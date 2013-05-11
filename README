@@ -1,0 +1,23 @@
+Introduction to Algorithms with Scheme
+--------------------------------------------------------------------
+
+A book for aspiring and/or hobbyist programmers who want to learn the
+most basic algorithms and data structures. We will use the Scheme
+programming language because it forces the programmer to think
+inductively and recursively. This way of thinking maps naturally onto
+many common algorithms.
+
+In addition, Scheme is simply badass.
+
+In order to provide a rich programming environment, this book will use
+the MIT/GNU Scheme implementation and Edwin, its integrated editor.
+The project website puts it nicely: ``MIT/GNU Scheme is an
+implementation of the Scheme programming language, providing an
+interpreter, compiler, source-code debugger, integrated Emacs-like
+editor, and a large runtime library.  MIT/GNU Scheme is best suited to
+programming large applications with a rapid development cycle.'' For
+more information, see http://www.gnu.org/software/mit-scheme/.
+
+This book is a work in progress, and will be licensed under the GNU
+Free Documentation License (or GFDL). For more information about the
+GFDL, see http://www.gnu.org/licenses/licenses.html#FDL.
