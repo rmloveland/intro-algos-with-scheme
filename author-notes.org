@@ -1,0 +1,26 @@
+#+title: Intro to Algorithms with Scheme -- Author Notes
+#+author: Rich Loveland
+#+email: loveland.richard@gmail.com
+
+* Overview
+
+  Things to cover:
+
+  - binary search
+  - merge sort?
+  - binary tree
+    - csrm: constructor, selector, recognizer, mutator
+    - creation
+    - insertion
+    - deletion
+    - walking the tree (use higher-order fns, notes from aduni lectures)
+  - sorting with treesort
+    - this is only fast if tree is balanced, so give the ``slow
+      version'' first, since balanced trees are not introduced yet
+  - balanced binary trees
+    - red-black tree (simpler than red-black to implement (?) but RB
+      has superior tree rotation runtime)
+    - now we can write the ``fast'' treesort!
+  - graphs
+    - represent data structure -- which representation?
+    - 2-3 common algorithms: traversal, search
