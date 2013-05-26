@@ -1,28 +1,30 @@
-(define (rml/merge l r)
+(define (rml/merge pred l r)
   (letrec ((merge-aux
-	    (lambda (left right result)
+	    (lambda (pred left right result)
 	      (cond ((and (null? left)
 			 (null? right))
 		     (reverse result))
 		    ((and (not (null? left))
 			  (not (null? right)))
-		     (if (< (car left)
+		     (if (pred (car left)
 			    (car right))
-			 (merge-aux (cdr left)
+			 (merge-aux pred
+                                    (cdr left)
 				    right
 				    (cons (car left) result))
-			 (merge-aux left
+			 (merge-aux pred
+                                    left
 				    (cdr right)
 				    (cons (car right) result))))
 		    ((not (null? left))
-		     (merge-aux (cdr left) right (cons (car left) result)))
+		     (merge-aux pred (cdr left) right (cons (car left) result)))
 		    ((not (null? right))
-		     (merge-aux left (cdr right) (cons (car right) result)))
+		     (merge-aux pred left (cdr right) (cons (car right) result)))
 		    (else #f)))))
-    (merge-aux l r '())))
+    (merge-aux pred l r '())))
 
-(define (rml/merge-sort xs)
-  (letrec ((merge-sort-aux 
+(define (rml/merge-sort xs pred)
+  (letrec ((merge-sort-aux
 	    (lambda (xs)
 	      ; If xs is empty or has 1 element, consider it sorted
 	      ; and return it
@@ -35,5 +37,5 @@
 			 (upper (drop xs middle))
 			 (left (merge-sort-aux lower))
 			 (right (merge-sort-aux upper)))
-		    (rml/merge left right))))))
+		    (rml/merge pred left right))))))
     (merge-sort-aux xs)))
