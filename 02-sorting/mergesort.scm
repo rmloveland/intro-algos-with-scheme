@@ -24,18 +24,15 @@
     (merge-aux pred l r '())))
 
 (define (rml/merge-sort xs pred)
-  (letrec ((merge-sort-aux
-	    (lambda (xs)
+  (let loop ((xs xs))
 	      ; If xs is empty or has 1 element, consider it sorted
 	      ; and return it
-	      (if (or (null? xs)
-		      (= (length xs) 1))
+	      (if (<= (length xs) 1)
 		  xs
 		  ; Otherwise, split xs into left and right sublists and call yourself recursively
 		  (let* ((middle (quotient (length xs) 2))
 			 (lower (take xs middle))
 			 (upper (drop xs middle))
-			 (left (merge-sort-aux lower))
-			 (right (merge-sort-aux upper)))
-		    (rml/merge pred left right))))))
-    (merge-sort-aux xs)))
+			 (left (loop lower))
+			 (right (loop upper)))
+		    (rml/merge pred left right)))))
