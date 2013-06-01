@@ -1,26 +1,56 @@
-#+title: Intro to Algorithms with Scheme -- Author Notes
-#+author: Rich Loveland
-#+email: loveland.richard@gmail.com
+Intro to Algorithms with Scheme -- Author Notes
+Rich Loveland
+r@rmloveland.com
 
-* Overview
+* Outline
 
-  Things to cover:
 
-  - binary search
-  - merge sort?
-  - binary tree
-    - csrm: constructor, selector, recognizer, mutator
-    - creation
-    - insertion
-    - deletion
-    - walking the tree (use higher-order fns, notes from aduni lectures)
-  - sorting with treesort
-    - this is only fast if tree is balanced, so give the ``slow
-      version'' first, since balanced trees are not introduced yet
-  - balanced binary trees
-    - red-black tree (simpler than red-black to implement (?) but RB
-      has superior tree rotation runtime)
-    - now we can write the ``fast'' treesort!
-  - graphs
-    - represent data structure -- which representation?
-    - 2-3 common algorithms: traversal, search
+** 00 - Introduction
+
+
+** 01 - Searching
+
+Binary search
+
+
+** 02 - Sorting
+
+Merge sort
+
+
+** 03 - Trees
+
+Binary trees
+
+CSRM: constructor, selector, recognizer, mutator
+
+Basic operations
+
+- creation
+- insertion
+- updating (destructive/in-place)
+- deletion
+
+Walking the tree
+
+use higher-order fns, notes from aduni lectures
+
+Sorting with treesort
+
+this is only fast if tree is balanced, so give the ``slow version''
+first, since balanced trees are not introduced yet
+
+Balanced binary trees
+
+red-black tree (avl tree is supposedly simpler than red-black to
+implement (?) but RB has superior tree rotation runtime) - once we
+have this we can write the ``fast'' treesort!
+
+
+** 04 - Graphs
+
+How to represent graphs with another data structure -- which
+representation? Matrix, hash table -- we might want to implement our
+own hash tables from bbt's first -- this would be way cool!
+
+Common graph algorithms: traversal, search
