@@ -10,8 +10,22 @@ outline over time.
 
 Testing library.
 
+Utilities library.
+
 Discussion of type annotations and return values in procedure
 definitions -- practical, not academic. Facilitates skim-reading code.
+
+Building a tags file for source navigation.
+
+Edwin basics.
+
+The `pp' procedure.
+
+The `show-parameter-list' procedure (M-Shift-A).
+
+The `scheme-complete-variable' procedure (ESC-TAB).
+
+The debugger.
 
 * 01 - Searching
 
