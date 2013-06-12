@@ -2,27 +2,30 @@ Intro to Algorithms with Scheme -- Author Notes
 Rich Loveland
 r@rmloveland.com
 
-* Outline
+The following are my writing notes for the book `Intro to Algorithms
+with Scheme'. It's my intent that they will turn into a working
+outline over time.
 
+* 00 - Introduction
 
-** 00 - Introduction
+Testing library.
 
+Discussion of type annotations and return values in procedure
+definitions -- practical, not academic. Facilitates skim-reading code.
 
-** 01 - Searching
+* 01 - Searching
 
-Binary search
+Binary search.
 
+* 02 - Sorting
 
-** 02 - Sorting
+Merge sort.
 
-Merge sort
+* 03 - Trees
 
+Binary trees.
 
-** 03 - Trees
-
-Binary trees
-
-CSRM: constructor, selector, recognizer, mutator
+CSRMs: constructors, selectors, recognizers, and mutators.
 
 Basic operations
 
@@ -31,26 +34,38 @@ Basic operations
 - updating (destructive/in-place)
 - deletion
 
-Walking the tree
+Walking the tree using higher order functions (see notes from ADuni lectures).
 
-use higher-order fns, notes from aduni lectures
+Sorting with treesort.
 
-Sorting with treesort
+This is only fast if the tree is balanced, so give the ``slow
+version'' first, since balanced trees are not introduced yet. Explain
+why it can be slow.
 
-this is only fast if tree is balanced, so give the ``slow version''
-first, since balanced trees are not introduced yet
+Balanced binary trees.
 
-Balanced binary trees
+Red-black tree or AVL tree? AVL is supposedly simpler to implement but
+red-black is said to have superior tree rotation runtime -- once we
+have a self-balancing tree of either type we can write the ``fast''
+treesort!
 
-red-black tree (avl tree is supposedly simpler than red-black to
-implement (?) but RB has superior tree rotation runtime) - once we
-have this we can write the ``fast'' treesort!
+* 04 - Graphs
 
+Introduction to graphs.
 
-** 04 - Graphs
+How to represent graphs with another data structure -- matrix or hash
+table. We might want to implement our own hash tables first using
+balanced binary trees -- this would be way cool!
 
-How to represent graphs with another data structure -- which
-representation? Matrix, hash table -- we might want to implement our
-own hash tables from bbt's first -- this would be way cool!
+In other words, it might be cool to build everything from the bottom
+up, e.g.:
 
-Common graph algorithms: traversal, search
+1. Balanced binary tree
+2. Hash Table
+3. Graph (using hash table representation)
+
+Discussion of common graph algorithms.
+
+Traversal: TBD.
+
+Search: Dijkstra's Algorithm.
