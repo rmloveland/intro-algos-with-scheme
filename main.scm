@@ -14,7 +14,8 @@
        '("/00-introduction/test-lib.scm"
          "/01-searching/binary-search.scm"
          "/02-sorting/mergesort.scm"
-         "/03-trees/binary-tree.scm")))
+         "/03-trees/binary-tree.scm"
+         "/utils/timing.scm")))
 
 (for-each (lambda (book-file)
             (load book-file))
