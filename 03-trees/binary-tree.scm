@@ -227,7 +227,6 @@ element element."
       (bst-nonempty-insert element B pred)))
 
 (define-syntax bst-insert!
-  "Destructively insert element element into binary search tree B."
   (syntax-rules ()
     ((bst-insert! element tree)
      (set! tree (bst-insert element tree)))))
