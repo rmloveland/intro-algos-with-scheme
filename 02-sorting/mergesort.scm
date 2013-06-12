@@ -5,7 +5,7 @@
 ;; already available in MIT/GNU Scheme's (user) environment. In other
 ;; words, you don't have to do anything, they're already baked in.
 
-(load-option 'format)
+(declare (usual-integrations))
 
 ;;; Recursive mergesort
 
@@ -148,16 +148,6 @@
 ;((1 2 5 7) (4 8) (3 6))
 ;((1 2 5 7) (3 4 6 8))
 ;(1 2 3 4 5 6 7 8)
-
-(define (rml/merge-sort3 xs pred)
-  (let ((len (length xs))
-        (ys (explode xs)))
-    (let loop
-        ((xs xs)
-         (ys ys))
-      (if (= len (length ys))
-          ys
-          '()))))
 
 ;;; Insertion sort (example of ease of implementation vs. performance
 
