@@ -1,7 +1,5 @@
 ;;; A binary search implementation in MIT/GNU Scheme.
 
-(load-option 'format)
-
 (define (make-list-of-random-numbers list-length max)
   ;; Int Int -> List
   "Make a list of random integers less than MAX that's LIST-LENGTH long."
@@ -78,18 +76,6 @@ N can be an integer or flonum (yes, it's quick and dirty)."
 		(loop low (+ 1 try))))
 	   (else #f))))))
 
-(define (assert= expected got #!optional noise)
-  ;; Int Int -> IO
-  (if (= expected got)
-      (format #t "~A is ~A\t...ok~%" expected got)
-      (format #t "~A is not ~A\t...FAIL~%" expected got)))
-
-(define (assert-equal? expected got #!optional noise)
-  ;; Int Int -> IO
-  (if (equal? expected got)
-      (format #t "~A is ~A\t...ok~%" expected got)
-      (format #t "~A is not ~A\t...FAIL~%" expected got)))
-
 (define (run-binary-search-tests)
   ;; -> IO
   "Run our binary search tests using known words from the 'words' file.
@@ -102,15 +88,16 @@ This file should be in the current working directory."
             (let* ((unsorted (make-list-of-words-matching "acc" "words"))
                    (sorted (sort unsorted string<?)))
               (format #t "doing binary searches...~%")
-              (assert-equal? #f (binary-search "test" '())) ; empty list
-              (assert-equal? #f (binary-search "aardvark" sorted)) ; element absent and too small
-              (assert-equal? #f (binary-search "zebra" sorted)) ; element absent and too large
-              (assert= 0 (binary-search "accusive" '("accusive"))) ; list of length one
-              (assert= 0 (binary-search "acca" sorted)) ; first element of list
-              (assert= 1 (binary-search "aardvark" '("aardvark" "aardvark" "babylon"))) ; multiple copies of word in list
-              (assert= 1 (binary-search "barbaric" '("accusive" "barbaric"))) ; list of length two
-              (assert= 98 (binary-search "acclamator" sorted))
-	      (assert= 127 (binary-search "aardvark" (map (lambda (x) "aardvark") sorted))) ; list is all one value
-              (assert= 143 (binary-search "accomplice" sorted))
-              (assert= 254 (binary-search "accustomedly" sorted))
-              (assert= 255 (binary-search "accustomedness" sorted)))))))) ; last element of list
+              (assert equal? #f (binary-search "test" '())) ; empty list
+              (assert equal? #f (binary-search "aardvark" sorted)) ; element absent and too small
+              (assert equal? #f (binary-search "zebra" sorted)) ; element absent and too large
+              (assert = 0 (binary-search "accusive" '("accusive"))) ; list of length one
+              (assert = 0 (binary-search "acca" sorted)) ; first element of list
+              (assert = 1 (binary-search "aardvark" '("aardvark" "aardvark" "babylon"))) ; multiple copies of word in list
+              (assert = 1 (binary-search "barbaric" '("accusive" "barbaric"))) ; list of length two
+              (assert = 98 (binary-search "acclamator" sorted))
+	      (assert = 127 (binary-search "aardvark" (map (lambda (x) "aardvark") sorted))) ; list is all one value
+              (assert = 143 (binary-search "accomplice" sorted))
+              (assert = 254 (binary-search "accustomedly" sorted))
+              (assert = 255 (binary-search "accustomedness" sorted)))) ; last element of list
+          (error "File `words' not found in this directory")))))
