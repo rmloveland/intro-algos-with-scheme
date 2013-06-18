@@ -31,6 +31,9 @@ The debugger.
 
 Binary search.
 
+TODO: Rewrite `make-list-of-words-matching' to use the built-in
+`re-string-match' procedure.
+
 * 02 - Sorting
 
 Merge sort.
