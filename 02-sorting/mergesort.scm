@@ -134,6 +134,20 @@
               (cons (list (car xs))
                     ys)))))
 
+(define (explode2 xs)
+  (let loop ((xs xs)
+             (ys '()))
+    (cond ((null? xs)
+           ys)
+          ((null? (cdr xs))
+           (loop '()
+                 (cons (list (car xs)) ys)))
+          (else
+           (loop (cddr xs) ; 3..
+                 (cons (list (first xs)
+                             (second xs))
+                       ys))))))
+
 ;; Now the bottom up merge sort!
 ;; The steps are:
 ;; 1. Pass through the list, merging sublists of size n.
