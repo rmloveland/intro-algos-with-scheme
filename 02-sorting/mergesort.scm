@@ -165,17 +165,23 @@
 
 (define (rml/merge-sort3 xs pred)
   (let ((exploded (explode xs)))
-    (let loop
-        ((exploded exploded)
-         (result '()))
-      (if (null? exploded)
-          result
-          (loop (cddr exploded)
-                (cons
-                 (rml/merge pred
-                            (first exploded)
-                            (second exploded))
-                 result))))))
+    (let loop ((exploded exploded)
+               (result '()))
+      (cond ((and (null? exploded)
+                  (= 1 (length result)))
+             (car result))
+            ((null? exploded)
+             (loop result
+                   exploded))
+            ((null? (cdr exploded))
+             (loop (cdr exploded)
+                   (cons (car exploded) result)))
+            (else
+             (loop (cddr exploded)
+                   (cons (rml/merge <
+                                    (first exploded)
+                                    (second exploded))
+                         result)))))))
 
 ;;; Insertion sort (example of ease of implementation vs. performance)
 
