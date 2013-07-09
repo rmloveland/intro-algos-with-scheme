@@ -183,6 +183,57 @@
                                     (second exploded))
                          result)))))))
 
+;;; Bottom-up, iterative merge sort, rewritten to avoid the O(n)
+;;; overhead of `explode'
+
+(define (rml/merge2 pred l r)
+  (letrec ((merge-aux
+	    (lambda (pred left right result)
+	      (cond 
+	       ((and (number? left)
+		     (number? right))
+		(merge-aux pred (list left) (list right) result))
+	       ((and (null? left)
+		     (null? right))
+		(reverse result))
+	       ((and (not (null? left))
+		     (not (null? right)))
+		(if (pred (car left)
+			  (car right))
+		    (merge-aux pred
+			       (cdr left)
+			       right
+			       (cons (car left) result))
+		    (merge-aux pred
+			       left
+			       (cdr right)
+			       (cons (car right) result))))
+	       ((not (null? left))
+		(merge-aux pred (cdr left) right (cons (car left) result)))
+	       ((not (null? right))
+		(merge-aux pred left (cdr right) (cons (car right) result)))
+	       (else #f)))))
+    (merge-aux pred l r '())))
+
+(define (rml/merge-sort4 xs pred)
+  (let loop ((xs xs)
+	     (result '()))
+    (cond ((and (null? xs)
+		(= 1 (length result)))
+	   (car result))
+	  ((null? xs)
+	   (loop result
+		 xs))
+	  ((null? (cdr xs))
+	   (loop (cdr xs)
+		 (cons (car xs) result)))
+	  (else
+	   (loop (cddr xs)
+		 (cons (rml/merge2 <
+				   (first xs)
+				   (second xs))
+		       result))))))
+
 ;;; Insertion sort (example of ease of implementation vs. performance)
 
 (define (rml/insertion-sort1 xs pred)
