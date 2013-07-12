@@ -219,7 +219,7 @@
   (let loop ((xs xs)
 	     (result '()))
     (cond ((and (null? xs)
-		(= 1 (length result)))
+		(null? (cdr result)))
 	   (car result))
 	  ((null? xs)
 	   (loop result
