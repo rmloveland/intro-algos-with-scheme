@@ -3,10 +3,12 @@
 (load-option 'format)
 (load-option 'regular-expression)
 
+;++ Rewrite this to use proper pathnames.
+
 (define book-dir 
   (string-append 
    (get-environment-variable "HOME")
-   "/Desktop/current/intro-algos-with-scheme/"))
+   "/Code/mathoms/intro-algos-with-scheme/"))
 
 (define book-files
   (map (lambda (fname)
