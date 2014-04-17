@@ -36,7 +36,7 @@
 (define (bintree-node-right node)
   ;; List -> Any
   "Retrieve the right subtree of NODE."
-  (third N))
+  (third node))
 
 ;;; Recognizers
 
@@ -220,11 +220,11 @@ element element."
 	  (bst-nonempty-member? element (bintree-node-left B))
 	  (bst-nonempty-member? element (bintree-node-right B)))))
 
-(define (bst-insert element B pred)
+(define (bst-insert element B)
   "Insert element element into binary search tree B."
   (if (bst-empty? B)
       (make-bintree-leaf element)
-      (bst-nonempty-insert element B pred)))
+      (bst-nonempty-insert element B)))
 
 (define-syntax bst-insert!
   (syntax-rules ()
@@ -234,9 +234,16 @@ element element."
 (define (list->tree xs)
   (let ((tree '()))
     (for-each (lambda (x)
-		(set! tree (bst-insert x tree pred)))
+		(set! tree (bst-insert x tree)))
 	      xs)
     tree))
+
+(define (flatten xs)
+  (cond ((null? xs) '())
+	((pair? xs)
+	 (append (flatten (car xs))
+		 (flatten (cdr xs))))
+	(else (list xs))))
 
 (define (atom? a)
   (and (not (null? a))
@@ -250,7 +257,7 @@ element element."
 	(else (+ (treesum (car tree))
 		 (treesum (cdr tree))))))
 
-(define (treesort xs pred)
+(define (treesort xs)
   (let ((result '())
 	(seen '())
 	(tree (list->tree xs)))
@@ -262,7 +269,7 @@ element element."
      (fast-bintree-preorder tree))
     (reverse result)))
 
-(define (bst-nonempty-insert element tree pred)
+(define (bst-nonempty-insert element B)
   ;; 
   "Insert ELEMENT into the non-empty binary search TREE."
   (if (bintree-leaf? B)
@@ -270,7 +277,7 @@ element element."
       (let ((this (bintree-node-element B))
 	    (left (bintree-node-left B))
 	    (right (bintree-node-right B)))
-	(if (pred element (bintree-node-element B)) ; Should be <= or semantic equivalent
+	(if (<= element (bintree-node-element B))
 	    (make-bintree-node this
 			       (bst-nonempty-insert element (bintree-node-left B))
 			       right)
@@ -304,10 +311,9 @@ element element."
 	  (bst-leaf-remove element B)
 	  (bst-node-remove element B))))
 
-(define (bst-leaf-remove element leaf pred)
-  ;; 
+(define (bst-leaf-remove element leaf)
   "Remove ELEMENT from binary search tree LEAF."
-  (if (pred element (bintree-leaf-element L)) ; Should be = or similar
+  (if (= element (bintree-leaf-element L))
       (make-empty-bst)
       L))
 
