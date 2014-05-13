@@ -1,12 +1,41 @@
-Intro to Algorithms with Scheme -- Author Notes
-Rich Loveland
+* An Invitation to Algorithms with Scheme            -*- Outline -*-
+
+by Rich Loveland
 r@rmloveland.com
 
-The following are my writing notes for the book `Intro to Algorithms
-with Scheme'. It's my intent that they will turn into a working
-outline over time.
+* Preface
+
+There are many books about algorithms.  Most provide detailed analyses
+of topics such as ``big O notation'' and are aimed at an academic
+audience.  As a result, they strive to be comprehensive, and in so
+doing, run to hundreds of pages in length.
+
+This book is different, because its goals are different.  First, it is
+an *invitation* to algorithms; this means that we will cover one or
+two of the most common algorithms in each of the standard areas such
+as searching, sorting, trees, graphs, &c.
+
+Second, it is an invitation to algorithms *with Scheme*.  This means
+that we will use Scheme to describe the algorithms we want the
+computer to perform.  As we will discover, this allows us to describe
+our algorithms in a language that is often very similar to the
+mathematical descriptions of those algorithms.  Whether this should be
+seen as a strength or a weakness of the Scheme language is left for
+the reader to decide.
+
+* Prerequisites
+
+This book does not try to teach the Scheme language.  We assume the
+reader has already encountered an introduction to Scheme elsewhere.  A
+good book that serves this purpose is _The Little Schemer_, by Dan
+Friedman & Matthias Felleisen.  For reference, see also Dybvig's _The
+Scheme Programming Language_.
 
 * 00 - Introduction
+
+Overview of the chapters.
+
+The three (or so) big ideas of this book.
 
 Testing library.
 
@@ -29,6 +58,8 @@ The debugger.
 
 * 01 - Searching
 
+NOTE: This should be chapter two, and `Sorting' should be first.
+
 Binary search.
 
 TODO: Rewrite `make-list-of-words-matching' to use the built-in
@@ -36,7 +67,35 @@ TODO: Rewrite `make-list-of-words-matching' to use the built-in
 
 * 02 - Sorting
 
-Merge sort.
+Although ostensibly, computers gonna compute, it turns out that most
+of the time we use them for their data-shuffling capabilities more
+than as calculators.  A lot of what we do with computers (some would
+argue almost all of it) has to do with shuffling data around from one
+place to the next (or one format into the next).  As a result,
+computers are beginning to become external brains that we dump things
+into for later use.
+
+As external brains, one of the most important things computers help us
+with is in finding things.  As it happens, it's much easier to search
+for and find things if you put them in order first.  This is as true
+for computers as it is for your house.
+
+Hence, sorting.
+
+In this chapter we will look at a few different sorting algorithms,
+finishing up with a relatively performant iterative implementation of
+*merge sort*.  This algorithm has a few qualities that make it worth
+using: first, it performs well; second, it is relatively simple to
+understand; third, it suits Scheme well due to the way lists (cons
+cells, really) are implemented.
+
+If you can understand the implementation of merge sort described in
+this chapter, you should have no problem learning more about (and
+implementing your own versions of) quicksort, heap sort, and the like.
+
+IMPL: Recursive merge sort.
+
+IMPL: Bottom-up merge sort.
 
 * 03 - Trees
 
@@ -86,3 +145,7 @@ Discussion of common graph algorithms.
 Traversal: TBD.
 
 Search: Dijkstra's Algorithm.
+
+* Appendix A: Helper Code
+
+This appendix contains the ``helper code'' used in the book: 
