@@ -143,12 +143,12 @@
 
    Let's look at each of these procedures in turn:
    
-   1. MERGE handles splicing two sublists together in an ordering
+   1. =MERGE= handles splicing two sublists together in an ordering
       determined by a predicate such as =<= or =STRING<?=.  In other
       words, it puts things in order based on which of them are "less
       than" the other (this can have different meanings for numbers
-      and strings).  Here are some examples showing its expected
-      output:
+      and strings).  Here are some examples showing the expected
+      output of =MERGE=:
    
       #+BEGIN_SRC scheme
         (merge < '(2 191) '(18 45))
@@ -184,24 +184,24 @@
    comparing the elements of each list in turn.  We will keep another
    list, =RESULT=, where we will put our, er, result.  If we assume
    =i= is the current position in the list, and if =(list-ref A i)=
-   (the current element from A) is less than =(list-ref B i)= (the one
-   from B), we push =(list-ref A i)= onto the result list.  Otherwise,
-   we push =(list-ref B i)= on.
+   (the current element from A) is less than =(list-ref B i)= (the
+   current element from B), we push =(list-ref A i)= onto the results
+   list.  Otherwise, we push =(list-ref B i)= onto the results list.
    
    IMAGE
    
    Finally, having traversed both of our input lists A and B, and
-   processed all the elements of each, we return RESULT.
+   processed all the elements of each, we return =RESULT=.
    
    IMAGE
    
-   It's important to note that RESULT is *not* a sorted list.  It has
-   been put into `pairwise order'.  This is a fancy way of saying that
-   we only compared two elements at a time, one each from A and B, as
-   we were building it.
+   It's important to note that =RESULT= is *not* a sorted list.  It
+   has been put into "pairwise order".  This is a fancy way of saying
+   that we only compared two elements at a time, one each from /A/ and
+   /B/, as we were building it.
    
-   At this point, you can probably begin to see why MERGE-SORT calls
-   MERGE over and over when it's sorting a list.
+   At this point, you can probably begin to see why =MERGE-SORT= calls
+   =MERGE= over and over when it's sorting a list.
    
 ** Implementing MERGE
    
@@ -241,7 +241,7 @@
    #+END_SRC
    
    Based on our above descriptions of the algorithm, the
-   implementation of MERGE is straightforward:
+   implementation of MERGE is straightforward, if a bit long:
    
    #+BEGIN_SRC scheme
      (define (merge pred l r)
@@ -314,13 +314,15 @@
    Let's go through the COND clause-by-clause.  First, as our
    recursive base case,
 
-** Recursive Merge Sort   
+** Recursive Merge Sort
 
-   IMPL: Recursive merge sort.
+   ++ Implement the recursive merge sort for comparison.
 
 ** Bottom-up Merge Sort
 
-   IMPL: Bottom-up merge sort.
+   We've already done the hard part by writing =MERGE=.  Now we just
+   need to write the "driver" procedure that will call it.  Hence,
+   =MERGE-SORT=.  Take a few minutes to study the commented version:
 
    #+BEGIN_SRC scheme
      (define (merge-sort xs pred)
@@ -343,15 +345,12 @@
    #+END_SRC
 
 * Searching
-  
-  NOTE: This should be chapter two, and `Sorting' should be first.
-  
-  Binary search.
-  
-  TODO: Rewrite `make-list-of-words-matching' to use the built-in
-  `re-string-match' procedure.
-   
+
+  ++ Write this chapter.
+
 * Trees
+
+  ++ Write this chapter.
   
   Binary trees.
   
@@ -403,6 +402,8 @@
 
 * Heaps
 
+* Stacks
+
 * Glossary
 
 [1] An iterative process is one that does not consume growing amounts
@@ -410,4 +411,9 @@ of stack space while it runs.
 
 * Appendix A: Helper Code
   
-  This appendix contains the ``helper code'' used in the book:
+  This appendix contains the "helper code" used in the book:
+
+
+Local variables:
+Mode: Org
+End:
