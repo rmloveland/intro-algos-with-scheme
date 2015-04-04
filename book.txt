@@ -1,61 +1,70 @@
 #+title: An Invitation to Algorithms with Scheme
-#+author: Richard Loveland
+#+author: Richard M. Loveland
 #+email: r@rmloveland.com
 
 * Preface
-  
-  There are many books about algorithms.  Most provide detailed
-  analyses of topics such as ``big O notation'' and are aimed at an
-  academic audience.  As a result, they strive to be comprehensive,
-  and in so doing, run to hundreds of pages in length.
-  
-  This book is different, because its goals are different.  First, it
-  is an *invitation* to algorithms; this means that we will cover one
-  or two common algorithms in each of several areas: searching,
-  sorting, trees, graphs, and matrices.  You can get surprisingly far
-  with these simple building blocks.
-  
-  Further, it is an invitation to algorithms *with Scheme*.  This
-  means that we will use Scheme to describe the algorithms we want the
-  computer to perform.  Along the way, we will solve real problems:
-  disk I/O, parsing input file formats, and so on.  This will take us
-  out of the realm of "pure" textbook algorithms and into the messy
-  but fun world of real programming.  Because programming isn't much
-  fun unless you can get the computer to actually do stuff.
 
-  Finally, it is my opinion that the notation provided by Scheme
-  provides a clear description of many common algorithms.  Whether
-  this should be seen as a strength or a weakness of the Scheme
-  language is left for the reader to decide.
+** Why another book about algorithms?
 
-* Prerequisites
+   There are many books about algorithms.  Most provide detailed
+   analyses of topics such as ``big O notation'' and are aimed at an
+   academic audience.  As a result, they strive to be comprehensive,
+   and in so doing, run to hundreds of pages in length.
+   
+   This book is different, because its goals are different.  First, it
+   is an *invitation* to algorithms; this means that we will cover one
+   or two common algorithms in each of several areas: searching,
+   sorting, trees, graphs, and matrices.  You can get surprisingly far
+   with these simple building blocks.
+   
+   Further, it is an invitation to algorithms *with Scheme*.  This
+   means that we will use Scheme to describe the algorithms we want the
+   computer to perform.  Along the way, we will solve real problems:
+   disk I/O, parsing input file formats, and so on.  This will take us
+   out of the realm of "pure" textbook algorithms and into the messy
+   but fun world of real programming.  Because programming isn't much
+   fun unless you can get the computer to actually do stuff.
 
-  This book does not try to teach the Scheme language.  We assume the
-  reader has already encountered an introduction to Scheme elsewhere.
-  In particular, you should be pretty comfortable with recursion.  A
-  good book that serves this purpose is _The Little Schemer_, by Dan
-  Friedman & Matthias Felleisen.  For a more detailed introduction to
-  the Scheme language, see Dybvig's excellent _The Scheme Programming
-  Language_.
+   Finally, it is my opinion that the notation provided by Scheme
+   provides a clear description of many common algorithms.  It is even
+   thought of by some programmers as beautiful, but I leave that for
+   you to decide.
 
-  You will need a Scheme interpreter that is compatible with the code
-  in this book.  I have tested the code in this book with the
-  following implementations:
+** Prerequisites
 
-  - FOO
-  - BAR
+   The following are the recommended prerequisites for reading this
+   book:
 
-* Conventions
-  
-  Procedure names are written like this: =CHAR-READY?=
+   + Familiarity with Scheme
 
-  Code samples are set off from the surrounding text like so:
+   This book does not try to teach the Scheme language.  We assume the
+   reader has already encountered an introduction to Scheme elsewhere.
+   In particular, you should be pretty comfortable with recursion.  A
+   good book that serves this purpose is _The Little Schemer_, by Dan
+   Friedman & Matthias Felleisen.  For a more detailed introduction to
+   the Scheme language, see Dybvig's excellent _The Scheme Programming
+   Language_.
 
-  #+BEGIN_SRC scheme
-    (define (foo n)
-      (expt n n))
-  #+END_SRC
-  
+   + The Scheme 48 Interpreter
+
+   You will need a copy of Scheme 48, version 0.53.  It is highly
+   likely that you will need access to a computer (or virtual machine)
+   running Mac OS X or Linux to build it.
+
+   For instructions on building the interpreter, see [[Appendix A:
+   Building Scheme]].
+
+** Conventions
+
+   Procedure names are written like this: =CHAR-READY?=
+
+   Code samples are set off from the surrounding text like so:
+
+   #+BEGIN_SRC scheme
+     (define (foo n)
+       (expt n n))
+   #+END_SRC
+   
 * Introduction
   
   What is an algorithm?
@@ -409,9 +418,7 @@
 [1] An iterative process is one that does not consume growing amounts
 of stack space while it runs.
 
-* Appendix A: Helper Code
-  
-  This appendix contains the "helper code" used in the book:
+* Appendix A: Building Scheme
 
 
 Local variables:
