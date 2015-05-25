@@ -40,29 +40,32 @@ N can be an integer or flonum (yes, it's quick and dirty)."
   "Do binary search of list XS for WORD. Return the index found, or #f."
   (if (null? xs)
       #f
-      (let loop ((low 0) (high (- (length xs) 1)))
+      (let loop ((low 0)
+		 (high (- (length xs) 1)))
 	(let* ((try (+ low (split-difference low high)))
 	       (word-at-try (list-ref xs try)))
 	  (cond
-           ((string=? word-at-try word) try)
-	   ((< (- high low) 1) #f)
+           ((string-ci=? word-at-try word)
+	    try)
+	   ((< (- high low) 1)
+	    #f)
 	   ((= (- high try) 1) 
-            (if (string=? (list-ref xs low) word)
+            (if (string-ci=? (list-ref xs low) word)
                 low
                 #f))
-	   ((string<? word-at-try word)
+	   ((string-ci<? word-at-try word)
 	    (if debug-print?
-		(begin (format #f "(string<? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~%" ; ,open formats
+		(begin (format #f "(string-ci<? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~%" ; ,open formats
 			       word-at-try word try high low)
 		       (loop (+ 1 try) high)) ; raise the bottom of the window
 		(loop (+ 1 try) high)))
-	   ((string>? word-at-try word)
+	   ((string-ci>? word-at-try word)
 	    (if debug-print?
-		(begin (format #f "(string>? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~%"
+		(begin (format #f "(string-ci>? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~%"
 			       word-at-try word try high low)
 		       (loop low (+ 1 try))) ; lower the top of the window
 		(loop low (+ 1 try))))
-	   (else #f))))))
+	   (else 'FAIL))))))
 
 (define (words-file)
   ;; -> Str
@@ -75,7 +78,7 @@ N can be an integer or flonum (yes, it's quick and dirty)."
   "Run our binary search tests using known words from the 'words' file."
   (begin
     (let* ((unsorted (load (words-file)))
-	   (sorted (sort-list unsorted string<?))) ; ,open sort
+	   (sorted (sort-list unsorted string-ci<?))) ; ,open sort
       (format #t "Running binary search tests...~%")
       (assert equal? #f (binary-search "test" '() #f) "element absent: list is empty")
       (assert equal? #f (binary-search "aardvark" sorted #f) "element absent: too small")
@@ -87,7 +90,8 @@ N can be an integer or flonum (yes, it's quick and dirty)."
       (assert = 1 (binary-search "barbaric" '("accusive" "barbaric") #f) "element present: list of length two")
       (assert = 98
 	      (binary-search "acclamator" sorted #f) "element present: general")
-      (assert = 127 (binary-search "aardvark" (map (lambda (x) "aardvark") sorted) #f) "element present: list is all one value")
+      (assert = 1
+	      (binary-search "aardvark" '("aardvark" "aardvark" "aardvark" "aardvark") #f) "element present: list is all one value")
       (assert = 143 (binary-search "accomplice" sorted #f) "element present: general")
       (assert = 254 (binary-search "accustomedly" sorted #f) "element present: general"))))
 
