@@ -2,7 +2,7 @@
 
 (define (assert pred expected got msg . noise)
   ;; Proc Value Value String . Value -> IO!
-  (format #t "Testing condition '~A'~% " msg)
+  (format #t "Testing condition '~A'~%~%" msg)
   (if (pred expected got)
       (format #t "~A is ~A... ok~%~%" expected got)
       (format #t "~A is not ~A... FAIL~%~%" expected got)))
