@@ -146,8 +146,8 @@ This is just a way of annotating our program code that serves as a form of docum
 {code}
 ; MERGE : Pred List List -> List
 (define (merge pred A B)
-(let ((return '()))
-return))
+  (let ((return '()))
+    return))
 {code}
 
 This meets the spec, in that it takes the right arguments and returns a list, but it doesn't actually do anything.  In fact, because we already know we're going to be returning a list, let's write it in a recursive style that uses an explicit list argument. This explicit list will be the value of RETURN we talked about earlier.  It also means we need to update our spec slightly.
@@ -155,77 +155,77 @@ This meets the spec, in that it takes the right arguments and returns a list, bu
 {code}
 ; MERGE : Pred List List List -> List
 (define (merge pred A B RETURN)
-RETURN)
+  RETURN)
 {code}
 
 Based on our above descriptions of the algorithm, the implementation of MERGE is straightforward, if a bit long:
 
 {code}
 (define (merge pred l r)
-(letrec ((merge-aux
-(lambda (pred left right result)
-(cond 
-;; If LEFT and RIGHT are both numbers, listify them so
-;; MERGE-AUX can work with them.
-((and (number? left)
-(number? right))
-(merge-aux pred (list left) (list right) result))
+  (letrec ((merge-aux
+	    (lambda (pred left right result)
+	      (cond 
+	       ;; If LEFT and RIGHT are both numbers, listify them so
+	       ;; MERGE-AUX can work with them.
+	       ((and (number? left)
+		     (number? right))
+		(merge-aux pred (list left) (list right) result))
 
-;; If LEFT is just a number, listify it so MERGE-AUX
-;; can work with it.
-((number? left)
-(merge-aux pred (list left) right result))
+	       ;; If LEFT is just a number, listify it so MERGE-AUX
+	       ;; can work with it.
+	       ((number? left)
+		(merge-aux pred (list left) right result))
 
-;; Likewise, if RIGHT is just a number, listify it for
-;; MERGE-AUX.
-((number? right)
-(merge-aux pred left (list right) result))
+	       ;; Likewise, if RIGHT is just a number, listify it for
+	       ;; MERGE-AUX.
+	       ((number? right)
+		(merge-aux pred left (list right) result))
 
-;; If LEFT and RIGHT are both strings, listify them so
-;; MERGE-AUX can use them.
-((and (string? left)
-(string? right))
-(merge-aux pred (list left) (list right) result))
+	       ;; If LEFT and RIGHT are both strings, listify them so
+	       ;; MERGE-AUX can use them.
+	       ((and (string? left)
+		     (string? right))
+		(merge-aux pred (list left) (list right) result))
 
-;; If either LEFT or RIGHT are just strings, listify
-;; for MERGE-AUX.
-((string? left) (merge-aux pred (list left) right result))
-((string? right) (merge-aux pred left (list right) result))
+	       ;; If either LEFT or RIGHT are just strings, listify
+	       ;; for MERGE-AUX.
+	       ((string? left) (merge-aux pred (list left) right result))
+	       ((string? right) (merge-aux pred left (list right) result))
 
-;; If LEFT and RIGHT are empty, we're done merging.
-;; Return the result.
-((and (null? left)
-(null? right))
-(reverse result))
+	       ;; If LEFT and RIGHT are empty, we're done merging.
+	       ;; Return the result.
+	       ((and (null? left)
+		     (null? right))
+		(reverse result))
 
-;; If LEFT and RIGHT still have elements to be
-;; processed, call PRED and run them through MERGE-AUX
-;; again.
-((and (not (null? left))
-(not (null? right)))
-(if (pred (car left)
-(car right))
-(merge-aux pred
-(cdr left)
-right
-(cons (car left) result))
-(merge-aux pred
-left
-(cdr right)
-(cons (car right) result))))
+	       ;; If LEFT and RIGHT still have elements to be
+	       ;; processed, call PRED and run them through MERGE-AUX
+	       ;; again.
+	       ((and (not (null? left))
+		     (not (null? right)))
+		(if (pred (car left)
+			  (car right))
+		    (merge-aux pred
+			       (cdr left)
+			       right
+			       (cons (car left) result))
+		  (merge-aux pred
+			     left
+			     (cdr right)
+			     (cons (car right) result))))
 
-;; If the cases above haven't matched, and LEFT is not
-;; NULL?, I call myself.
-((not (null? left))
-(merge-aux pred (cdr left) right (cons (car left) result)))
+	       ;; If the cases above haven't matched, and LEFT is not
+	       ;; NULL?, I call myself.
+	       ((not (null? left))
+		(merge-aux pred (cdr left) right (cons (car left) result)))
 
-;; Same as the previous case -- this time with RIGHT.
-((not (null? right))
-(merge-aux pred left (cdr right) (cons (car right) result)))
+	       ;; Same as the previous case -- this time with RIGHT.
+	       ((not (null? right))
+		(merge-aux pred left (cdr right) (cons (car right) result)))
 
-;; We should never get here.
-(else #f)))))
-(merge-aux pred l r '())))
+	       ;; We should never get here.
+	       (else #f)))))
+    (merge-aux pred l r '())))
 {code}
 
 Let's go through the COND clause-by-clause.  First, as our recursive base case,
@@ -238,22 +238,22 @@ We've already done the hard part by writing {{MERGE}}.  Now we just need to writ
 
 {code}
 (define (merge-sort xs pred)
-(let loop ((xs xs)
-(result '()))
-(cond ((and (null? xs)
-(null? (cdr result)))
-(car result))
-((null? xs)
-(loop result xs))
-((null? (cdr xs))
-(loop (cdr xs)
-(cons (car xs) result)))
-(else
-(loop (cddr xs)
-(cons (merge <
-(first xs)
-(second xs))
-result))))))
+  (let loop ((xs xs)
+	     (result '()))
+       (cond ((and (null? xs)
+		   (null? (cdr result)))
+	      (car result))
+	     ((null? xs)
+	      (loop result xs))
+	     ((null? (cdr xs))
+	      (loop (cdr xs)
+		    (cons (car xs) result)))
+	     (else
+	      (loop (cddr xs)
+		    (cons (merge <
+				 (first xs)
+				 (second xs))
+			  result))))))
 {code}
 
 h3. Searching
