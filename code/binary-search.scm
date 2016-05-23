@@ -69,7 +69,7 @@ N can be an integer or flonum (yes, it's quick and dirty)."
 
 (define (words-file)
   ;; -> Str
-  "/home/rml/Code/intro-algos-with-scheme/01-searching/words.scm")
+  (expand-file-name "~/Documents/personal/intro-algos-with-scheme/data/words.dat"))
 
 (define *words* (load (words-file)))	; IO!
 
