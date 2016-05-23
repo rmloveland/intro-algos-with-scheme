@@ -5,8 +5,6 @@
 ;; already available in MIT/GNU Scheme's (user) environment. In other
 ;; words, you don't have to do anything, they're already baked in.
 
-(declare (usual-integrations))
-
 ;;; Recursive mergesort
 
 ;; First, we need a `merge' procedure.
@@ -38,23 +36,25 @@
 
 ;; Recursive merge sort (note tree recursion)
 
-(define (rml/merge-sort1 xs pred #!optional debug-print)
+(define (rml/merge-sort1 xs pred . debug-print)
   (let loop ((xs xs))
-	      ; If xs is empty or has 1 element, consider it sorted
-	      ; and return it
-	      (if (<= (length xs) 1)
-		  xs
-		  ; Otherwise, split xs into left and right sublists and call yourself recursively
-		  (let* ((middle (quotient (length xs) 2))
-			 (left (loop (take xs middle)))
-			 (right (loop (drop xs middle))))
-		    (if (not (default-object? debug-print))
-			(format #t "merging:~%~A~%~A~%" left right))
-		    (rml/merge pred left right)))))
+    ;; If xs is empty or has 1 element, consider it sorted and return
+    ;; it
+    (if (<= (length xs) 1)
+        xs
+        ;; Otherwise, split xs into left and right sublists and call
+        ;; yourself recursively
+        (let* ((middle (quotient (length xs) 2))
+               (left (loop (take xs middle)))
+               (right (loop (drop xs middle))))
+          (begin
+            (if debug-print
+                (format #t "merging:~%~A~%~A~%" left right))
+            (rml/merge pred left right))))))
 
 ;; The above two procedures merged into one
 
-(define (rml/merge-sort2 xs pred #!optional debug-print)
+(define (rml/merge-sort2 xs pred . debug-print)
   (let loop ((xs xs))
     ;; If xs is empty or has 1 element, consider it sorted
     ;; and return it
@@ -62,61 +62,62 @@
         xs
         ;; Otherwise, split xs into left and right sublists and call yourself recursively
         (let ((middle (quotient (length xs) 2)))
-          (if (not (default-object? debug-print))
-              (format #t "merging:~%~A~%~A~%" left right))
-          (let merge
-              ((pred pred) 
-               (left (loop (take xs middle)))
-               (right (loop (drop xs middle))) 
-               (result '()))
-            (cond ((and (null? left)
-                        (null? right))
-                   (reverse result))
-                  ((and (not (null? left))
-                        (not (null? right)))
-                   (if (pred (car left)
-                             (car right))
-                       (merge pred
-                              (cdr left)
-                              right
-                              (cons (car left) result))
-                       (merge pred
-                              left
-                              (cdr right)
-                              (cons (car right) result))))
-                  ((not (null? left))
-                   (merge pred (cdr left) right (cons (car left) result)))
-                  ((not (null? right))
-                   (merge pred left (cdr right) (cons (car right) result)))
-                  (else #f)))))))
+          (begin
+            (if debug-print
+                (format #t "merging:~%~A~%~A~%" left right))
+            (let merge
+                ((pred pred)
+                 (left (loop (take xs middle)))
+                 (right (loop (drop xs middle))) 
+                 (result '()))
+              (cond ((and (null? left)
+                          (null? right))
+                     (reverse result))
+                    ((and (not (null? left))
+                          (not (null? right)))
+                     (if (pred (car left)
+                               (car right))
+                         (merge pred
+                                (cdr left)
+                                right
+                                (cons (car left) result))
+                         (merge pred
+                                left
+                                (cdr right)
+                                (cons (car right) result))))
+                    ((not (null? left))
+                     (merge pred (cdr left) right (cons (car left) result)))
+                    ((not (null? right))
+                     (merge pred left (cdr right) (cons (car right) result)))
+                    (else #f))))))))
 
 ;; Ported from the MIT Scheme `merge-sort!' implementation, which uses
 ;; vectors and is way fast. This uses lists and is way slow, slower
 ;; even than the tree-recursive implementation above.
 
-(define (rml/merge-sort! xs pred)
-  (let sort-sublist
-      ((xs xs)
-       (temp (list-copy xs))
-       (low 0)
-       (high (length xs)))
-    (if (> (- high low) 1)
-	(let ((middle (quotient (+ low high) 2)))
-	  (sort-sublist temp xs low middle)
-	  (sort-sublist temp xs middle high)
-	  (let merge ((p low) (p1 low) (p2 middle))
-	    (if (< p high)
-		(if (and (< p1 middle)
-			 (or (= p2 high)
-			     (not (pred (list-ref temp p2)
-					(list-ref temp p1)))))
-		    (begin
-		      (list-set! xs p (list-ref temp p1))
-		      (merge (+ p 1) (+ p1 1) p2))
-		    (begin 
-		      (list-set! xs p (list-ref temp p2))
-		      (merge (+ p 1) p1 (+ p2 1)))))))))
-  xs)
+'(define (rml/merge-sort! xs pred)
+   (let sort-sublist
+       ((xs xs)
+        (temp (list-copy xs))
+        (low 0)
+        (high (length xs)))
+     (if (> (- high low) 1)
+         (let ((middle (quotient (+ low high) 2)))
+           (sort-sublist temp xs low middle)
+           (sort-sublist temp xs middle high)
+           (let merge ((p low) (p1 low) (p2 middle))
+             (if (< p high)
+                 (if (and (< p1 middle)
+                          (or (= p2 high)
+                              (not (pred (list-ref temp p2)
+                                         (list-ref temp p1)))))
+                     (begin
+                       (list-set! xs p (list-ref temp p1))
+                       (merge (+ p 1) (+ p1 1) p2))
+                     (begin 
+                       (list-set! xs p (list-ref temp p2))
+                       (merge (+ p 1) p1 (+ p2 1)))))))))
+   xs)
 
 ;;; Bottom-up merge sort
 
@@ -124,7 +125,7 @@
 ;; into lots of little two-element lists. Note that the list you pass
 ;; to this procedure must be already flattened.
 
-(define (explode xs)
+'(define (explode xs)
   (let loop
       ((xs xs)
        (ys '()))
@@ -134,7 +135,7 @@
               (cons (list (car xs))
                     ys)))))
 
-(define (explode2 xs)
+'(define (explode2 xs)
   (let loop ((xs xs)
              (ys '()))
     (cond ((null? xs)
