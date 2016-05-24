@@ -1,6 +1,8 @@
 ;;;; binary-search.scm
 
-(define %random (make-random 314159))	; ,open random
+;; ,open random floatnums formats sort
+
+(define %random (make-random 314159))	; random
 
 (define (random n)
   ;; Int -> Int
@@ -21,7 +23,7 @@
   ;; Num -> Int
   "Given a number N, return its integer representation.
 N can be an integer or flonum (yes, it's quick and dirty)."
-  (cond ((floatnum? n)			; ,open floatnums
+  (cond ((floatnum? n)			; floatnums
 	 (floor (inexact->exact n)))
 	((integer? n) n)
 	((exact? n)
@@ -55,7 +57,7 @@ N can be an integer or flonum (yes, it's quick and dirty)."
                 #f))
 	   ((string-ci<? word-at-try word)
 	    (if debug-print?
-		(begin (format #f "(string-ci<? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~%" ; ,open formats
+		(begin (format #f "(string-ci<? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~%" ; formats
 			       word-at-try word try high low)
 		       (loop (+ 1 try) high)) ; raise the bottom of the window
 		(loop (+ 1 try) high)))
@@ -78,7 +80,7 @@ N can be an integer or flonum (yes, it's quick and dirty)."
   "Run our binary search tests using known words from the 'words' file."
   (begin
     (let* ((unsorted (load (words-file)))
-	   (sorted (sort-list unsorted string-ci<?))) ; ,open sort
+	   (sorted (sort-list unsorted string-ci<?))) ; sort
       (format #t "Running binary search tests...~%")
       (assert equal? #f (binary-search "test" '() #f) "element absent: list is empty")
       (assert equal? #f (binary-search "aardvark" sorted #f) "element absent: too small")
