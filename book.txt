@@ -346,6 +346,10 @@ Search: Dijkstra's Algorithm.
 
 Maybe include a discussion of {{longest-path.scm}} (implementation is currently incomplete)
 
+*** Graph Traversal
+
+Write up longest-path code here.
+
 *** Graph Search
 
 !winston-horn-network.png!
