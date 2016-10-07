@@ -88,7 +88,7 @@ In this chapter we will look at several implementations of merge sort, starting 
 
 If you can understand the implementation of merge sort described in this chapter, you should have no problem learning more about (and implementing your own versions of) quicksort, heap sort, and the like that you come across in other books or on the web.
 
-**** Architecture of a Merge Sort Implementation
+***** Architecture of a Merge Sort Implementation
 
 Merge sort is usually implemented with an architecture that consists of two parts: {{MERGE}}, a lower-level "helper" procedure that merges two partially sorted lists, and {{MERGE-SORT}}, a top-level procedure that internally calls {{MERGE}} repeatedly to get the list sorted.
 
@@ -114,7 +114,7 @@ Let's look at each of these procedures in turn.
 ;; => FIXME: MERGE-AUX broken for strings, something is assuming numbers.
 {code}
 
-**** How MERGE Works
+***** How MERGE Works
 
 As we just saw, before we can do a merge sort, we need to write the =MERGE}} procedure.  Remember that it splices two lists together in an ordering determined by a predicate such as {{<}}.  (For expository purposes, we will stick to numbers for the rest of this implementation.)
 
@@ -130,7 +130,7 @@ It's important to note that {{RESULT}} is *not* a sorted list.  It has been put 
 
 At this point, you can probably begin to see why {{MERGE-SORT}} calls =MERGE}} over and over when it's sorting a list.
 
-**** Implementing MERGE
+***** Implementing MERGE
 
 Let's begin implementing MERGE by reminding ourselves of its specification.  MERGE takes as its arguments a predicate and two lists, and it returns a `pairwise ordered' list.  Another way of writing this is as follows (you may have noticed this notation above):
 
@@ -227,9 +227,9 @@ Based on our above descriptions of the algorithm, the implementation of MERGE is
 
 Let's go through the COND clause-by-clause.  First, as our recursive base case,
 
-**** Recursive Merge Sort
+***** Recursive Merge Sort
 
-**** Bottom-up Merge Sort
+***** Bottom-up Merge Sort
 
 We've already done the hard part by writing {{MERGE}}.  Now we just need to write the "driver" procedure that will call it.  Hence, =MERGE-SORT}}.  Take a few minutes to study the commented version:
 
@@ -261,7 +261,7 @@ In this section we'll look at a particular type of search algorithm called /bina
 
 Unlike some other searches, binary search only works on ordered lists of things.  That is why we had to go through the trouble of sorting our list earlier: so that we could search through it now.
 
-**** Binary search in words
+***** Binary search in words
 
 Binary search works like this:
 
@@ -284,13 +284,13 @@ split the list in half at the current element
 
 search again, this time using only the "low half" of the list as input
 
-**** Binary search in pictures
+***** Binary search in pictures
 
 INSERT IMAGE (GIF?) OF BINARY SEARCH ALGO HERE.
 
-**** Properties of Binary Search
+***** Properties of Binary Search
 
-**** When to use binary search
+***** When to use binary search
 
 ** Stacks
 
@@ -325,7 +325,7 @@ Red-black tree or AVL tree? AVL is supposedly simpler to implement but red-black
 
 ** Graphs
 
-Introduction to graphs.
+*** Overview of Graphs
 
 How to represent graphs with another data structure: matrix, hash table, or association list. We might want to implement our own hash tables first using balanced binary trees -- that would be way cool!
 
