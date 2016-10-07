@@ -39,14 +39,6 @@ p {
 .tip { background-color: #7FFF00; }
 .warning { background-color: #FF0000; }
 
-@media (max-width: 600px) {
-  body {
-    margin-left: 12.5%;
-    margin-right: 12.5%;
-    max-width: 80%;
-  }
-}
-
 blockquote {
     font-style: italic; 
 }
