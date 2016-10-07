@@ -5,24 +5,11 @@ body {
 	max-width: 66%;
 }
 
-/* #toc { */
-/* 	/\* float: left; *\/ */
-/* 	/\* width: 30%; *\/ */
-/* 	/\* overflow: hidden; *\/ */
-/* } */
-
-/* #toc ul > li { */
-/* 	list-style-type: none; */
-/* } */
-
-/* #content { */
-/* 	float: right; */
-/*     width: 60%; */
-/* } */
-
-/* #clearing { */
-/* 	clear: both; */
-/* } */
+#toc {
+    position: fixed;
+    right: 4em;
+    top: 0em;
+}
 
 h1,h2,h3,h4,h5,h6 {
   color: #205081;
