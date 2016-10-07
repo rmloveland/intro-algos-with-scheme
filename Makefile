@@ -7,3 +7,5 @@ html:
 
 clean:
 	rm book.html
+
+.PHONY: html
