@@ -2,7 +2,9 @@ body {
 	margin-top: 4em;
 	margin-left: 6em;
 	font-family: serif;
-	max-width: 66%;
+	max-width: 60%;
+    background-color: #F4ECD8;
+    color: #5B4636;
 }
 
 #toc {
@@ -14,7 +16,7 @@ body {
 h1,h2,h3,h4,h5,h6 {
   color: #205081;
   font-family: sans-serif;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 a:link {
@@ -26,7 +28,7 @@ a:link {
 p {
   text-align: justify;
   hyphens: auto;
-  line-height: 1.4;
+  line-height: 1.2;
 }
 
 .red   { color: #ff0000; }
