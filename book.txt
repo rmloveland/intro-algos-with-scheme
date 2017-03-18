@@ -2,7 +2,6 @@
 
 by [Richard M. Loveland|mailto:r@rmloveland.com]
 
- *Table of Contents*
  {toc:minlevel=2|maxlevel=2}
 
 ** Preface
@@ -11,38 +10,55 @@ by [Richard M. Loveland|mailto:r@rmloveland.com]
 
 There are many books about algorithms.  Most provide detailed analyses of topics such as "big O notation" and are aimed at an academic audience.  As a result, they strive to be comprehensive, and in so doing, run to hundreds of pages in length.
 
-This book is different, because its goals are different.  First, it is an *invitation* to algorithms; this means that we will cover one or two common algorithms in each of several areas: searching, sorting, trees, graphs, and matrices.  You can get surprisingly far with these simple building blocks.
+This book is different, because its goals are different.  First, it is an _invitation_ to algorithms; this means that we will cover one or two common algorithms in each of the following areas:
 
-Further, it is an invitation to algorithms *with Scheme*.  This means that we will use Scheme to describe the algorithms we want the computer to perform.  Along the way, we will solve real problems: disk I/O, parsing input file formats, and so on.  This will take us out of the realm of "pure" textbook algorithms and into the messy but fun world of real programming.  Because programming isn't much fun unless you can get the computer to actually do stuff.
++ Sorting
++ Searching
++ Trees
++ Graphs
 
-Finally, it is my opinion that the notation provided by Scheme provides a clear description of many common algorithms.  It is even thought of by some programmers as beautiful, but I leave that for you to decide.
+You can get surprisingly far with these simple building blocks!
+
+Further, it is an invitation to algorithms _with Scheme_.  This means that we will use Scheme to describe the algorithms we want the computer to perform.  Along the way, we will solve real problems: disk I/O, parsing input file formats, and so on.  This will take us out of the realm of "pure" textbook algorithms and into the messy but fun world of real programming.  Because programming isn't much fun unless you can get the computer to actually do stuff.
+
+Finally, it is my opinion that the notation provided by Scheme provides a clear description of many common algorithms.  It is even thought of by some programmers as beautiful in its own right, but I leave that for you to decide.
 
 **** Prerequisites
 
  *Familiarity with Scheme:*
 
-This book does not try to teach the Scheme language.  We assume the reader has already encountered an introduction to Scheme elsewhere. In particular, you should be pretty comfortable with recursion.  A good book that serves this purpose is _The Little Schemer_, by Dan Friedman & Matthias Felleisen.  For a more detailed introduction to the Scheme language, see Dybvig's excellent _The Scheme Programming Language_.
+This book does not try to teach the Scheme language.  We assume you have already encountered an introduction to Scheme elsewhere. In particular, you should be pretty comfortable with recursion, since we'll be using plenty of it.
 
- *The Scheme 48 Interpreter:*
+A good book that serves this purpose is [The Little Schemer|https://www.amazon.com/Little-Schemer-Daniel-P-Friedman/dp/0262560992/ref=sr_1_1?ie=UTF8&qid=1489850762&sr=8-1&keywords=the+little+schemer], by Dan Friedman & Matthias Felleisen.
 
-You will need a copy of scsh 0.6.7.  You'll need access to a computer (or virtual machine) running Mac OS X or Linux to build it.  See [Appendix A|#appendix-a-building-scsh] for instructions on building scsh.
+For a more advanced introduction to the Scheme language, see Dybvig's excellent [The Scheme Programming Language|http://scheme.com/tspl4/].
+
+ *The Scheme Interpreter:*
+
+This book uses {{scsh}} 0.6.7.  {{Scsh}} is a Scheme interpreter designed to integrate closely with UNIX-like systems.  It also happens to be a pretty good Scheme implementation.
+
+For more information about {{scsh}}, see [scsh.net|http://www.scsh.net].
+
+You'll need access to a computer (or virtual machine) running Mac OS X or Linux to run the interpreter.  You should also be able to run it on Windows, using the [Windows Subsystem for Linux|https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux].
+
+For instructions on installing {{scsh}} on each of these platforms, see [Appendix A|#appendix-a-building-scsh].
 
 **** Conventions
 
 Procedure names are written like this: {{CHAR-READY?}}
 
-Code samples are set off from the surrounding text like so:
+Code samples are usually set off from the surrounding text and look like this:
 
 {code}
-(define (foo n)
-  (expt n n))
+(define (double n)
+  (+ n n))
 {code}
 
 ** Introduction
 
 What is an algorithm?
 
-The three (or so) big ideas of this book:
+The three (or so) main ideas in this book:
 
 1. Divide and conquer
 2. Recursion
@@ -58,19 +74,7 @@ Discussion of type annotations and return values in procedure definitions. Facil
 
 Building a tags file for source navigation.
 
-Edwin basics.
-
-The `pp' procedure.
-
-The `show-parameter-list' procedure (M-Shift-A).
-
-The `scheme-complete-variable' procedure (ESC-TAB).
-
-The debugger.
-
-** Lists
-
-**** Sorting
+** Sorting
 
 Although ostensibly, computers gonna compute, it turns out that most of the time we use them for their data processing capabilities more than as pure calculators.  A lot of what we do with computers (some would argue almost all of it) has to do with shuffling data around from one place to the next (or from one format into the next).  As a result, computers are beginning to become external brains that we dump things into for later use.
 
@@ -253,7 +257,7 @@ We've already done the hard part by writing {{MERGE}}.  Now we just need to writ
 			  result))))))
 {code}
 
-**** Searching
+** Searching
 
 Now that we've sorted a list of elements, we can search it.  It turns out that searching through a list of things is much faster if you can sort that list first.
 
@@ -291,8 +295,6 @@ INSERT IMAGE (GIF?) OF BINARY SEARCH ALGO HERE.
 ***** Properties of Binary Search
 
 ***** When to use binary search
-
-** Stacks
 
 ** Trees
 
@@ -488,18 +490,109 @@ Meanwhile, back at the REPL... we remind ourselves of what {{*NEIGHBORS*}} actua
 
 What fun!  I can almost imagine using a three-dimensional variant of these searches for a space wargame with wormhole travel!  Except, you know, they'd need to be much faster and more skillfully implemented.  There's also the tiny requirement to write the surrounding game...
 
-It shouldn't need to be said, but: Of course the authors knew better; they were trying to hide that unnecessary complexity from the reader until later.
+It shouldn't need to be said, but: Of course the authors knew better; they were trying to hide that unnecessary complexity from you until later.
 
-** Heaps
+** Real World: Hash Tables
+
+In this chapter, we're going to implement our own hash tables.
+
+In day-to-day programming, the hash table is probably the most important real-world data structure.
+
+The hash table also gives us a nice real-world proving ground for our algorithms skills, since implementing hash tables requires putting together several different data structures into one - in other words, it is a _compound data structure_.
 
 ** Glossary
 
- *Iterative process*: An iterative process is one that does not consume growing amounts of stack space while it runs.
+*** Iterative process
+
+<a name="glossary-iterative-process" />
+
+An iterative process is one that does not consume growing amounts of stack space while it runs.  In terms of Scheme code, code that describes an iterative process usually looks like this:
+
+{code}
+(define (+ a b)
+  (if (= a 0)
+      b
+      (+ (decr a)
+         (incr b))))
+{code}
+
+You can visualize the operation of an iterative like this:
+
+{code}
+(+ 4 3)
+(+ 3 4)
+(+ 2 5)
+(+ 1 6)
+(+ 0 7)
+;; => 7
+{code}
+
+Notice how the "shape" of the successive calls to {{+}} stay the same "size"?
+
+Using [Big O notation|#glossary-big-o-notation], you can say that {{+}} uses _O(1)_ space (memory), and _O(n)_ time (CPU).
+
+*** Recursive Process
+
+<a name="glossary-recursive-process" />
+
+A recursive process is one that consumes growing amounts of stack space while it runs.  It terms of Scheme code, code that describes a recursive process usually looks like this:
+
+{code}
+(define (incr n) (+ n 1))
+(define (decr n) (- n 1))
+
+(define (+ a b)
+  (if (= a 0)
+      b
+      (incr (+ (decr a) b))))
+{code}
+
+You can visualize the operation of a recursive process like this:
+
+{code}
+(+ 3 4)
+(incr (+ (decr 3) 4))
+(incr (incr (+ (decr 2) 4)))
+(incr (incr (incr (+ (decr 1) 4))))
+(incr (incr (incr 4)))
+7
+{code}
+
+Notice how the "shape" of the successive calls to {{+}} get "larger"?
+
+Using [Big O notation|#glossary-big-o-notation], you can say that {{+}} uses _O(n)_ time in its first argument and _O(n)_ space in its second.
+
+*** Big O Notation
+
+<a name="glossary-big-o-notation" />
+
+"Big O" notation is a way to talk about the resource usage of an algorithm.  This usage can be along several axes:
+
++ Time (CPU - how many instructions will it take to compute?)
++ Space (Memory - how much storage will it use?)
+
+Instead of "resource usage" you can also say the "complexity" of the algorithm.  This is the term you are likely to find in more academic writings.
+
+To be more precise, this notation describes the "upper bound" of the resource usage.  This means that, even in the worst case scenario, the algorithm will not use more than a given amount of resources.
+
+For more details, check out the following references:
+
++ [A beginner's guide to Big O notation|https://rob-bell.net/2009/06/a-beginners-guide-to-big-o-notation/]: Nice short article to get your feet wet with.
+
++ [What is a plain English explanation of "Big O notation?|http://stackoverflow.com/questions/487258/what-is-a-plain-english-explanation-of-big-o-notation] - the first answer provides a really good overview.  If you don't understand some of the mathier parts, just skip over them.
+
++ [Big-O Cheat Sheet|http://bigocheatsheet.com/]: This page has a nice big graph that makes it easy to visualize the different complexities.  Further down the page there are tables that list algorithm complexities for various operations (insert, delete, search) on data structures such as stacks, lists, hash tables, etc.  Add this to your bookmarks so you can refer back to it as needed.
 
 ** Bibliography
 
++ Abelson & Sussman, _Structure and Interpretation of Computer Programs_, 1st ed.
+
++ Winston & Horn, _Lisp_, X ed.
+
 ** Appendix
 
-*** A - Building scsh
+<a name="appendix-a-building-scsh" />
+
+*** A. Building scsh
 
 Describe the process of building scsh here.
