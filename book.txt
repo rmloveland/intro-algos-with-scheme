@@ -6,11 +6,11 @@ by [Richard M. Loveland|mailto:r@rmloveland.com]
 
 ** Preface
 
-**** Why another book about algorithms?
+Why another book about algorithms?
 
-There are many books about algorithms.  Most provide detailed analyses of topics such as "big O notation" and are aimed at an academic audience.  As a result, they strive to be comprehensive, and in so doing, run to hundreds of pages in length.
+There are already many books about algorithms.  Many provide detailed analyses of topics such as "Big O notation" and are aimed at an academic audience.  As a result, they strive to be comprehensive, and in so doing, run to hundreds of pages in length.
 
-This book is different, because its goals are different.  First, it is an _invitation_ to algorithms; this means that we will cover one or two common algorithms in each of the following areas:
+This book is different because its goals are different.  First, it is an _invitation_ to algorithms; this means that we will cover one or two common algorithms in each of the following areas:
 
 + Sorting
 + Searching
@@ -19,31 +19,59 @@ This book is different, because its goals are different.  First, it is an _invit
 
 You can get surprisingly far with these simple building blocks!
 
-Further, it is an invitation to algorithms _with Scheme_.  This means that we will use Scheme to describe the algorithms we want the computer to perform.  Along the way, we will solve real problems: disk I/O, parsing input file formats, and so on.  This will take us out of the realm of "pure" textbook algorithms and into the messy but fun world of real programming.  Because programming isn't much fun unless you can get the computer to actually do stuff.
+Further, it is an invitation to algorithms _with Scheme_.  This means that we will use Scheme to describe the algorithms we want the computer to perform.  Once we've covered the basics, we will work on some interesting projects, such as building our own hash tables.  This will take us out of the realm of "textbook" algorithms and into the messy but fun world of real programming.  Programming isn't much fun unless you can get the computer to actually do stuff.
 
-Finally, it is my opinion that the notation provided by Scheme provides a clear description of many common algorithms.  It is even thought of by some programmers as beautiful in its own right, but I leave that for you to decide.
+Finally, it is my opinion that the notation provided by Scheme provides a clear description of many common algorithms.
 
-**** Prerequisites
+** Introduction
+
+What is an algorithm?
+
+An _algorithm_ is a recipe for getting a certain type of job done by the computer.  Many algorithms are very simple, since many of the jobs we need a computer to do are simple.  For example, you may need to sort a long list of numbers.
+
+"Sort a list of numbers" sounds simple, but there is some complexity there that needs to be addressed.  How long is the list?  Is it longer than the available memory on your machine?  Are the numbers in the list in random order?  Are the numbers almost sorted already?
+
+Depending on the answers to these questions, you'll need to choose one sorting algorithm or another.  Some take more memory (space).  Some require more CPU cycles (time).
+
+However, unless you are doing very specialized optimization work, you can probably get by with knowing one or two of the most common sorting algorithms, and choosing which one to use based on the needs of the problem at hand.
+
+And that brings us to the point of this book.  We will cover one or two common algorithms in each of several areas.  We will implement those algorithms in the Scheme language.  As our mastery increases, we will take on several "Real World" implementation projects, such as writing our own hash tables.
+
+Along the way, we will observe several themes that repeat:
+
+1. Divide and conquer
+2. Recursion
+3. ???
+
+** Prerequisites
 
  *Familiarity with Scheme:*
 
-This book does not try to teach the Scheme language.  We assume you have already encountered an introduction to Scheme elsewhere. In particular, you should be pretty comfortable with recursion, since we'll be using plenty of it.
+This book does not try to teach the Scheme language.  We assume you have already encountered an introduction to Scheme elsewhere. In particular, you should be pretty comfortable with recursion, since we'll be using plenty of it.  By recursion, I just mean that you understand code that looks like this:
+
+{code}
+(define (+ a b)
+  (if (= a 0)
+      b
+      (+ (decr a)
+         (incr b))))
+{code}
 
 A good book that serves this purpose is [The Little Schemer|https://www.amazon.com/Little-Schemer-Daniel-P-Friedman/dp/0262560992/ref=sr_1_1?ie=UTF8&qid=1489850762&sr=8-1&keywords=the+little+schemer], by Dan Friedman & Matthias Felleisen.
 
-For a more advanced introduction to the Scheme language, see Dybvig's excellent [The Scheme Programming Language|http://scheme.com/tspl4/].
+For a more advanced introduction to the Scheme language, see Dybvig's [The Scheme Programming Language|http://scheme.com/tspl4/].
 
  *The Scheme Interpreter:*
 
-This book uses {{scsh}} 0.6.7.  {{Scsh}} is a Scheme interpreter designed to integrate closely with UNIX-like systems.  It also happens to be a pretty good Scheme implementation.
+This book uses {{Scsh}}, a Scheme interpreter designed to integrate closely with UNIX-like systems.
 
 For more information about {{scsh}}, see [scsh.net|http://www.scsh.net].
 
-You'll need access to a computer (or virtual machine) running Mac OS X or Linux to run the interpreter.  You should also be able to run it on Windows, using the [Windows Subsystem for Linux|https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux].
+To run {{scsh}}, you'll need access to a computer running Mac OS X or Linux.  You should also be able to run it on Windows, using the [Windows Subsystem for Linux|https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux].
 
 For instructions on installing {{scsh}} on each of these platforms, see [Appendix A|#appendix-a-building-scsh].
 
-**** Conventions
+** Conventions
 
 Procedure names are written like this: {{CHAR-READY?}}
 
@@ -54,27 +82,9 @@ Code samples are usually set off from the surrounding text and look like this:
   (+ n n))
 {code}
 
-** Introduction
+** Lists
 
-What is an algorithm?
-
-The three (or so) main ideas in this book:
-
-1. Divide and conquer
-2. Recursion
-3. ???
-
-Overview of the chapters.
-
-Testing library.
-
-Utilities library.
-
-Discussion of type annotations and return values in procedure definitions. Facilitates skim-reading code.
-
-Building a tags file for source navigation.
-
-** Sorting
+*** Sorting
 
 Although ostensibly, computers gonna compute, it turns out that most of the time we use them for their data processing capabilities more than as pure calculators.  A lot of what we do with computers (some would argue almost all of it) has to do with shuffling data around from one place to the next (or from one format into the next).  As a result, computers are beginning to become external brains that we dump things into for later use.
 
@@ -257,7 +267,7 @@ We've already done the hard part by writing {{MERGE}}.  Now we just need to writ
 			  result))))))
 {code}
 
-** Searching
+*** Searching
 
 Now that we've sorted a list of elements, we can search it.  It turns out that searching through a list of things is much faster if you can sort that list first.
 
@@ -322,8 +332,6 @@ Red-black tree or AVL tree? AVL is supposedly simpler to implement but red-black
 **** Balancing Trees
 
 **** Searching Trees
-
-**** Practical: Using Trees to Implement Hash Tables
 
 ** Graphs
 
