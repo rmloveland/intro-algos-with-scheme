@@ -75,7 +75,7 @@ For instructions on installing {{scsh}} on each of these platforms, see [Appendi
 
 Procedure names are written like this: {{CHAR-READY?}}
 
-Code samples are usually set off from the surrounding text and look like this:
+Code samples are set off from the surrounding text and look like this:
 
 {code}
 (define (double n)
@@ -84,23 +84,44 @@ Code samples are usually set off from the surrounding text and look like this:
 
 ** Lists
 
+The list data structure is ubiquitous in programming.  One of the most common patterns is to gather up a list of elements, and then process them.
+
+When we say that something is a "list" in Scheme, we mean that it's a _linked list_, which has the following structure:
+
+{code}
+
+ --- ---        --- ---
+| A | B | ---> | A | B | ---> NIL
+ --- ---        --- ---
+  |              |
+ 'Apple       'Banana
+
+{code}
+
+In Scheme code, we'd write this as just: {{'(Apple Banana)}}.
+
+As you can see from the diagram, each element of the linked list has two "cells":
+
+1. The first cell holds the contents of that element, e.g., {{'Apple}}
+2. The second cell points to the next element of the list
+
+In this section we'll explore some common operations on lists:
+
++ Sorting
++ Searching
++ Updating
+
 *** Sorting
 
-Although ostensibly, computers gonna compute, it turns out that most of the time we use them for their data processing capabilities more than as pure calculators.  A lot of what we do with computers (some would argue almost all of it) has to do with shuffling data around from one place to the next (or from one format into the next).  As a result, computers are beginning to become external brains that we dump things into for later use.
+There are a few algorithms for sorting lists.  In this section we'll focus on [Merge Sort|https://en.wikipedia.org/wiki/Merge_sort], for the following reasons:
 
-As external brains, one of the most important things computers help us with is in finding things.  As it happens, it's much easier to search for and find things if you put them in order first.  This is as true for computers as it is for your house.
+1. It performs reasonably well, and provides a good tradeoff between implementation complexity and overall performance
+2. It is a good example of the general "divide and conquer" strategy for designing algorithms
+3. It suits Scheme due to the way lists are implemented
 
-That's why we'll start with sorting.
+In this chapter we will look at several implementations of merge sort, starting with the naive tree-recursive version you can easily find on the internet, and finishing up with an [iterative|#glossary-iterative-process] implementation.
 
-There are a number of different sorting algorithms with different properties.  In this book we'll focus on [Merge Sort|https://en.wikipedia.org/wiki/Merge_sort].  How come? It has a few qualities that make it worth using: 
-
-1. It performs reasonably well, and provides a good tradeoff between implementation complexity and overall performance.
-2. It is a good example of the general "divide and conquer" strategy for designing algorithms.
-3. It suits Scheme due to the way lists (cons cells, really) are implemented.
-
-In this chapter we will look at several implementations of merge sort, starting with the naive tree-recursive version you can easily find on the internet, and finishing up with a relatively performant iterative implementation.
-
-If you can understand the implementation of merge sort described in this chapter, you should have no problem learning more about (and implementing your own versions of) quicksort, heap sort, and the like that you come across in other books or on the web.
+If you can understand the implementations of merge sort described in this chapter, you should have no problem learning more about (and implementing your own versions of) quicksort, heap sort, and other sorting algorithms that you encounter.
 
 ***** Architecture of a Merge Sort Implementation
 
@@ -306,6 +327,8 @@ INSERT IMAGE (GIF?) OF BINARY SEARCH ALGO HERE.
 
 ***** When to use binary search
 
+*** Updating
+
 ** Trees
 
 *** Binary trees
@@ -510,9 +533,9 @@ The hash table also gives us a nice real-world proving ground for our algorithms
 
 ** Glossary
 
-*** Iterative process
-
 <a name="glossary-iterative-process" />
+
+*** Iterative process
 
 An iterative process is one that does not consume growing amounts of stack space while it runs.  In terms of Scheme code, code that describes an iterative process usually looks like this:
 
@@ -524,7 +547,7 @@ An iterative process is one that does not consume growing amounts of stack space
          (incr b))))
 {code}
 
-You can visualize the operation of an iterative like this:
+You can visualize the operation of an iterative process like this:
 
 {code}
 (+ 4 3)
@@ -535,7 +558,7 @@ You can visualize the operation of an iterative like this:
 ;; => 7
 {code}
 
-Notice how the "shape" of the successive calls to {{+}} stay the same "size"?
+Notice how the "shape" of the successive calls to {{+}} stays the same "size"?  In other words, it doesn't grow out to the right.
 
 Using [Big O notation|#glossary-big-o-notation], you can say that {{+}} uses _O(1)_ space (memory), and _O(n)_ time (CPU).
 
