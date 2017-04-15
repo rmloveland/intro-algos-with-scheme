@@ -523,6 +523,8 @@ What fun!  I can almost imagine using a three-dimensional variant of these searc
 
 It shouldn't need to be said, but: Of course the authors knew better; they were trying to hide that unnecessary complexity from you until later.
 
+** Strings
+
 ** Real World: Hash Tables
 
 In this chapter, we're going to implement our own hash tables.
