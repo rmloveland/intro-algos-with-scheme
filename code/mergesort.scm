@@ -172,24 +172,24 @@
 ;;; Bottom-up, *iterative* merge sort.  This version has been
 ;;; rewritten to avoid the (unnecessary) overhead of EXPLODE.
 
-(define (rml/merge2 pred l r)
+(define (merge pred l r)
   (letrec ((merge-aux
             (lambda (pred left right result)
               (cond 
                ;; If LEFT and RIGHT are both numbers, listify them so
                ;; MERGE-AUX can work with them.
-               ((and (number? left)
-                     (number? right))
+               ((and (atom? left)
+                     (atom? right))
                 (merge-aux pred (list left) (list right) result))
 
                ;; If LEFT is just a number, listify it so MERGE-AUX
                ;; can work with it.
-               ((number? left)
+               ((atom? left)
                 (merge-aux pred (list left) right result))
 	       
                ;; Likewise, if RIGHT is just a number, listify it for
                ;; MERGE-AUX.
-               ((number? right)
+               ((atom? right)
                 (merge-aux pred left (list right) result))
 
                ;; If LEFT and RIGHT are empty, we're done merging.
