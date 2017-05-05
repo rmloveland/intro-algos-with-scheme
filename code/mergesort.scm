@@ -31,9 +31,8 @@
                     (else #f)))))
     (merge-aux pred l r '())))
 
-;; Note tree recursion in this procedure
+;; "take" the first I elements of XS
 
-(define (rml/merge-sort1 xs pred . debug-print)
 (define (take xs i)
   (let loop ((xs xs) (ys '()) (i i))
     (cond ((null? xs) (reverse ys))
@@ -55,6 +54,8 @@
 (define (first xs) (car xs))
 (define (second xs) (cadr xs))
 (define (rest xs) (cdr xs))
+
+(define (rml/merge-sort1 xs pred)
   (let loop ((xs xs))
     ;; If xs is empty or has 1 element, consider it sorted and return
     ;; it
