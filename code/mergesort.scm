@@ -19,16 +19,11 @@
                      (reverse result))
                     ((and (not (null? left))
                           (not (null? right)))
-                     (if (pred (car left)
-                               (car right))
-                         (merge-aux pred
-                                    (cdr left)
-                                    right
-                                    (cons (car left) result))
-                         (merge-aux pred
-                                    left
-                                    (cdr right)
-                                    (cons (car right) result))))
+                     (if (pred (car left) (car right))
+                         (merge-aux pred (cdr left)
+                                    right (cons (car left) result))
+                         (merge-aux pred left
+                                    (cdr right) (cons (car right) result))))
                     ((not (null? left))
                      (merge-aux pred (cdr left) right (cons (car left) result)))
                     ((not (null? right))
@@ -100,27 +95,20 @@
 ;; to this procedure must be already flattened.
 
 (define (explode xs)
-  (let loop
-      ((xs xs)
-       (ys '()))
+  (let loop ((xs xs) (ys '()))
     (if (null? xs)
         ys
         (loop (cdr xs)
               (cons (list (car xs)) ys)))))
 
 (define (explode2 xs)
-  (let loop ((xs xs)
-             (ys '()))
-    (cond ((null? xs)
-           ys)
+  (let loop ((xs ys) (ys '()))
+    (cond ((null? xs) ys)
           ((null? (cdr xs))
-           (loop '()
-                 (cons (list (car xs)) ys)))
+           (loop '() (cons (list (car xs)) ys)))
           (else
            (loop (cddr xs)
-                 (cons (list (first xs)
-                             (second xs))
-                       ys))))))
+                 (cons (list (first xs) (second xs)) ys))))))
 
 ;; Now the bottom up merge sort!
 ;; The steps are:
