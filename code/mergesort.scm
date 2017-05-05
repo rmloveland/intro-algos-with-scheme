@@ -121,7 +121,7 @@
               (cons (list (car xs)) ys)))))
 
 (define (explode2 xs)
-  (let loop ((xs ys) (ys '()))
+  (let loop ((xs xs) (ys '()))
     (cond ((null? xs) ys)
           ((null? (cdr xs))
            (loop '() (cons (list (car xs)) ys)))
