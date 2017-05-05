@@ -4,3 +4,4 @@ TAGS
 *.pdf
 *.tex
 *.log
+code/load-module.scm
