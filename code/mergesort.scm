@@ -302,4 +302,4 @@
 
 (define (rml/insertion-sort2 xs pred)
   (let ((exploded (explode xs)))
-    (fold-right (lambda (x y) (rml/merge pred x y)) '() exploded)))
+    (fold-right (lambda (x y) (merge pred x y)) '() exploded)))
