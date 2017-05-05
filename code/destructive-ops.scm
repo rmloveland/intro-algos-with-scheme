@@ -17,8 +17,12 @@
      (begin (set! var (+ 1 var))
             var))))
 
+(define (incf n) (+ n 1))
+
 (define-syntax decf!
   (syntax-rules ()
     ((decf! var)
      (begin (set! var (- var 1))
             var))))
+
+(define (decf n) (- n 1))
