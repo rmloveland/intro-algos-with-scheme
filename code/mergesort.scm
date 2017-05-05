@@ -225,39 +225,78 @@
                (else #f)))))
     (merge-aux pred l r '())))
 
-(define (rml/merge-sort4 xs pred)
-  (let loop ((xs xs)
-	     (result '()))
-    (cond ((and (null? xs)
-		(null? (cdr result)))
-	   (car result))
-	  ((null? xs)
-	   (loop result
-		 xs))
-	  ((null? (cdr xs))
-	   (loop (cdr xs)
-		 (cons (car xs) result)))
-	  (else
-	   (loop (cddr xs)
-		 (cons (rml/merge2 <
-				   (first xs)
-				   (second xs))
-		       result))))))
+(define (%merge-sort xs pred trace?)
+  (let loop ((xs xs) (result '()))
+    (cond ((and (null? xs) (null? (cdr result)))
+           (car result))
+          ((null? xs) (loop result xs))
+          ((null? (cdr xs))
+           (loop (cdr xs) (cons (car xs) result)))
+          (else
+           (if trace?
+               (begin
+                 (display (first xs))
+                 (newline)
+                 (display (second xs))
+                 (newline)
+                 (newline)
+                 (loop (cddr xs)
+                       (cons (merge pred (first xs) (second xs)) result)))
+               (loop (cddr xs)
+                     (cons (merge pred (first xs) (second xs)) result)))))))
+
+(define (merge-sort xs pred)
+  (%merge-sort xs pred #f))
+
+(define (merge-sort-traced xs pred)
+  (%merge-sort xs pred #t))
+
+;; (merge-sort-traced '(#\a #\s #\o #\r #\t #\i #\n #\g #\e #\x #\a #\m #\p #\l #\e) char<=?)
+
+(define (run-merge-sort-tests)
+  (let ((xs '(#\a #\s #\o #\r #\t #\i #\n #\g #\e #\x #\a #\m #\p #\l #\e))
+        (xs* '(#\a #\a #\e #\e #\g #\i #\l #\m #\n #\o #\p #\r #\s #\t #\x))
+        (is '(149 402 107 880 177 766 743 956 141 298 803 712 41 22 287 148))
+        (is* '(22 41 107 141 148 149 177 287 298 402 712 743 766 803 880 956)))
+    (assert equal? xs* (merge-sort xs char<=?) "MERGE-SORT: sort a list of chars, ascending")
+    (assert equal? is* (merge-sort is <=) "MERGE-SORT: sort a list of integers, ascending")))
 
 
 
 ;;; Insertion sort: a nice example of ease of implementation
 ;;; vs. performance.
 
-(define (rml/insertion-sort1 xs pred)
-  (let loop ((xs xs)
-             (result '()))
+(define (insertion-sort xs pred)
+  (%insertion-sort xs pred #f))
+
+(define (insertion-sort-traced xs pred)
+  (%insertion-sort xs pred #t))
+
+(define (%insertion-sort xs pred trace?)
+  (let loop ((xs xs) (result '()))
     (if (null? xs)
         result
-        (loop (cdr xs)
-              (rml/merge pred
-                         (list (first xs))
-                         result)))))
+        (if trace?
+            (begin
+              (display xs)
+              (newline)
+              (display result)
+              (newline)
+              (newline)
+              (loop (cdr xs)
+                    (merge pred (list (first xs)) result)))
+            (loop (cdr xs)
+                  (merge pred (list (first xs)) result))))))
+
+(define (run-insertion-sort-tests)
+  (let ((xs '(#\a #\s #\o #\r #\t #\i #\n #\g #\e #\x #\a #\m #\p #\l #\e))
+        (xs* '(#\a #\a #\e #\e #\g #\i #\l #\m #\n #\o #\p #\r #\s #\t #\x))
+        (is '(149 402 107 880 177 766 743 956 141 298 803 712 41 22 287 148))
+        (is* '(22 41 107 141 148 149 177 287 298 402 712 743 766 803 880 956)))
+    (assert equal? xs* (insertion-sort xs char<=?)
+            "INSERTION-SORT: sort a list of chars, ascending")
+    (assert equal? is* (insertion-sort is <=)
+            "INSERTION-SORT: sort a list of integers, ascending")))
 
 ;; Super slow version that uses lists and FOLD-RIGHT.
 
