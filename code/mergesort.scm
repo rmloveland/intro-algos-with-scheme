@@ -66,10 +66,7 @@
         (let* ((middle (quotient (length xs) 2))
                (left (loop (take xs middle)))
                (right (loop (drop xs middle))))
-          (begin
-            (if debug-print
-                (format #t "merging ~A and ~A~%" left right))
-            (rml/merge pred left right))))))
+          (rml/merge pred left right)))))
 
 ;; The following procedure is just the above two procedures merged
 ;; into one.
