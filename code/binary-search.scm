@@ -28,14 +28,10 @@ N can be an integer or flonum (yes, it's quick and dirty)."
         (let* ((try (+ low (split-difference low high)))
                (word-at-try (list-ref xs try)))
           (cond
-           ((string-ci=? word-at-try word)
-            try)
-           ((< (- high low) 1)
-            #f)
-           ((= (- high try) 1) 
-            (if (string-ci=? (list-ref xs low) word)
-                low
-                #f))
+           ((string-ci=? word-at-try word) try)
+           ((< (- high low) 1) #f)
+           ((= (- high try) 1)
+            (if (string-ci=? (list-ref xs low) word) low #f))
            ((string-ci<? word-at-try word)
             (if debug-print?
                 (begin (format #f "(string-ci<? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~%" ; formats
