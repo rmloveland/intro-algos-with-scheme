@@ -70,4 +70,11 @@
 (define (with-tracing var proc)
   '())
 
+;; Not every implementation loads SRFI-1 by default
+
+(define (first xs) (car xs))
+(define (second xs) (cadr xs))
+(define (third xs) (caddr xs))
+(define (rest xs) (cdr xs))
+
 ;; eof
