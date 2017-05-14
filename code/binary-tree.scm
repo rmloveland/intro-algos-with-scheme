@@ -14,6 +14,10 @@
 
 ;; Selectors
 
+(define (bintree-root B)
+  ;; List -> Any
+  (car B))
+
 (define (bintree-leaf-element leaf)
   ;; List -> Any
   "Retrieve the element of LEAF."
