@@ -66,6 +66,15 @@
 (define (atom? x)
   (not (or (vector? x) (pair? x) (null? x))))
 
+;; Vector util
+
+(define (vector-swap! V i j)
+  (let ((i* (vector-ref V i))
+        (j* (vector-ref V j)))
+    (begin
+      (vector-set! V i j*)
+      (vector-set! V j i*))))
+
 ;; Read in files of S-expressions
 
 (define (read-file f)             ; Only for S-exps due to READ.
