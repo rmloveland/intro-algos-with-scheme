@@ -1,9 +1,5 @@
 ;;;; A binary tree implementation in MIT/GNU Scheme.
 
-(define L '(128 76 106 402 100 46 354 1018 112 28 396 35))
-(define test-bintree '(- (+ (128) (12)) (136.2)))
-(define test-bst '(2 (1 (1) (2)) (3 (3) (4))))
-
 ;;; Constructors
 
 (define (make-bintree-leaf element)
