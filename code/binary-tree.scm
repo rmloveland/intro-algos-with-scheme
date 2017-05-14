@@ -38,6 +38,15 @@
   "Retrieve the right subtree of NODE."
   (third node))
 
+(define (bintree-smallest B)
+  ;; List -> Any
+  (car (bintree-node-left B)))
+
+(define (bintree-pop! B)
+  ;; List -> State!
+  (let ((smallest (bintree-smallest B)))
+    (bst-remove! smallest B)))
+
 ;; Recognizers
 
 (define (bintree-leaf? tree)
@@ -194,7 +203,6 @@ element element."
   "Return #t if the set S is empty."
   (null? S))
 
-
 ;; Binary search trees
 
 ;; (These will be implemented in terms of our binary trees above.)
@@ -310,6 +318,13 @@ element element."
       (if (bintree-leaf? B)
           (bst-leaf-remove element B)
           (bst-node-remove element B))))
+
+(define-syntax bst-remove!
+  (syntax-rules ()
+    ((bst-remove! elem B)
+     (begin
+       (set! B (bst-remove elem B))
+       B))))
 
 (define (bst-leaf-remove element leaf)
   "Remove ELEMENT from binary search tree LEAF."
