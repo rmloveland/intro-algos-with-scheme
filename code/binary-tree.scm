@@ -240,13 +240,20 @@ element element."
     ((bst-insert! element tree)
      (set! tree (bst-insert element tree)))))
 
-(define (list->tree xs)
+(define (list->bst xs)
   (let ((tree '()))
     (for-each (lambda (x)
                 (set! tree (bst-insert x tree)))
               xs)
     tree))
 
+(define (vector->bst vs)
+  (let ((xs (vector->list vs))
+        (tree '()))
+    (for-each (lambda (x)
+                (set! tree (bst-insert x tree)))
+              xs)
+    tree))
 
 (define (treesum tree)
   (cond ((null? tree) 0)
