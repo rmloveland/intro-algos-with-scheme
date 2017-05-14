@@ -54,6 +54,13 @@
 ;; '(make-list* 12 (lambda (x) (string-upcase x)) "bar")
 ;; ;Value 15: ("BAR" "BAR" "BAR" "BAR" "BAR" "BAR" "BAR" "BAR" "BAR" "BAR" "BAR" "BAR")
 
+(define (flatten xs)
+  (cond ((null? xs) '())
+        ((pair? xs)
+         (append (flatten (car xs))
+                 (flatten (cdr xs))))
+        (else (list xs))))
+
 ;; Testing for atoms.
 
 (define (atom? x)
