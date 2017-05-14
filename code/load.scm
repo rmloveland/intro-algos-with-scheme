@@ -5,4 +5,5 @@
   (load-module 'format)
   (load-module 'assert)
   (load-module 'mergesort)
-  (load-module 'binary-search))
+  (load-module 'binary-search)
+  (load-module 'binary-tree))
