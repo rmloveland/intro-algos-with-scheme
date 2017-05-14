@@ -1,6 +1,6 @@
-;;;; A binary tree implementation in MIT/GNU Scheme.
+;;; binary-tree.scm
 
-;;; Constructors
+;; Constructors
 
 (define (make-bintree-leaf element)
   ;; Any -> List
@@ -12,7 +12,7 @@
   "Create a node containing ELEMENT, subtree LEFT and subtree RIGHT."
   (list element left right))
 
-;;; Selectors
+;; Selectors
 
 (define (bintree-leaf-element leaf)
   ;; List -> Any
@@ -34,7 +34,7 @@
   "Retrieve the right subtree of NODE."
   (third node))
 
-;;; Recognizers
+;; Recognizers
 
 (define (bintree-leaf? tree)
   ;; Any -> Bool
@@ -191,8 +191,9 @@ element element."
   (null? S))
 
 
-;;; BINARY SEARCH TREES.
-;; These will be implemented in terms of our above binary trees.
+;; Binary search trees
+
+;; (These will be implemented in terms of our binary trees above.)
 
 (define (make-empty-bst)
   "Create an empty binary search tree."
