@@ -58,8 +58,8 @@
   (if (bintree-leaf? tree)
       (equal? element (bintree-leaf-element tree)) 
       (or (equal? element (bintree-node-element tree))
-	  (bintree-member? element (bintree-node-left tree))
-	  (bintree-member? element (bintree-node-right tree)))))
+          (bintree-member? element (bintree-node-left tree))
+          (bintree-member? element (bintree-node-right tree)))))
 
 ;; Exercise: Let size(B) be the number of members of a binary tree
 ;; B. Give a recursive definition of size(B), then implement a Scheme
@@ -73,7 +73,7 @@
   (if (bintree-leaf? B)
       1
       (+ 1 (+ (bintree-size (bintree-node-left B))
-	      (bintree-size (bintree-node-right B))))))
+              (bintree-size (bintree-node-right B))))))
 
 (define (bintree-reverse B)
   "Reverse binary tree B."
@@ -89,20 +89,20 @@
   (if (bintree-leaf? B)
       (list (bintree-leaf-element B))
       (cons (bintree-node-element B)
-	    (append 
-	     (bintree-preorder (bintree-node-left B))
-	     (bintree-preorder (bintree-node-right B))))))
+            (append
+             (bintree-preorder (bintree-node-left B))
+             (bintree-preorder (bintree-node-right B))))))
 
 (define (fast-bintree-preorder B)
   ;;
   "A tail-recursive version of bin-tree-preorder."
   (letrec ((preorder-aux
-	    (lambda (B A)
-	      (if (bintree-leaf? B)
-		  (cons (bintree-leaf-element B) A)
-		  (cons (bintree-leaf-element B)
-			(preorder-aux (bintree-node-left B)
-				      (preorder-aux (bintree-node-right B) A)))))))
+            (lambda (B A)
+              (if (bintree-leaf? B)
+                  (cons (bintree-leaf-element B) A)
+                  (cons (bintree-leaf-element B)
+                        (preorder-aux (bintree-node-left B)
+                                      (preorder-aux (bintree-node-right B) A)))))))
     (preorder-aux B '())))
 
 ;; Exercise: Implement a function that will create a list containing
@@ -121,20 +121,20 @@
   (if (bintree-leaf? B)
       (list (bintree-leaf-element B))
       (append (bintree-postorder (bintree-node-right B))
-	      (append (bintree-postorder (bintree-node-left B))
-		      (cons (bintree-leaf-element B) '())))))
+              (append (bintree-postorder (bintree-node-left B))
+                      (cons (bintree-leaf-element B) '())))))
 
 (define (fast-bintree-postorder B)
   "A tail-recursive version of 'bintree-postorder'."
   (letrec ((postorder-aux
-	    (lambda (B A)
-	      (if (bintree-leaf? B)
-		  (cons (bintree-leaf-element B) A)
-		  (postorder-aux
-		   (bintree-node-right B)
-		   (postorder-aux
-		    (bintree-node-left B)
-		    (cons (bintree-leaf-element B) A)))))))
+            (lambda (B A)
+              (if (bintree-leaf? B)
+                  (cons (bintree-leaf-element B) A)
+                  (postorder-aux
+                   (bintree-node-right B)
+                   (postorder-aux
+                    (bintree-node-left B)
+                    (cons (bintree-leaf-element B) A)))))))
     (postorder-aux B '())))
 
 ;; Exercise: Repeat the last exercise with inorder.
@@ -145,25 +145,25 @@
       (list (bintree-leaf-element B))
       (append
        (append (bintree-inorder (bintree-node-left B))
-	       (cons
-		(bintree-leaf-element B) '()))
+               (cons
+                (bintree-leaf-element B) '()))
        (bintree-inorder (bintree-node-right B)))))
 
 (define (fast-bintree-inorder B)
   "A tail-recursive version of 'bintree-inorder'."
   (letrec ((inorder-aux
-	    (lambda (B A C)
-	      (if (bintree-leaf? B)
-		  (cons (bintree-leaf-element B) C)
-		  (inorder-aux
-		   (bintree-node-left B) A
-		   (inorder-aux
-		    (cons (bintree-leaf-element B) A) C
-		    (inorder-aux
-		     (bintree-node-right B) A C)))))))
+            (lambda (B A C)
+              (if (bintree-leaf? B)
+                  (cons (bintree-leaf-element B) C)
+                  (inorder-aux
+                   (bintree-node-left B) A
+                   (inorder-aux
+                    (cons (bintree-leaf-element B) A) C
+                    (inorder-aux
+                     (bintree-node-right B) A C)))))))
     (inorder-aux B '() '())))
 
-;;; SETS.
+;; Sets
 
 (define (make-empty-set)
   "Creates an empty set."
@@ -178,10 +178,10 @@ element element."
   "Return a set containing all the members of the set S except the
 element element."
   (let ((not-element?
-	 (lambda (elem)
-	   (if (equal? element elem)
-	       #f
-	       #t))))
+         (lambda (elem)
+           (if (equal? element elem)
+               #f
+               #t))))
     (filter not-element? S)))
 
 (define (set-member? element S)
@@ -217,8 +217,8 @@ element element."
   (if (bintree-leaf? B)
       (= element (bintree-leaf-element B))
       (if (<= element (bintree-node-element B))
-	  (bst-nonempty-member? element (bintree-node-left B))
-	  (bst-nonempty-member? element (bintree-node-right B)))))
+          (bst-nonempty-member? element (bintree-node-left B))
+          (bst-nonempty-member? element (bintree-node-right B)))))
 
 (define (bst-insert element B)
   "Insert element element into binary search tree B."
@@ -234,16 +234,16 @@ element element."
 (define (list->tree xs)
   (let ((tree '()))
     (for-each (lambda (x)
-		(set! tree (bst-insert x tree)))
-	      xs)
+                (set! tree (bst-insert x tree)))
+              xs)
     tree))
 
 (define (flatten xs)
   (cond ((null? xs) '())
-	((pair? xs)
-	 (append (flatten (car xs))
-		 (flatten (cdr xs))))
-	(else (list xs))))
+        ((pair? xs)
+         (append (flatten (car xs))
+                 (flatten (cdr xs))))
+        (else (list xs))))
 
 (define (atom? a)
   (and (not (null? a))
@@ -251,11 +251,11 @@ element element."
 
 (define (treesum tree)
   (cond ((null? tree) 0)
-	((atom? (car tree))
-	 (+ (car tree)
-	    (treesum (cdr tree))))
-	(else (+ (treesum (car tree))
-		 (treesum (cdr tree))))))
+        ((atom? (car tree))
+         (+ (car tree)
+            (treesum (cdr tree))))
+        (else (+ (treesum (car tree))
+                 (treesum (cdr tree))))))
 
 ;; ++ TREESORT has a bug: it's clipping the last element of the list
 ;; it's sorting, e.g.:
@@ -269,46 +269,45 @@ element element."
 
 (define (treesort xs)
   (let ((result '())
-	(seen '())
-	(tree (list->tree xs)))
+        (seen '())
+        (tree (list->tree xs)))
     (for-each
      (lambda (x)
        (if (member x seen)
-	   (set! result (cons x result))
-	   (set! seen (cons x seen))))
+           (set! result (cons x result))
+           (set! seen (cons x seen))))
      (fast-bintree-preorder tree))
     (reverse result)))
 
 (define (bst-nonempty-insert element B)
-  ;; 
   "Insert ELEMENT into the non-empty binary search TREE."
   (if (bintree-leaf? B)
       (bst-leaf-insert element B)
       (let ((this (bintree-node-element B))
-	    (left (bintree-node-left B))
-	    (right (bintree-node-right B)))
-	(if (<= element (bintree-node-element B))
-	    (make-bintree-node this
-			       (bst-nonempty-insert element (bintree-node-left B))
-			       right)
-	    (make-bintree-node this
-			       left
-			       (bst-nonempty-insert element (bintree-node-right B)))))))
+            (left (bintree-node-left B))
+            (right (bintree-node-right B)))
+        (if (<= element (bintree-node-element B))
+            (make-bintree-node this
+                               (bst-nonempty-insert element (bintree-node-left B))
+                               right)
+            (make-bintree-node this
+                               left
+                               (bst-nonempty-insert element (bintree-node-right B)))))))
 
-(define (bst-leaf-insert element L) ; This needs changing for Harel.
+(define (bst-leaf-insert element L)   ; This needs changing for Harel.
   "Insert element element into a binary search tree with only one leaf."
   (let ((this (bintree-leaf-element L)))
     (if (= element this)
-	L ; return yourself
-	(if (< element this)
-	    (make-bintree-node element ; Make element a node, and element the lesser leaf
-			       (make-bintree-leaf element)
-			       (make-bintree-leaf this)) ; Make
-					; yourself the right leaf
-	    (make-bintree-node this ; else make yourself the node
-			       (make-bintree-leaf this) ; ...and the
-					; lesser leaf
-			       (make-bintree-leaf element)))))) ; make element the
+        L                               ; return yourself
+        (if (< element this)
+            (make-bintree-node element ; Make element a node, and element the lesser leaf
+                               (make-bintree-leaf element)
+                               (make-bintree-leaf this)) ; Make
+                                        ; yourself the right leaf
+            (make-bintree-node this     ; else make yourself the node
+                               (make-bintree-leaf this) ; ...and the
+                                        ; lesser leaf
+                               (make-bintree-leaf element)))))) ; make element the
 					; greater leaf
 
 ;; Removal
@@ -318,8 +317,8 @@ element element."
   (if (bst-empty? B)
       B
       (if (bintree-leaf? B)
-	  (bst-leaf-remove element B)
-	  (bst-node-remove element B))))
+          (bst-leaf-remove element B)
+          (bst-node-remove element B))))
 
 (define (bst-leaf-remove element leaf)
   "Remove ELEMENT from binary search tree LEAF."
@@ -330,19 +329,19 @@ element element."
 (define (bst-node-remove element N)
   "Remove node element from the binary search tree node N."
   (let ((this (bintree-node-element N))
-	(left (bintree-node-left N))
-	(right (bintree-node-right N)))
+        (left (bintree-node-left N))
+        (right (bintree-node-right N)))
     (if (<= element this)
-	(if (bintree-leaf? left)
-	    (if (= element (bintree-leaf-element left))
-		right
-		N)
-	    (make-bintree-node this (bst-node-remove element left) right))
-	(if (bintree-leaf? right)
-	    (if (= element (bintree-leaf-element right))
-		left
-		N)
-	    (make-bintree-node this left (bst-node-remove element right))))))
+        (if (bintree-leaf? left)
+            (if (= element (bintree-leaf-element left))
+                right
+                N)
+            (make-bintree-node this (bst-node-remove element left) right))
+        (if (bintree-leaf? right)
+            (if (= element (bintree-leaf-element right))
+                left
+                N)
+            (make-bintree-node this left (bst-node-remove element right))))))
 
 ;; Utils
 
