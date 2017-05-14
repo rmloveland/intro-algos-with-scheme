@@ -257,6 +257,16 @@ element element."
 	(else (+ (treesum (car tree))
 		 (treesum (cdr tree))))))
 
+;; ++ TREESORT has a bug: it's clipping the last element of the list
+;; it's sorting, e.g.:
+
+;; > (merge-sort *nums* <)
+;; (39 239 318 427 499 548 733 806 826 856 889 944 978 981 1009
+;;     1020)
+;; > (treesort *nums*)
+;; (39 239 318 427 499 548 733 806 826 856 889 944 978 981
+;;     1009)
+
 (define (treesort xs)
   (let ((result '())
 	(seen '())
