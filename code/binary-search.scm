@@ -1,34 +1,15 @@
-;;;; binary-search.scm
-
-;; ,open random floatnums formats sort
-
-(define %random (make-random 314159))	; random
-
-(define (random n)
-  ;; Int -> Int
-  (modulo (%random) n))
-
-(define (make-list-of-random-numbers list-length max)
-  ;; Int Int -> List
-  "Make a list of random integers less than MAX that's LIST-LENGTH long."
-  (letrec ((maker
-            (lambda (list-length max result)
-              (let loop ((n list-length) (result '()))
-                (if (= n 0)
-                    result
-                    (loop (- n 1) (cons (random max) result)))))))
-    (maker list-length max '())))
+;;; binary-search.scm
 
 (define (number->integer n)
   ;; Num -> Int
   "Given a number N, return its integer representation.
 N can be an integer or flonum (yes, it's quick and dirty)."
-  (cond ((floatnum? n)			; floatnums
-	 (floor (inexact->exact n)))
-	((integer? n) n)
-	((exact? n)
-	 (floor (exact->inexact n)))
-	(else #f)))			; BOOM!!!
+  (cond ((inexact? n)
+         (floor (inexact->exact n)))
+        ((integer? n) n)
+        ((exact? n)
+         (inexact->exact (floor (exact->inexact n))))
+        (else #f)))                     ; BOOM!!!
 
 (define (split-difference low high)
   ;; Int Int -> Int
@@ -43,45 +24,44 @@ N can be an integer or flonum (yes, it's quick and dirty)."
   (if (null? xs)
       #f
       (let loop ((low 0)
-		 (high (- (length xs) 1)))
-	(let* ((try (+ low (split-difference low high)))
-	       (word-at-try (list-ref xs try)))
-	  (cond
+                 (high (- (length xs) 1)))
+        (let* ((try (+ low (split-difference low high)))
+               (word-at-try (list-ref xs try)))
+          (cond
            ((string-ci=? word-at-try word)
-	    try)
-	   ((< (- high low) 1)
-	    #f)
-	   ((= (- high try) 1) 
+            try)
+           ((< (- high low) 1)
+            #f)
+           ((= (- high try) 1) 
             (if (string-ci=? (list-ref xs low) word)
                 low
                 #f))
-	   ((string-ci<? word-at-try word)
-	    (if debug-print?
-		(begin (format #f "(string-ci<? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~%" ; formats
-			       word-at-try word try high low)
-		       (loop (+ 1 try) high)) ; raise the bottom of the window
-		(loop (+ 1 try) high)))
-	   ((string-ci>? word-at-try word)
-	    (if debug-print?
-		(begin (format #f "(string-ci>? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~%"
-			       word-at-try word try high low)
-		       (loop low (+ 1 try))) ; lower the top of the window
-		(loop low (+ 1 try))))
-	   (else 'FAIL))))))
+           ((string-ci<? word-at-try word)
+            (if debug-print?
+                (begin (format #f "(string-ci<? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~%" ; formats
+                               word-at-try word try high low)
+                       (loop (+ 1 try) high)) ; raise the bottom of the window
+                (loop (+ 1 try) high)))
+           ((string-ci>? word-at-try word)
+            (if debug-print?
+                (begin (format #f "(string-ci>? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~%"
+                               word-at-try word try high low)
+                       (loop low (+ 1 try))) ; lower the top of the window
+                (loop low (+ 1 try))))
+           (else 'FAIL))))))
 
 (define (words-file)
   ;; -> Str
-  (expand-file-name "~/Documents/personal/intro-algos-with-scheme/data/words.dat"))
-
-(define *words* (load (words-file)))	; IO!
+  "../data/words.dat")
 
 (define (run-binary-search-tests)
   ;; -> IO!
   "Run our binary search tests using known words from the 'words' file."
   (begin
-    (let* ((unsorted (load (words-file)))
-	   (sorted (sort-list unsorted string-ci<?))) ; sort
-      (format #t "Running binary search tests...~%")
+    (let* ((unsorted (read-file (words-file)))
+           (sorted (merge-sort unsorted string-ci<?))) ; sort
+      (display "Running binary search tests...")
+      (newline)
       (assert equal? #f (binary-search "test" '() #f) "element absent: list is empty")
       (assert equal? #f (binary-search "aardvark" sorted #f) "element absent: too small")
       (assert equal? #f (binary-search "zebra" sorted #f) "element absent: too large")
@@ -91,10 +71,10 @@ N can be an integer or flonum (yes, it's quick and dirty)."
       (assert = 1 (binary-search "aardvark" '("aardvark" "aardvark" "babylon") #f) "element present: multiple copies of word in list")
       (assert = 1 (binary-search "barbaric" '("accusive" "barbaric") #f) "element present: list of length two")
       (assert = 98
-	      (binary-search "acclamator" sorted #f) "element present: general")
+              (binary-search "acclamator" sorted #f) "element present: general")
       (assert = 1
-	      (binary-search "aardvark" '("aardvark" "aardvark" "aardvark" "aardvark") #f) "element present: list is all one value")
+              (binary-search "aardvark" '("aardvark" "aardvark" "aardvark" "aardvark") #f) "element present: list is all one value")
       (assert = 143 (binary-search "accomplice" sorted #f) "element present: general")
       (assert = 254 (binary-search "accustomedly" sorted #f) "element present: general"))))
 
-;;; eof
+;; eof
