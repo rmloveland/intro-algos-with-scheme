@@ -239,16 +239,6 @@ element element."
               xs)
     tree))
 
-(define (flatten xs)
-  (cond ((null? xs) '())
-        ((pair? xs)
-         (append (flatten (car xs))
-                 (flatten (cdr xs))))
-        (else (list xs))))
-
-(define (atom? a)
-  (and (not (null? a))
-       (not (pair? a))))
 
 (define (treesum tree)
   (cond ((null? tree) 0)
@@ -343,14 +333,6 @@ element element."
                 left
                 N)
             (make-bintree-node this left (bst-node-remove element right))))))
-
-;; Utils
-
-(define (first xs) (car xs))
-
-(define (second xs) (cadr xs))
-
-(define (third xs) (caddr xs))
 
 ;; Tests
 
