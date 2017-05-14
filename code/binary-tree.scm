@@ -343,3 +343,27 @@ element element."
 		left
 		N)
 	    (make-bintree-node this left (bst-node-remove element right))))))
+
+;; Utils
+
+(define (first xs) (car xs))
+
+(define (second xs) (cadr xs))
+
+(define (third xs) (caddr xs))
+
+;; Tests
+
+(define L '(128 76 106 402 100 46 354 1018 112 28 396 35))
+(define test-bintree '(- (+ (128) (12)) (136.2)))
+(define test-bst '(2 (1 (1) (2)) (3 (3) (4))))
+
+(define (run-binary-tree-tests)
+  (let* ((sorted '(28 35 46 76 100 106 112 128 354 396 402 1018))
+         (unsorted '(128 76 106 402 100 46 354 1018 112 28 396 35))
+         (treesorted (treesort unsorted))
+         (test-bintree '(- (+ (128) (12)) (136.2)))
+         (test-bst '(2 (1 (1) (2)) (3 (3) (4)))))
+    (assert equal? sorted treesorted "treesort: sort a list")))
+
+;; eof
