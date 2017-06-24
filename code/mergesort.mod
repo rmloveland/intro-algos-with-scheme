@@ -2,6 +2,8 @@
 
 (define-module mergesort
   (exports
+   take
+   drop
    merge
    merge-sort
    merge-sort-traced
