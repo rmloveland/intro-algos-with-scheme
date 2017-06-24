@@ -8,14 +8,14 @@ by [Richard M. Loveland|mailto:r@rmloveland.com]
 
 Why another book about algorithms?
 
-There are already many books about algorithms.  Many provide detailed analyses of topics such as "Big O notation" and are aimed at an academic audience.  As a result, they strive to be comprehensive, and in so doing, run to hundreds of pages in length.
+There are already many books about algorithms.  Most provide detailed analyses of topics such as "Big O notation" and are aimed at an academic audience.  As a result, they strive to be comprehensive, and they may run to hundreds of pages in length.
 
 This book is different because its goals are different.  First, it is an _invitation_ to algorithms; this means that we will cover one or two common algorithms in each of the following areas:
 
-+ Sorting
-+ Searching
++ Lists
 + Trees
 + Graphs
++ Strings
 
 You can get surprisingly far with these simple building blocks!
 
@@ -27,15 +27,15 @@ Finally, it is my opinion that the notation provided by Scheme provides a clear 
 
 What is an algorithm?
 
-An _algorithm_ is a recipe for getting a certain type of job done by the computer.  Many algorithms are very simple, since many of the jobs we need a computer to do are simple.  For example, you may need to sort a long list of numbers.
+An _algorithm_ is a recipe for getting a job done by the computer.  Many algorithms are very simple, since many of the jobs we need a computer to do are simple.  For example, we may need to sort a list of numbers.
 
-"Sort a list of numbers" sounds simple, but there is some complexity there that needs to be addressed.  How long is the list?  Is it longer than the available memory on your machine?  Are the numbers in the list in random order?  Are the numbers almost sorted already?
+"Sort a list of numbers" sounds simple, but there is some complexity there that needs to be addressed.  How long is the list?  Is it longer than the available memory on our machine?  Are the numbers in the list in random order?  Or are the numbers almost sorted already?
 
-Depending on the answers to these questions, you'll need to choose one sorting algorithm or another.  Some take more memory (space).  Some require more CPU cycles (time).
+Sometimes, depending on the answers to these questions, you'll need to choose one sorting algorithm or another.  Some take more memory (space).  Some require more CPU cycles (time).
 
-However, unless you are doing very specialized optimization work, you can probably get by with knowing one or two of the most common sorting algorithms, and choosing which one to use based on the needs of the problem at hand.
+However, unless you are doing very specialized optimization work, you can probably get along very well with just knowing two or three of the most common sorting algorithms, and choosing which one to use based on the needs of the problem at hand.
 
-And that brings us to the point of this book.  We will cover one or two common algorithms in each of several areas.  We will implement those algorithms in the Scheme language.  As our mastery increases, we will take on several "Real World" implementation projects, such as writing our own hash tables.
+And that brings us to the point of this book.  We will study two or three common algorithms across each of several common data structures.  Then, we will implement these algorithms in the Scheme programming language.  As our mastery increases, we will take on several "Real World" implementation projects, such as writing our own hash tables.
 
 Along the way, we will observe several themes that repeat:
 
@@ -47,7 +47,7 @@ Along the way, we will observe several themes that repeat:
 
  *Familiarity with Scheme:*
 
-This book does not try to teach the Scheme language.  We assume you have already encountered an introduction to Scheme elsewhere. In particular, you should be pretty comfortable with recursion, since we'll be using plenty of it.  By recursion, I just mean that you understand code that looks like this:
+This book does not try to teach the Scheme language.  We assume you have already encountered an introduction to Scheme elsewhere. In particular, you should be pretty comfortable with recursion, since we'll be using plenty of it.  By recursion, we just mean that you understand code that looks like this:
 
 {code}
 (define (+ a b)
@@ -59,23 +59,22 @@ This book does not try to teach the Scheme language.  We assume you have already
 
 A good book that serves this purpose is [The Little Schemer|https://www.amazon.com/Little-Schemer-Daniel-P-Friedman/dp/0262560992/ref=sr_1_1?ie=UTF8&qid=1489850762&sr=8-1&keywords=the+little+schemer], by Dan Friedman & Matthias Felleisen.
 
-For a more advanced introduction to the Scheme language, see Dybvig's [The Scheme Programming Language|http://scheme.com/tspl4/].
+ *A Scheme Interpreter:*
 
- *The Scheme Interpreter:*
+This book works with the following combinations of Scheme implementation and operating system:
 
-This book uses {{Scsh}}, a Scheme interpreter designed to integrate closely with UNIX-like systems.
-
-For more information about {{scsh}}, see [scsh.net|http://www.scsh.net].
-
-To run {{scsh}}, you'll need access to a computer running Mac OS X or Linux.  You should also be able to run it on Windows, using the [Windows Subsystem for Linux|https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux].
-
-For instructions on installing {{scsh}} on each of these platforms, see [Appendix A|#appendix-a-building-scsh].
+{table}
+|| Implementation || OS ||
+| Larceny | Linux, Windows |
+| Chez (Petite) | Windows |
+| Gambit | Windows, Linux |
+{table}
 
 ** Conventions
 
-Procedure names are written like this: {{CHAR-READY?}}
+Procedure names are written inline with the text like this: {{CHAR-READY?}}
 
-Code samples are set off from the surrounding text and look like this:
+Code samples are set off from the surrounding text like this:
 
 {code}
 (define (double n)
@@ -382,7 +381,7 @@ Write up the {{longest-path.scm}} code here.
 
 *** Graph Search
 
-!winston-horn-network.png!
+!winston-horn-network.png:520!
 
 I've been having fun translating some of the code in Winston and Horn's _Lisp_ into Scheme.  This book is amazing -- clearly written, with lots of motivating examples and applications.  As SICP is to language implementation, _Lisp_ is to application development, with chapters covering constraint propagation, forward and backward chaining, simulation, object-oriented programming, and so on.  And it does include the obligatory Lisp interpreter in one chapter, if you're into that sort of thing.
 
