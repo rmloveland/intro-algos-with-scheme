@@ -1,4 +1,4 @@
-BOOKDIR=$(HOME)/Dropbox/Documents/personal/intro-algos-with-scheme
+BOOKDIR=${HOME}/Dropbox/Documents/personal/intro-algos-with-scheme
 
 all: html
 
