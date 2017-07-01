@@ -19,9 +19,9 @@ This book is different because its goals are different.  First, it is an _invita
 
 You can get surprisingly far with these simple building blocks!
 
-Further, it is an invitation to algorithms _with Scheme_.  This means that we will use Scheme to describe the algorithms we want the computer to perform.  Once we've covered the basics, we will work on some interesting projects, such as building our own hash tables.  This will take us out of the realm of "textbook" algorithms and into the messy but fun world of real programming.  Programming isn't much fun unless you can get the computer to actually do stuff.
+Further, it is an invitation to algorithms _with Scheme_.  This means that we will use Scheme to describe the algorithms we want the computer to perform.  It is my opinion that the notation provided by Scheme provides a clear description of many common algorithms.
 
-Finally, it is my opinion that the notation provided by Scheme provides a clear description of many common algorithms.
+Once we've covered the basics, we will work on some interesting projects, such as building our own hash tables.  This will take us out of the realm of "textbook" algorithms and into the messy but fun world of real programming.  After all, programming isn't much fun unless you can get the computer to do stuff you actually care about.
 
 ** Introduction
 
@@ -33,19 +33,18 @@ An _algorithm_ is a recipe for getting a job done by the computer.  Many algorit
 
 Sometimes, depending on the answers to these questions, you'll need to choose one sorting algorithm or another.  Some take more memory (space).  Some require more CPU cycles (time).
 
-However, unless you are doing very specialized optimization work, you can probably get along very well with just knowing two or three of the most common sorting algorithms, and choosing which one to use based on the needs of the problem at hand.
+Unless you are doing very specialized optimization work, you can probably get along very well with just knowing two or three of the most common sorting algorithms, and choosing which one to use based on the needs of the problem at hand.
 
-And that brings us to the point of this book.  We will study two or three common algorithms across each of several common data structures.  Then, we will implement these algorithms in the Scheme programming language.  As our mastery increases, we will take on several "Real World" implementation projects, such as writing our own hash tables.
+And that brings us to the point of this book.  We will study two or three common algorithms across each of several common data structures.  Then, we will implement these algorithms in the Scheme programming language.  As our mastery increases, we will take on several "Real World" implementation projects, such as writing our own hash tables and our own regular expression matcher.
 
 Along the way, we will observe several themes that repeat:
 
-1. Divide and conquer
-2. Recursion
-3. ???
+1. _Divide and conquer_: break the problem into pieces, solve a smaller problem.
+2. _Recursion_: Do it again, and again, and again, until you're done.
 
 ** Prerequisites
 
- *Familiarity with Scheme:*
+ *Familiarity with Scheme*
 
 This book does not try to teach the Scheme language.  We assume you have already encountered an introduction to Scheme elsewhere. In particular, you should be pretty comfortable with recursion, since we'll be using plenty of it.  By recursion, we just mean that you understand code that looks like this:
 
@@ -57,11 +56,11 @@ This book does not try to teach the Scheme language.  We assume you have already
          (incr b))))
 {code}
 
-A good book that serves this purpose is [The Little Schemer|https://www.amazon.com/Little-Schemer-Daniel-P-Friedman/dp/0262560992/ref=sr_1_1?ie=UTF8&qid=1489850762&sr=8-1&keywords=the+little+schemer], by Dan Friedman & Matthias Felleisen.
+A good book that serves this purpose is [The Little Schemer|https://www.amazon.com/Little-Schemer-Daniel-P-Friedman/dp/0262560992/ref=sr_1_1?ie=UTF8&qid=1489850762&sr=8-1&keywords=the+little+schemer], by Dan Friedman & Matthias Felleisen.  For more recommendations, see the [Bibliography|#Bibliography-TOC].
 
- *A Scheme Interpreter:*
+ *Access to a computer with a Scheme Interpreter*
 
-This book works with the following combinations of Scheme implementation and operating system:
+This book's code has been tested with the following combinations of Scheme implementation and operating system:
 
 {table}
 || Implementation || OS ||
@@ -81,115 +80,126 @@ Code samples are set off from the surrounding text like this:
   (+ n n))
 {code}
 
-** Lists
+** 1. Lists
 
-The list data structure is ubiquitous in programming.  One of the most common patterns is to gather up a list of elements, and then process them.
+The list data structure is ubiquitous in Scheme programming.  One of the most common patterns is to gather up a list of elements, and then process them.
 
-When we say that something is a "list" in Scheme, we mean that it's a _linked list_, which has the following structure:
-
-{code}
-
- --- ---        --- ---
-| A | B | ---> | A | B | ---> NIL
- --- ---        --- ---
-  |              |
- 'Apple       'Banana
+When we say that something is a "list" in Scheme, we mean that it's actually a _linked list_, which has the following structure:
 
 {code}
 
-In Scheme code, we'd write this as just: {{'(Apple Banana)}}.
+ ---    ---          ---   ---
+| CAR | CDR | ---> | CAR | CDR | ---> NIL
+ ---    ---          ---   ---
+  |                   |
+ 'Apple            'Banana
+
+{code}
 
 As you can see from the diagram, each element of the linked list has two "cells":
 
 1. The first cell holds the contents of that element, e.g., {{'Apple}}
 2. The second cell points to the next element of the list
 
-In this section we'll explore some common operations on lists:
+In code, we'd write this as just: {{'(Apple Banana)}}.  Or more verbosely,
 
-+ Sorting
-+ Searching
-+ Updating
+{code}
+(cons 'Apple (cons 'Banana '()))
+{code}
+
+In other languages we'd need to represent this linked list structure explicitly, whereas in Scheme it's built-in.
+
+In the sections that follow we'll implement common operations on lists.
+
++ [Sorting|#Sorting-TOC]
++ [Searching|#Searching-TOC]
++ [Updating|#Updating-TOC]
 
 *** Sorting
 
-There are a few algorithms for sorting lists.  In this section we'll focus on [Merge Sort|https://en.wikipedia.org/wiki/Merge_sort], for the following reasons:
+In this section we'll implement the following sort algorithms for lists:
 
-1. It performs reasonably well, and provides a good tradeoff between implementation complexity and overall performance
-2. It is a good example of the general "divide and conquer" strategy for designing algorithms
-3. It suits Scheme due to the way lists are implemented
++ [Merge Sort|#Merge Sort-TOC]
++ [Quick Sort|#Quick Sort-TOC]
++ [Tree Sort|#Tree Sort-TOC]
 
-In this chapter we will look at several implementations of merge sort, starting with the naive tree-recursive version you can easily find on the internet, and finishing up with an [iterative|#glossary-iterative-process] implementation.
+If you can understand the sort implementations described in this chapter, you should have no problem learning more about (and implementing your own versions of) other sorting algorithms that you encounter.
 
-If you can understand the implementations of merge sort described in this chapter, you should have no problem learning more about (and implementing your own versions of) quicksort, heap sort, and other sorting algorithms that you encounter.
+**** Merge Sort
 
-***** Architecture of a Merge Sort Implementation
+There are a number of good algorithms for sorting lists.  We'll start with [Merge Sort|https://en.wikipedia.org/wiki/Merge_sort] for the following reasons:
 
-Merge sort is usually implemented with an architecture that consists of two parts: {{MERGE}}, a lower-level "helper" procedure that merges two partially sorted lists, and {{MERGE-SORT}}, a top-level procedure that internally calls {{MERGE}} repeatedly to get the list sorted.
+1. It performs well, and provides a good tradeoff between implementation complexity, performance, and CPU and memory usage
+2. It is a good example of the "divide and conquer" strategy for designing algorithms
+3. It suits Scheme (and other Lisps) due to the way (linked) lists are implemented in the language
+
+In this section we'll look at several implementations of merge sort, starting with the naive recursive version you can easily find on the internet, followed by an [iterative|#glossary-iterative-process] implementation.
+
+***** The architecture of a merge sort implementation
+
+Merge sort is most easily implemented with a two-part architecture:
+
+1. {{MERGE}}, a lower-level "helper" procedure that merges two partially sorted lists
+2. {{MERGE-SORT}}, a top-level "driver" procedure that internally calls {{MERGE}} repeatedly to get the list sorted
 
 Let's look at each of these procedures in turn.
 
-{{MERGE}} handles splicing two sublists together in an ordering determined by a predicate such as {{<}}.  In other words, it puts things in order based on which of them are "less than" the other (this can have different meanings for numbers and strings).  Here are some examples showing the expected output.
+{{MERGE}} handles splicing two sublists together in an ordering determined by a [predicate|https://people.eecs.berkeley.edu/~bh/ssch6/true.html] such as {{<}}.
+
+In other words, assuming we use {{<}} as our predicate, {{MERGE}} walks both lists, putting things in pairwise order (in this case numbers) based on which of them are "less than" the other.
+
+It doesn't fully sort the lists; it only works on one item from each list at a time.  That's why we need the {{MERGE-SORT}} driver procedure.
+
+Here are examples showing some expected inputs and outputs:
 
 {code}
-(merge < '(2 191) '(18 45))
-;; => (2 18 45 191)
+> (merge < '(2 191) '(18 45))
+(2 18 45 191)
 
-(merge string<? '("scheme" "hacking") '("is" "fun"))
-;; => ("is" "fun" "scheme" "hacking")
+> (merge string<? '("scheme" "hacking") '("is" "fun"))
+("is" "fun" "scheme" "hacking")
 {code}
 
-{{MERGE-SORT}} is a higher-level procedure that we can think of as a "driver" for {{MERGE}}.  It handles calling {{MERGE}} repeatedly and splicing the successively larger partially sorted lists returned by calls to {{MERGE}} together into one that is fully sorted.  Here are some examples showing its expected output:
+The actual {{MERGE-SORT}} procedure can be thought of as a "driver" for {{MERGE}}.  It handles calling {{MERGE}} repeatedly and splicing the partially sorted lists returned by successive calls to {{MERGE}} together into a final list that is fully sorted.
+
+Here are examples showing some expected inputs and outputs:
 
 {code}
-(merge-sort '(17 51 55 13 12 75 98 48 98 89 68 86 89 51 73 18 92) <)
-;; => (12 13 17 18 48 51 51 55 68 73 75 86 89 89 92 98 98)
+> (merge-sort '(17 51 55 13 12 75 98 48 98 89 68 86 89 51) <)
+(12 13 17 48 51 51 55 68 75 86 89 89 98 98)
 
-(merge-sort '("i" "am" "a" "little" "teapot" "short" "and" "stout") string<?)
-;; => FIXME: MERGE-AUX broken for strings, something is assuming numbers.
+> (merge-sort '("i" "am" "a" "little" "teapot") string<?)
+("a" "am" "i" "little" "teapot")
 {code}
 
-***** How MERGE Works
+***** How {{MERGE}} Works
 
-As we just saw, before we can do a merge sort, we need to write the =MERGE}} procedure.  Remember that it splices two lists together in an ordering determined by a predicate such as {{<}}.  (For expository purposes, we will stick to numbers for the rest of this implementation.)
+{{MERGE}} splices two lists together in a pairwise ordering determined by a predicate such as {{<}}.
 
-An easy way to do this work is to walk two lists, /A/ and /B/, comparing the elements of each list in turn.  We will keep another list, {{RESULT}}, where we will put our, er, result.  If we assume =i}} is the current position in the list, and if {{(list-ref A i)}} (the current element from A) is less than {{(list-ref B i)}} (the current element from B), we push {{(list-ref A i)}} onto the results list.  Otherwise, we push {{(list-ref B i)}} onto the results list.
+It walks two lists, call them _A_ and _B_, comparing the elements of each list in turn.  It keeps another list, {{RESULT}}, where it stores the output.  If the current element from _A_ is less than the current element from _B_, {{MERGE}} pushes it onto the output list.  Otherwise, it pushes the current element from _B_ onto the output list.
 
-IMAGE
+Once {{MERGE}} has traversed both of its input lists _A_ and _B_, and processed all the elements of each, it returns its result.
 
-Finally, having traversed both of our input lists A and B, and processed all the elements of each, we return {{RESULT}}.
+As noted above, the output of {{MERGE}} is *not* a sorted list.  It has been put into "pairwise order".  This is a fancy way of saying that we only compared two elements at a time, one each from _A_ and _B_, as we were building it.
 
-IMAGE
+***** Implementing {{MERGE}}
 
-It's important to note that {{RESULT}} is *not* a sorted list.  It has been put into "pairwise order".  This is a fancy way of saying that we only compared two elements at a time, one each from /A/ and /B/, as we were building it.
+Let's begin implementing {{MERGE}} by reminding ourselves of its specification.  It takes as its arguments a predicate and two lists, and it returns a "pairwise ordered" list.
 
-At this point, you can probably begin to see why {{MERGE-SORT}} calls =MERGE}} over and over when it's sorting a list.
-
-***** Implementing MERGE
-
-Let's begin implementing MERGE by reminding ourselves of its specification.  MERGE takes as its arguments a predicate and two lists, and it returns a `pairwise ordered' list.  Another way of writing this is as follows (you may have noticed this notation above):
+The following code shows a way of annotating our program code that serves as a form of documentation.  It makes it a little easier to remember what a procedure does when you've been away from it for a while.
 
 {code}
-; MERGE : Pred List List -> List
-{code}
-
-This is just a way of annotating our program code that serves as a form of documentation.  It makes it a little easier to remember what a procedure does when you've been away from it for a while. Given this spec, we can start our implementation:
-
-{code}
-; MERGE : Pred List List -> List
 (define (merge pred A B)
+  ;; Pred List List -> List
   (let ((return '()))
     return))
 {code}
 
-This meets the spec, in that it takes the right arguments and returns a list, but it doesn't actually do anything.  In fact, because we already know we're going to be returning a list, let's write it in a recursive style that uses an explicit list argument. This explicit list will be the value of RETURN we talked about earlier.  It also means we need to update our spec slightly.
+This meets the spec, in that it takes the right arguments and returns a list, but it doesn't actually do anything.
 
-{code}
-; MERGE : Pred List List List -> List
-(define (merge pred A B RETURN)
-  RETURN)
-{code}
+Based on our above description of the merge algorithm, the implementation is straightforward, if a bit long:
 
-Based on our above descriptions of the algorithm, the implementation of MERGE is straightforward, if a bit long:
+YOU ARE HERE
 
 {code}
 (define (merge pred l r)
@@ -265,7 +275,7 @@ Let's go through the COND clause-by-clause.  First, as our recursive base case,
 
 ***** Bottom-up Merge Sort
 
-We've already done the hard part by writing {{MERGE}}.  Now we just need to write the "driver" procedure that will call it.  Hence, =MERGE-SORT}}.  Take a few minutes to study the commented version:
+We've already done the hard part by writing {{MERGE}}.  Now we just need to write the "driver" procedure that will call it.  Hence, {{MERGE-SORT}}.  Take a few minutes to study the commented version:
 
 {code}
 (define (merge-sort xs pred)
@@ -286,6 +296,10 @@ We've already done the hard part by writing {{MERGE}}.  Now we just need to writ
 				 (second xs))
 			  result))))))
 {code}
+
+**** Quick Sort
+
+**** Tree Sort
 
 *** Searching
 
@@ -328,7 +342,7 @@ INSERT IMAGE (GIF?) OF BINARY SEARCH ALGO HERE.
 
 *** Updating
 
-** Trees
+** 2. Trees
 
 *** Binary trees
 
@@ -355,7 +369,7 @@ Red-black tree or AVL tree? AVL is supposedly simpler to implement but red-black
 
 **** Searching Trees
 
-** Graphs
+** 3. Graphs
 
 *** Overview of Graphs
 
@@ -375,11 +389,11 @@ Search: Dijkstra's Algorithm.
 
 Maybe include a discussion of {{longest-path.scm}} (implementation is currently incomplete)
 
-*** Graph Traversal
+*** Traversal
 
 Write up the {{longest-path.scm}} code here.
 
-*** Graph Search
+*** Search
 
 !winston-horn-network.png:520!
 
@@ -522,15 +536,19 @@ What fun!  I can almost imagine using a three-dimensional variant of these searc
 
 It shouldn't need to be said, but: Of course the authors knew better; they were trying to hide that unnecessary complexity from you until later.
 
-** Strings
+** 4. Strings
 
-** Real World: Hash Tables
+** 5. (RW) Hash Tables
 
 In this chapter, we're going to implement our own hash tables.
 
 In day-to-day programming, the hash table is probably the most important real-world data structure.
 
 The hash table also gives us a nice real-world proving ground for our algorithms skills, since implementing hash tables requires putting together several different data structures into one - in other words, it is a _compound data structure_.
+
+** 6. (RW) Regular Expressions
+
+** 7. (RW) Neural Networks
 
 ** Glossary
 
@@ -621,10 +639,10 @@ For more details, check out the following references:
 
 + Winston & Horn, _Lisp_, X ed.
 
-** Appendix
+** Glossary
 
-<a name="appendix-a-building-scsh" />
+** Appendices
 
-*** A. Building scsh
+*** Appendix A. Loading code into your Scheme
 
-Describe the process of building scsh here.
+Describe the process of loading the book's code here.
