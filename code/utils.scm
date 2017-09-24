@@ -93,4 +93,9 @@
 (define (third xs) (caddr xs))
 (define (rest xs) (cdr xs))
 
+(define (filter f xs)
+  (let ((res '()))
+    (for-each (lambda (x) (if (f x) (set! res (cons x res)))) xs)
+    (reverse res)))
+
 ;; eof
