@@ -297,9 +297,3 @@
             "INSERTION-SORT: sort a list of chars, ascending")
     (assert equal? is* (insertion-sort is <=)
             "INSERTION-SORT: sort a list of integers, ascending")))
-
-;; Super slow version that uses lists and FOLD-RIGHT.
-
-(define (rml/insertion-sort2 xs pred)
-  (let ((exploded (explode xs)))
-    (fold-right (lambda (x y) (merge pred x y)) '() exploded)))
