@@ -172,36 +172,40 @@
                      (bintree-node-right B) A C)))))))
     (inorder-aux B '() '())))
 
-;; Sets
+
 
-(define (make-empty-set)
-  "Creates an empty set."
-  '())
+;; ;; Sets
 
-(define (set-insert element S)
-  "Return a set containing all the members of the set S plus the
-element element."
-  (lset-adjoin equal? S element))
+;; (define (make-empty-set)
+;;   "Creates an empty set."
+;;   '())
 
-(define (set-remove element S)
-  "Return a set containing all the members of the set S except the
-element element."
-  (let ((not-element?
-         (lambda (elem)
-           (if (equal? element elem)
-               #f
-               #t))))
-    (filter not-element? S)))
+;; (define (set-insert element S)
+;;   "Return a set containing all the members of the set S plus the
+;; element element."
+;;   (lset-adjoin equal? S element))
 
-(define (set-member? element S)
-  "Return #t if set S contains element element."
-  (if (member element S)
-      #t
-      #f))
+;; (define (set-remove element S)
+;;   "Return a set containing all the members of the set S except the
+;; element element."
+;;   (let ((not-element?
+;;          (lambda (elem)
+;;            (if (equal? element elem)
+;;                #f
+;;                #t))))
+;;     (filter not-element? S)))
 
-(define (set-empty? S)
-  "Return #t if the set S is empty."
-  (null? S))
+;; (define (set-member? element S)
+;;   "Return #t if set S contains element element."
+;;   (if (member element S)
+;;       #t
+;;       #f))
+
+;; (define (set-empty? S)
+;;   "Return #t if the set S is empty."
+;;   (null? S))
+
+;; 
 
 ;; Binary search trees
 
@@ -276,7 +280,7 @@ element element."
 (define (treesort xs)
   (let ((result '())
         (seen '())
-        (tree (list->tree xs)))
+        (tree (list->bst xs)))
     (for-each
      (lambda (x)
        (if (member x seen)
