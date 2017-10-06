@@ -12,6 +12,12 @@
                       (begin
                         (display (car objects))
                         (loop (cddr format-list) (cdr objects)))))
+                 ((#\A)
+                  (if (null? objects)
+                      (error 'format "No value for escape sequence")
+                      (begin
+                        (display (car objects))
+                        (loop (cddr format-list) (cdr objects)))))
                  ((#\s)
                   (if (null? objects)
                       (error 'format "No value for escape sequence")
