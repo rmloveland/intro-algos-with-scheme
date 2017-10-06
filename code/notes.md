@@ -57,6 +57,16 @@ Note: This may be obsolete with the introduction of the [require](https://github
 + MIT Scheme: ?
 + Chicken: ?
 
-# how to load `SYNTAX-RULES` in Gambit
+## how to load `SYNTAX-RULES` in Gambit
 
     > (load "~~/lib/syntax-case")
+
+## TODO
+
+Libraries to (maybe) add:
+
++ pathname library
++ foof-loop?
++ break out `LET-OPTIONALS` into a separate library
++ anything interesting in MIT Scheme?  Perhaps `STAR-PARSER`?
++ mine some interesting code from <https://mumble.net/~campbell/scheme/>
