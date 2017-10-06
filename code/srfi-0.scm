@@ -1,4 +1,4 @@
-;;; COND-EXPAND: Feature-based conditional expansion construct.
+;;; SRFI-0: Feature-based conditional expansion construct.
 
 (define-syntax cond-expand
   (syntax-rules (and or not else srfi-0 srfi-5)
