@@ -1,6 +1,7 @@
-;;; -*- mode: scheme -*-
+;;; -*- Mode: Scheme -*-
 
 (define-module assert
-  (exports assert))
+  (exports assert)
+  (requires format))
 
 ;; eof
