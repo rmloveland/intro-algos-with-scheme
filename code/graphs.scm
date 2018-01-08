@@ -89,4 +89,3 @@
                        (append
                         (extend-path (first queue))
                         (rest queue)))))))))
-
