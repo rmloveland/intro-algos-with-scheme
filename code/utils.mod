@@ -17,6 +17,7 @@
    third
    rest
    flatten
+   mapconcat
 
    ;; Files
    read-file

@@ -98,4 +98,9 @@
     (for-each (lambda (x) (if (f x) (set! res (cons x res)))) xs)
     (reverse res)))
 
+(define (mapconcat xs sep)
+  (let* ((catted (map (lambda (x) (string-append x " ")) xs))
+         (appended (apply string-append catted)))
+    appended))
+
 ;; eof
