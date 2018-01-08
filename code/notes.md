@@ -54,6 +54,89 @@ Libraries to (maybe) add:
 
 + pathname library
 + foof-loop?
-+ break out `LET-OPTIONALS` into a separate library
++ X break out `LET-OPTIONALS` into a separate library
 + anything interesting in MIT Scheme?  Perhaps `STAR-PARSER`?
 + mine some interesting code from <https://mumble.net/~campbell/scheme/>
++ implement library "aliases", so you can load SRFI-69 code by (say) `(load-module 'hash-table)`
+
+## SUPPORTED SCHEMES
+
+### Larceny Scheme 0.99
+
++ uuid
++ xml
++ srfi-8
++ srfi-9
++ srfi-0
++ srfi-16
++ srfi-19
++ srfi-28
++ srfi-2
++ srfi-43
++ srfi-69
++ apropos
++ assert
++ binary-search
++ binary-tree
++ destructive-ops
++ format
++ let-optionals
++ mergesort
++ pregexp
+
+### Chez Scheme 9.5
+
++ utils
++ srfi-9
++ srfi-0
++ srfi-2
++ apropos
++ assert
++ binary-search
++ binary-tree
++ destructive-ops
++ format
++ let-optionals
++ mergesort
++ pregexp
++ srfi-16
++ srfi-19
++ srfi-28
++ srfi-8
+
+### JScheme 7.2
+
+Note: You must load `define-syntax` into JScheme as follows before loading modules.
+
+    (use-module "elf/basic.scm")
+    (use-module "elf/mbe.scm")
+
++ pregexp
++ destructive-ops
++ utils
++ assert
++ format
+
+### Scheme 48 1.9.2
+
++ utils
++ apropos
++ assert
++ format
++ binary-search
++ binary-tree
++ destructive-ops
++ let-optionals
++ mergesort
++ pregexp
++ srfi-0
++ srfi-16
++ srfi-28
++ srfi-2
++ srfi-43
++ srfi-69
++ srfi-8
++ srfi-9
++ utils
++ uuid
++ xml
