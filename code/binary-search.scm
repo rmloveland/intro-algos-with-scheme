@@ -34,13 +34,13 @@ N can be an integer or flonum (yes, it's quick and dirty)."
             (if (string-ci=? (list-ref xs low) word) low #f))
            ((string-ci<? word-at-try word)
             (if debug-print?
-                (begin (format #f "(string-ci<? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~%" ; formats
+                (begin (format "(string-ci<? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~%" ; formats
                                word-at-try word try high low)
                        (loop (+ 1 try) high)) ; raise the bottom of the window
                 (loop (+ 1 try) high)))
            ((string-ci>? word-at-try word)
             (if debug-print?
-                (begin (format #f "(string-ci>? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~%"
+                (begin (format "(string-ci>? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~%"
                                word-at-try word try high low)
                        (loop low (+ 1 try))) ; lower the top of the window
                 (loop low (+ 1 try))))
