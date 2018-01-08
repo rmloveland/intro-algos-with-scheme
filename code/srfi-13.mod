@@ -34,6 +34,7 @@
    string-null?
    string-join
    string-tokenize
-   string-replace))
+   string-replace)
+  (requires srfi-8 let-optionals))
 
 ;; eof
