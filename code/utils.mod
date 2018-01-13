@@ -19,6 +19,7 @@
    rest
    flatten
    mapconcat
+   filter
 
    ;; Files
    read-file
