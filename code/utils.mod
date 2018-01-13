@@ -12,6 +12,7 @@
    make-list
    make-list*
    atom?
+   alist?
    first
    second
    third

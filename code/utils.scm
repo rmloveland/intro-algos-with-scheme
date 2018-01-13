@@ -103,4 +103,8 @@
          (appended (apply string-append catted)))
     appended))
 
+(define (alist? x)
+  (and (map (lambda (elem) (list? elem)) x)
+       (list? x)))
+
 ;; eof
