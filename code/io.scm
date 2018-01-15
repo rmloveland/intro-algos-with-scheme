@@ -29,10 +29,7 @@
                    (read-char port)
                    (peek-char port)))))))
 
-(define (map-lines file)
-  (filter (lambda (x) (not (string=? x ""))) (%map-lines file)))
-
-(define (%map-lines file)               ; Internal
+(define (map-lines fn file)
   (call-with-input-file file
     (lambda (port)
       (let loop ((line (read-line port))
@@ -40,4 +37,4 @@
         (if (eof-object? line)
             (reverse lines)
             (loop (read-line port)
-                  (cons line lines)))))))
+                  (cons (fn line) lines)))))))
