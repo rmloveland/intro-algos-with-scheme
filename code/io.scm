@@ -24,7 +24,7 @@
                (next-char (peek-char port)))
       (cond
        ((eof-object? next-char) next-char)
-       ((char=? next-char sep) (list->string (reverse chars)))
+       ((char=? next-char sep) (list->string (reverse (cons this-char chars))))
        (else (loop (cons this-char chars)
                    (read-char port)
                    (peek-char port)))))))
