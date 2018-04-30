@@ -11,9 +11,9 @@
 
 ;; For more information about the Larceny behavior and why it may be
 ;; correct, see the following:
-;; 
+;;
 ;; - https://github.com/larcenists/larceny/issues/748
-;; 
+;;
 ;; - https://github.com/larcenists/larceny/commit/6f0ce4455c
 
 (define (read-line port)
@@ -38,3 +38,12 @@
             (reverse lines)
             (loop (read-line port)
                   (cons (fn line) lines)))))))
+
+(define (for-each-line fn file)
+  (call-with-input-file file
+    (lambda (port)
+      (let loop ((line (read-line port)))
+        (if (eof-object? line)
+            #f                          ; Ignore
+            (begin (fn line)
+                   (loop (read-line port))))))))
