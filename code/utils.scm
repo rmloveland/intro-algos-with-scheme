@@ -107,4 +107,14 @@
   (and (map (lambda (elem) (list? elem)) x)
        (list? x)))
 
+(define (.. start end)
+  (let loop ((start start)
+             (end end)
+             (xs '()))
+    (if (= start (+ end 1))
+        (reverse xs)
+        (loop (+ start 1)
+              end
+              (cons start xs)))))
+
 ;; eof
