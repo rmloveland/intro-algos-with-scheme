@@ -54,20 +54,22 @@
 
 
 
-;; ;; testing intermediate states
+;; testing intermediate states
 
-;; (apply-pattern
-;;  (let ((expanded (rewrite-vars '(("/Dan/" display $1) ((== $3 0) display $1)) (build-field-vars "Daniel in the lion's den"))))
-;;    (first expanded))
-;;  "Daniel in the lion's den")
+(apply-pattern
+ (let ((expanded (rewrite-vars '(("/Dan/" display $1) ((== $3 0) display $1)) (build-field-vars "Daniel in the lion's den"))))
+   (first expanded))
+ "Daniel in the lion's den")
+;; ==> Daniel
 
-;; (let ((expanded (rewrite-vars '(("/Dan/" display $1) ((== $3 0) display $1)) (build-field-vars "Daniel in the lion's den"))))
-;;     (first expanded))
-;; ;; '("/Dan/" display "Daniel")
+(let ((expanded (rewrite-vars '(("/Dan/" display $1) ((== $3 0) display $1)) (build-field-vars "Daniel in the lion's den"))))
+    (first expanded))
+;; ==> '("/Dan/" display "Daniel")
 
-;; (rewrite-vars '(("/Dan/" display $1) ((== $3 0) display $1)) (build-field-vars "Daniel in the lion's den"))
+(rewrite-vars '(("/Dan/" display $1) ((== $3 0) display $1)) (build-field-vars "Daniel in the lion's den"))
+;; ==> '(("/Dan/" display "Daniel") ((== "the" 0) display "Daniel"))
 
-;; 
+
 
 (define (awk* file pattern-actions)
   (for-each-line
