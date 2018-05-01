@@ -75,7 +75,6 @@
      (let* ((field-vars (build-field-vars line))
             (expanded-patterns (rewrite-vars pattern-actions field-vars)))
        (begin
-         (display expanded-patterns)
          (for-each (lambda (pa)
                      (apply-pattern pa line)) expanded-patterns))))
    file))
@@ -101,13 +100,11 @@
   ;; pull the pattern off the list, then the CDR is the action
   (let ((pattern (car pattern-action))
         (action (cdr pattern-action)))
-    (begin
       (if (string? pattern)
           (let* ((stripped (strip-slashes pattern))
                  (re (make-regexp stripped)))
             (if (regexp-search? re line)
-                (begin
-                  (eval action (interaction-environment)))))))))
+                (eval action (interaction-environment)))))))
 
 (define == equal?)
 
