@@ -43,7 +43,6 @@
   (call-with-input-file file
     (lambda (port)
       (let loop ((line (read-line port)))
-        (if (eof-object? line)
-            #f                          ; Ignore
+        (if (not (eof-object? line))
             (begin (fn line)
                    (loop (read-line port))))))))
