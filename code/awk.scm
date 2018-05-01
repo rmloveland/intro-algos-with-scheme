@@ -44,10 +44,6 @@
        ;; Print names of people who didn't work last week
        ((= $3 0) (display $1)))))
 
-;; AWK* takes a filename and an alist of (PATTERN . ACTION) pairs, e.g.,
-
-;; (AWK* "awk-data.txt" '((("/Dan/") . (display $0)) ((= $3 0) (display $1))))
-
 ;; Validate pattern-action pairs
 
 (define *pattern-action-pairs* '(("/Dan/" . (display $0)) ((== $3 0) . (display $1))))
@@ -91,18 +87,6 @@
 
 ;; ++ This is using some scsh APIs in the prototype, which will need to be fixed.
 ;; ++ This needs to be expanded to handle expressions, e.g. `($3 == 19)`.
-
-(define (display-pattern-action pattern-action)
-  (let ((pattern (car pattern-action))
-        (action (cdr pattern-action)))
-    (begin (display 'pattern)
-           (newline)
-           (display pattern)
-           (newline)
-           (display 'action)
-           (newline)
-           (display action)
-           (newline))))
 
 (define (apply-pattern pattern-action line)
   ;; if the pattern is a string, it's a regex
