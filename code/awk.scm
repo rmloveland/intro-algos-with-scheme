@@ -18,7 +18,7 @@
 ;; - NR: Number of input records that have been processed during
 ;;   program execution.  Set each time a new record is read.
 
-(define $FS " ")
+(define $FS "[ \t]+")                        ; regexp used by pregexp-split
 (define $OFS " ")
 (define $RS "\n")
 (define $ORS "\n")
