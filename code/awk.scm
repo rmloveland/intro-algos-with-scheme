@@ -25,6 +25,13 @@
 (define $NF 0)
 (define $NR 0)
 
+(define BEGIN #t)
+(define END #t)
+
+(define (print s)
+  (display s)
+  (newline))
+
 (define (process-file file)
   (awk file
       ((BEGIN (set! $FS "\t")
@@ -72,6 +79,7 @@
 
 
 (define (awk* file pattern-actions)
+  (set! BEGIN #t)
   (for-each-line
    (lambda (line)
      (let* ((field-vars (build-field-vars line))
@@ -102,11 +110,25 @@
   ;; pull the pattern off the list, then the CDR is the action
   (let ((pattern (car pattern-action))
         (action (cdr pattern-action)))
-      (if (string? pattern)
-          (let* ((stripped (strip-slashes pattern))
-                 (re (make-regexp stripped)))
-            (if (regexp-search? re line)
-                (eval action (interaction-environment)))))))
+    (cond ((string? pattern)
+           ;; Regex case
+           (let* ((stripped (strip-slashes pattern))
+                  (re (make-regexp stripped)))
+             (if (regexp-search? re line)
+                 (eval action (interaction-environment)))))
+          ((equal? pattern 'BEGIN)
+           (if BEGIN                    ; Set by caller
+               (begin
+                 (eval action (interaction-environment))
+                 (set! BEGIN #f))))
+          ((list? pattern)
+           ;; Sexp case
+           (let* ((exp pattern)
+                  (val (eval exp (interaction-environment))))
+             (begin
+               (if val
+                   (eval action (interaction-environment))))))
+          (else #f))))
 
 (define == equal?)
 
