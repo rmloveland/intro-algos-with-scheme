@@ -134,9 +134,6 @@
 
 ;; get and set vars in the per-line environment
 
-(define ? get-var)
-(define ! set-var)
-
 (define (get-var var env)
   ;; Symbol Alist -> Object
   (let ((val (assoc var env)))
@@ -146,6 +143,9 @@
   ;; Symbol Object -> Alist
   (let ((pair (cons var val)))
     (cons pair env)))
+
+(define ? get-var)
+(define ! set-var)
 
 ;; build the per-line environment
 
