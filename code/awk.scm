@@ -51,23 +51,6 @@
 
 
 
-;; testing intermediate states
-
-(apply-pattern
- (let ((expanded (rewrite-vars '(("/Dan/" display $1) ((== $3 0) display $1)) (build-field-vars "Daniel in the lion's den"))))
-   (first expanded))
- "Daniel in the lion's den")
-;; ==> Daniel
-
-(let ((expanded (rewrite-vars '(("/Dan/" display $1) ((== $3 0) display $1)) (build-field-vars "Daniel in the lion's den"))))
-    (first expanded))
-;; ==> '("/Dan/" display "Daniel")
-
-(rewrite-vars '(("/Dan/" display $1) ((== $3 0) display $1)) (build-field-vars "Daniel in the lion's den"))
-;; ==> '(("/Dan/" display "Daniel") ((== "the" 0) display "Daniel"))
-
-
-
 (define (awk* file pattern-actions)
   (set! BEGIN #t)
   (for-each-line
@@ -181,41 +164,37 @@
 
 
 
-;; hypothetical usage/API
+;; testing intermediate states
+
+(apply-pattern
+ (let ((expanded (rewrite-vars '(("/Dan/" display $1) ((== $3 0) display $1)) (build-field-vars "Daniel in the lion's den"))))
+   (first expanded))
+ "Daniel in the lion's den")
+;; ==> Daniel
+
+(let ((expanded (rewrite-vars '(("/Dan/" display $1) ((== $3 0) display $1)) (build-field-vars "Daniel in the lion's den"))))
+    (first expanded))
+;; ==> '("/Dan/" display "Daniel")
+
+(rewrite-vars '(("/Dan/" display $1) ((== $3 0) display $1)) (build-field-vars "Daniel in the lion's den"))
+;; ==> '(("/Dan/" display "Daniel") ((== "the" 0) display "Daniel"))
+
+
+
+;;; Hypothetical usage/API
+
+;; ++ Clearly this macro definition is wrong.
 
 '(define-syntax awk
    (syntax-rules ()
      ((awk ?file
-          ((?pat) ?body ...)
-          ((?pat2) ?body2 ...)
-        ...)
-      (for-each-line (lambda (line)
-                       (let* ((pieces (build-field-vars line $FS))
-                              ($0 line)
-                              ($1 (get-var '$1 pieces))
-                              ($2 (get-var '$2 pieces))
-                              ($3 (get-var '$3 pieces))
-                              ($4 (get-var '$4 pieces))
-                              ($5 (get-var '$5 pieces))
-                              ($5 (get-var '$5 pieces))
-                              ($6 (get-var '$6 pieces))
-                              ($7 (get-var '$7 pieces))
-                              ($8 (get-var '$8 pieces))
-                              ($9 (get-var '$9 pieces))
-                              ($10 (get-var '$10 pieces))
-                              (cond ((pregexp-match ?pat line) ?body)
-                                    ...
-                                    (else ""))))
-                       ?file)))))
+           ?pat ?body ...
+           ?pat2 ?body2 ...)
+      (awk* ?file
+            '((?pat ?body)
+              (?pat2 ?body2)
+              (...))))))
 
 '(awk file
-    '(("^#")
-      (display line) (newline))
-    '(("Status")
-      (format "~A, Date, ~A, ~A, Notes~%" $1 $2 $3))
-  '(("^TODO|DONE")
-    (let* ((newfile (pregexp-replace "\.txt" file ""))
-           (year (substring newfile 0 4))
-           (month (substring newfile 4 6))
-           (date (string-append year "-" month "-01")))
-      (format "~A, ~A, ~A, ~A, ~A~%" $1 date $2 $3 $4))))
+      "^#" (display $0)
+      "/Status/" (format "~A, Date, ~A, ~A, Notes~%" $1 $2 $3))
