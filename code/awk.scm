@@ -39,7 +39,16 @@
          ;; Print lines matching a regex
          ("/Dan/" print $1)             ; works
          ;; Print names of people who didn't work last week
-         ((== $3 0) print $3))))        ; ++ DOES NOT WORK (yet)
+         ((== $3 0) print (string-append $1 " made 0 dollars")))))
+
+;; Output of PROCESS-FILE is still very strange:
+;; Hello World!
+;; Beth made 0 dollars
+
+;; Dan
+
+;; Dan made 0 dollars
+;; $75 = #f
 
 ;; Validate pattern-action pairs
 
@@ -90,7 +99,20 @@
                  (eval act (interaction-environment)))))
           (else #f))))
 
-(define == equal?)
+(define (== x y)
+  (cond ((and (number? x) (number? y))
+         (= x y))
+        ((and (string? x) (number? y))
+         (let ((n (string->number x)))
+           (if n
+               (= n y))))
+        ((and (number? x) (string? y))
+         (let ((n (string->number y)))
+           (if n
+               (= n x))))
+        ((and (string? x) (string? y))
+         (string=? x y))
+        (else #f)))
 
 (define (strip-slashes string)
   (let* ((xs (string->list string))
