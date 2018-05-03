@@ -46,9 +46,6 @@
 
 ;; Validate pattern-action pairs
 
-(define *pattern-action-pairs* '(("/Dan/" . (display $0)) ((== $3 0) . (display $1))))
-(define *pa2* '(("/Dan/" . (display $0))))
-
 (define (get-pattern pair)
   (car pair))
 
