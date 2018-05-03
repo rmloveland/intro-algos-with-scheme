@@ -97,8 +97,8 @@
     (cond ((string? pattern)
            ;; Regex case
            (let* ((stripped (strip-slashes pattern))
-                  (re (make-regexp stripped)))
-             (if (regexp-search? re line)
+                  (re (pregexp stripped)))
+             (if (pregexp-match re line)
                  (eval action (interaction-environment)))))
           ((equal? pattern 'BEGIN)
            (if BEGIN                    ; Set by caller
