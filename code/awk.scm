@@ -104,11 +104,10 @@
                  (set! BEGIN #f))))
           ((list? pattern)
            ;; Sexp case
-           (let* ((exp pattern)
-                  (val (eval exp (interaction-environment))))
-             (begin
-               (if val
-                   (eval action (interaction-environment))))))
+           (let* ((pat (car pattern-action))
+                  (act (cdr pattern-action)))
+             (if (eval pat (interaction-environment))
+                 (eval act (interaction-environment)))))
           (else #f))))
 
 (define == equal?)
