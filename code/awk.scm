@@ -33,16 +33,13 @@
   (newline))
 
 (define (process-file file)
-  (awk file
-      ((BEGIN (set! $FS "\t")
-              (display "Hello World!")
-              (display newline))
-
-       ;; Print lines matching a regex
-       ("/Dan/" (display $0))
-
-       ;; Print names of people who didn't work last week
-       ((= $3 0) (display $1)))))
+  (awk* file
+        ;; Run a BEGIN block
+        '((BEGIN print "Hello World!")
+         ;; Print lines matching a regex
+         ("/Dan/" print $1)             ; works
+         ;; Print names of people who didn't work last week
+         ((== $3 0) print $3))))        ; ++ DOES NOT WORK (yet)
 
 ;; Validate pattern-action pairs
 
