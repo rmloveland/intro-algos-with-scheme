@@ -11,6 +11,6 @@
    insertion-sort-traced
    run-merge-sort-tests
    run-insertion-sort-tests)
-  (requires assert))
+  (requires assert utils))
 
 ;; eof
