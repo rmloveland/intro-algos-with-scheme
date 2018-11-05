@@ -6,6 +6,13 @@
   ;; XXX: Add code for others here? COND-EXPAND?
   oblist)
 
+;; Kawa
+(cond-expand (oblist)
+             (kawa
+              (begin
+                (define (oblist)
+                  (environment-fold (interaction-environment) cons '())))))
+
 (define (apropos regexp)
   ;; Regexp -> List
   (let* ((list-bindings (get-oblist-procedure))
