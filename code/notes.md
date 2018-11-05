@@ -1,65 +1,77 @@
-# notes
+# Notes
 
-## instrumentation of intermediate variables
+## Idea: Instrumentation of intermediate variables
 
-It would be nice if, when we want to inspect the intermediate values of a variable, rather than having to write code like this:
+It would be nice if, when we want to inspect the intermediate values
+of a variable, rather than having to write code like this:
 
-```
-(define (%merge-sort xs pred trace?)
-  (let loop ((xs xs) (result '()))
-       ...
-       (if trace?
-         (begin
-           (display (first xs))
-           (newline)
-           (display (second xs))
-           (newline)
-           (newline)
-           (loop ...))
-        (loop ...))))
-```
+    (define (%merge-sort xs pred trace?)
+      (let loop ((xs xs) (result '()))
+           ...
+           (if trace?
+             (begin
+               (display (first xs))
+               (newline)
+               (display (second xs))
+               (newline)
+               (newline)
+               (loop ...))
+            (loop ...))))
 
 we could instead write code like this:
 
-```
-(define (%merge-sort xs pred trace?)
-  (instrumented-let loop ((xs xs) (result '()))
-          ... normal algorithm ...
-          ...))
-```
+    (define (%merge-sort xs pred trace?)
+      (instrumented-let loop ((xs xs) (result '()))
+              ... normal algorithm ...
+              ...))
 
-`INSTRUMENTED-LET` watches the values of all variables and prints their value each time through the loop.
+In this hypothetical reality, `INSTRUMENTED-LET` watches the values of
+all variables and prints their value each time through the loop.
 
 I guess it will be implemented as syntax, but we'll see.
 
 Also, it's not clear that this is the best name for it.
 
-Oh!  And actually, it might be better to implement this in a similar fashion to `LOAD-MODULE`, where it just rewrites whole batches of Scheme code to generate the output needed, rather than having to manually rewrite the text of procedures.
+Oh!  And actually, it might be better to implement this in a similar
+fashion to `LOAD-MODULE`, where it just rewrites whole batches of
+Scheme code to generate the output needed, rather than asking the user
+to manually rewrite the text of procedures.
 
-## how to list all bound symbols
+## How to list all bound symbols in various Schemes
 
-+ Larceny, Chez: `(OBLIST)`
++ Larceny: `oblist`
++ Chez: `oblist`
 + Gambit: ?
 + Chibi: ?
 + MIT Scheme: ?
 + Chicken: ?
++ Kawa: `environment-fold`
++ JScheme: ?
 
-## how to load `SYNTAX-RULES` in Gambit
+## How to load R5RS `SYNTAX-RULES` in Gambit
 
     > (load "~~/lib/syntax-case")
 
-## TODO
+## Things to do
 
-Libraries to (maybe) add:
++ Add a pathname library?
 
-+ pathname library
-+ foof-loop?
-+ X break out `LET-OPTIONALS` into a separate library
-+ anything interesting in MIT Scheme?  Perhaps `STAR-PARSER`?
-+ mine some interesting code from <https://mumble.net/~campbell/scheme/>
-+ implement library "aliases", so you can load SRFI-69 code by (say) `(load-module 'hash-table)`
++ Add foof-loop?  (may not be really necessary)
 
-## SUPPORTED SCHEMES
++ Implement X11 protocol support? (See Common Lisp CLX lib)
+
++ Maybe break out `LET-OPTIONALS` into a separate library?
+
++ Consider stealing interesting things from MIT Scheme such as
+  `STAR-PARSER`
+
++ Add various interesting codez from
+  <https://mumble.net/~campbell/scheme/>
+
++ Implement "library aliases", so you can load SRFI-69 code by typing
+  e.g. `(load-module 'hash-table)`
+
+## Supported Schemes
 
 ### Larceny Scheme 0.99
 
@@ -106,7 +118,8 @@ Libraries to (maybe) add:
 
 ### JScheme 7.2
 
-Note: You must load `define-syntax` into JScheme as follows before loading modules.
+Note: You must load support for R5RS `define-syntax` into JScheme as
+follows before you can use `LOAD-MODULE`.
 
     (use-module "elf/basic.scm")
     (use-module "elf/mbe.scm")
@@ -140,3 +153,5 @@ Note: You must load `define-syntax` into JScheme as follows before loading modul
 + utils
 + uuid
 + xml
+
+### Kawa 3.0 (git describe: 3.0-0-g39797ea94)
