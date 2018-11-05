@@ -1,0 +1,1337 @@
+%% -*- Mode: LaTeX; Char-set: UTF-8; -*-
+%% Invitation to Algorithms with Scheme
+
+\documentclass[11pt,a4paper,openright,draft]{book}
+
+%% ----- PACKAGES START ----- %%
+
+%% TODO(rml): Figure out what packages you want to use.  We should
+%% ensure that whatever we use also works with tex2page.
+
+%% https://en.wikibooks.org/wiki/LaTeX/Source_Code_Listings
+%% \usepackage{listings}
+
+%% https://www.overleaf.com/learn/latex/Typesetting_quotations
+%% For putting quotations at the beginning of each chapter.
+%% \usepackage{epigraph}
+
+\usepackage{hyperref}
+
+%% ----- PACKAGES END ----- %%
+
+%% Custom page layout
+
+%% End custom page layout
+
+\begin{document}
+\title{Invitation to Algorithms with Scheme}
+\author{R. M. Loveland}
+\date{November 2018}
+
+\frontmatter
+\maketitle
+
+\chapter{Preface}
+
+Why another book about algorithms?
+
+There are already many books about algorithms.  Most provide detailed
+analyses of topics such as ``Big O notation'' and are aimed at an
+academic audience.  As a result, they strive to be comprehensive, and
+they may run to hundreds of pages in length.
+
+This book is different because its goals are different.  First, it is
+an \emph{invitation} to algorithms; this means that we will cover one or
+two common algorithms in each of the following areas:
+
+\begin{itemize}
+\item Lists
+\item Trees
+\item Graphs
+\item Strings
+\end{itemize}
+
+You can get surprisingly far with these simple building blocks!
+
+Further, it is an invitation to algorithms \emph{with Scheme}.  This
+means that we will use Scheme to describe the algorithms we want the
+computer to perform.  It is my opinion that the notation provided by
+Scheme provides a clear description of many common algorithms.
+
+Once we've covered the basics, we will work on some interesting
+projects, such as building our own hash tables.  This will take us out
+of the realm of ``textbook'' algorithms and into the messy but fun world
+of real programming.  After all, programming isn't much fun unless you
+can get the computer to do stuff you actually care about.
+
+\chapter{Introduction}
+
+What is an \emph{algorithm}?
+
+An algorithm is a recipe for getting a job done by the computer.
+Many algorithms are very simple, since many of the jobs we need a
+computer to do are simple.  For example, we may need to sort a list
+of numbers.
+
+``Sort a list of numbers'' sounds simple, but there is some complexity
+there that needs to be addressed.  How long is the list?  Is it
+longer than the available memory on our machine?  Are the numbers in
+the list in random order?  Or are the numbers almost sorted already?
+
+Sometimes, depending on the answers to these questions, you'll need
+to choose one sorting algorithm or another.  Some take more memory
+(space).  Some require more CPU cycles (time).
+
+Unless you are doing very specialized optimization work, you can
+probably get along very well knowing one or two of the most common
+sorting algorithms, and choosing which one to use based on the needs
+of the problem at hand.
+
+And that brings us to the point of this book.  We will study one or
+two common algorithms across each of several common data structures.
+Then, we will implement these algorithms in the Scheme programming
+language.  As our mastery increases, we will take on several ``Real
+World'' implementation projects, such as writing our own hash tables
+and our own regular expression matcher.
+
+Along the way, we will observe several themes that repeat:
+
+\begin{enumerate}
+\item \emph{Divide and conquer}: break the problem into pieces, solve a smaller problem.
+\item \emph{Recursion}: Do it again, and again, and again, until you're done.
+\end{enumerate}
+
+\chapter{Prerequisites}
+
+\section{Familiarity with Scheme}
+
+This book does not try to teach the Scheme language.  We assume you
+have already encountered an introduction to Scheme elsewhere. In
+particular, you should be pretty comfortable with recursion, since
+we'll be using plenty of it.  By ``comfortable with recursion'', we mean
+that you understand code that looks like this:
+
+\begin{verbatim}
+
+(define (+ a b)
+  (if (= a 0)
+      b
+    (+ (decr a)
+       (incr b))))
+
+\end{verbatim}
+
+A good book that serves this purpose is \emph{The Little Schemer} by Dan
+Friedman \& Matthias Felleisen.  For more recommendations, see the
+Bibliography.
+
+\section{Access to a computer with a Scheme Interpreter}
+
+This book's code has been tested with the following combinations of
+Scheme implementation and operating system:
+
+\begin{tabular}{ l r }
+Larceny        & Windows 10, Linux \\
+Chez (Petite)  & Windows           \\
+Gambit         & Windows, Linux    \\
+Scheme 48      & Windows 10, Linux \\
+\end{tabular}
+
+\section{Required libraries}
+
+The portable module system (which has been tested in all of the
+implementation/OS combinations in the previous section) can be
+downloaded from \url{https://github.com/rmloveland/load-module}.
+
+The book's code can be downloaded from the \verb|code| directory in
+\url{https://github.com/rmloveland/intro-algos-with-scheme}.
+
+To load the book's code:
+
+\begin{enumerate}
+\item Copy \verb|load-module/load-module.scm| into the book's \verb|intro-algos-with-scheme/code| directory.
+
+\item Change into the \verb|intro-algos-with-scheme/code| directory.
+
+\item Start your Scheme.
+
+\item Load the module system as follows: \verb|(load "load-module.scm")|
+
+\item Load the required modules as described at the beginning of each chapter, e.g., \verb|(load-module 'mergesort)|.
+\end{enumerate}
+
+\section{Typographical Conventions}
+
+Procedure names are written inline with the text like this: \verb|CHAR-READY?|
+
+Code samples are set off from the surrounding text like this:
+
+\begin{verbatim}
+(define (double n)
+  (+ n n))
+\end{verbatim}
+
+\mainmatter{}
+\part{Basics}
+\chapter{Lists, Sorting, and Searching}
+
+The list data structure is ubiquitous in Scheme programming.  One of
+the most common patterns is to gather up a list of elements, and
+then process them.
+
+When we say that something is a ``list'' in Scheme, we mean that it's
+actually a linked list, which has the following structure:
+
+\begin{verbatim}
+> (visualize (list 'Apple 'Banana))
+
+ ---    ---          ---   ---
+| CAR | CDR | ---> | CAR | CDR | ---> NIL
+ ---    ---          ---   ---
+  |                   |
+ 'Apple            'Banana
+\end{verbatim}
+
+As you can see from the diagram, each element of the linked list has
+two ``cells'':
+
+\begin{enumerate}
+\item The first cell holds the contents of that element, e.g., \verb|'Apple|.
+\item The second cell points to the next element of the list.
+\end{enumerate}
+
+In code, we'd write this as: \verb|'(Apple Banana)|.  Or more
+verbosely,
+
+\begin{verbatim}
+(cons 'Apple (cons 'Banana '()))
+\end{verbatim}
+
+In other languages we'd need to represent this linked list structure
+explicitly, whereas in Scheme it's built-in.
+
+In the sections that follow we'll implement common operations on
+lists.
+
+\section{Sorting}
+
+In this section we'll implement the merge sort algorithm.
+
+If you can understand the merge sort implementation described in this
+chapter, you should have no problem learning more about (and
+implementing your own versions of) other sorting algorithms that you
+encounter.
+
+We'll start with Merge Sort for the following reasons:
+
+\begin{enumerate}
+\item It performs well, and provides a good tradeoff between
+  implementation complexity, performance, and CPU and memory usage.
+\item It is a good example of the ``divide and conquer'' strategy for
+  designing algorithms.
+\item It suits Scheme (and other Lisps) due to the way lists are
+  implemented in the language.
+\end{enumerate}
+
+In this section we'll look at several implementations of merge sort,
+starting with the naive recursive version you can easily find on the
+internet, followed by an iterative\footnote{An iterative process is
+  one that does not consume growing amounts of stack space while it
+  runs.} implementation.
+
+Let's go ahead and load the code:
+
+\begin{verbatim}
+> (load-module 'mergesort)
+\end{verbatim}
+
+\subsection{The architecture of a merge sort implementation}
+
+Merge sort is most easily implemented with a two-piece architecture:
+
+\begin{enumerate}
+\item \verb|MERGE|, a lower-level ``helper'' procedure that merges two
+  partially sorted lists.
+\item \verb|MERGE-SORT|, a top-level ``driver'' procedure that
+  internally calls \verb|MERGE| repeatedly to get the list sorted.
+\end{enumerate}
+
+Let's look at each of these procedures in turn.
+
+\verb|MERGE| handles splicing two sublists together in an ordering
+determined by a predicate such as \verb|<|.
+
+In other words, assuming we use \verb|<| as our sorting predicate,
+\verb|MERGE| walks both lists, putting things in pairwise order (in
+this case numbers) based on which of them are ``less than'' the other.
+
+It doesn't fully sort the lists; it only works on one item from each
+list at a time.  That's why we need the \verb|MERGE-SORT| driver
+procedure.
+
+Here are examples showing some expected inputs and outputs:
+
+\begin{verbatim}
+> (merge < '(2 191) '(18 45))
+(2 18 45 191)
+
+> (merge string<? '("scheme" "hacking") '("is" "fun"))
+("is" "fun" "scheme" "hacking")
+\end{verbatim}
+
+The actual \verb|MERGE-SORT| procedure can be thought of as a
+``driver'' for \verb|MERGE|.  It handles calling \verb|MERGE|
+repeatedly and splicing the partially sorted lists returned by
+successive calls to \verb|MERGE| together into a final list that is
+fully sorted.
+
+Here are examples showing some expected inputs and outputs:
+
+\begin{verbatim}
+> (merge-sort '(17 51 55 13 12 75 98 48 98 89 68 86 89 51) <)
+(12 13 17 48 51 51 55 68 75 86 89 89 98 98)
+
+> (merge-sort '("i" "am" "a" "little" "teapot") string<?)
+("a" "am" "i" "little" "teapot")
+\end{verbatim}
+
+\subsection{How the merge procedure works}
+
+\verb|MERGE| splices two lists together in a pairwise ordering
+determined by a predicate such as \verb|<|.
+
+It walks two lists, call them $A$ and $B$, comparing the elements of
+each list in turn.  It keeps another list, \verb|RESULT|, where it stores
+the output.  If the current element from $A$ is less than the current
+element from $B$, \verb|MERGE| pushes it onto the output list.  Otherwise,
+it pushes the current element from $B$ onto the output list.
+
+Once \verb|MERGE| has traversed both of its input lists $A$ and $B$,
+and processed all the elements of each, it returns its result.
+
+As noted above, the output of \verb|MERGE| is *not* a sorted list.  It has
+been put into ``pairwise order''.  This is a fancy way of saying that we
+only compared two elements at a time, one each from $A$ and $B$, as we
+were building it.
+
+\subsection{Implementing the merge procedure}
+
+Let's begin implementing \verb|MERGE| by reminding ourselves of its
+specification.  It takes as its arguments a predicate and two
+lists, and it returns a pairwise ordered list.
+
+The following code shows a way of annotating our program code
+that serves as a form of documentation.  It makes it a little
+easier to remember what a procedure does when you've been away
+from it for a while.
+
+\begin{verbatim}
+(define (merge pred A B)
+  ;; Pred List List -> List
+  (let ((return '()))
+    return))
+\end{verbatim}
+
+This meets the spec, in that it takes the right arguments and returns
+a list, but it doesn't actually do anything.
+
+Based on our above description of the merge algorithm, the
+implementation is straightforward, if a bit long:
+
+\begin{verbatim}
+
+(define (merge pred l r)
+    (define (merge-aux pred left right result)
+      (cond
+       ;; If LEFT and RIGHT are both numbers, listify them so
+       ;; MERGE-AUX can work with them.
+       ((and (atom? left)
+             (atom? right))
+        (merge-aux pred (list left) (list right) result))
+
+       ;; If LEFT is just a number, listify it so MERGE-AUX
+       ;; can work with it.
+       ((atom? left)
+        (merge-aux pred (list left) right result))
+
+       ;; Likewise, if RIGHT is just a number, listify it for
+       ;; MERGE-AUX.
+       ((atom? right)
+        (merge-aux pred left (list right) result))
+
+       ;; If LEFT and RIGHT are empty, we're done merging.
+       ;; Return the result.
+       ((and (null? left)
+             (null? right))
+        (reverse result))
+
+       ;; If LEFT and RIGHT still have elements to be
+       ;; processed, call PRED and run them through MERGE-AUX
+       ;; again.
+       ((and (not (null? left))
+             (not (null? right)))
+        (if (pred (car left)
+                  (car right))
+            (merge-aux pred
+                       (cdr left)
+                       right
+                       (cons (car left) result))
+            (merge-aux pred
+                       left
+                       (cdr right)
+                       (cons (car right) result))))
+
+       ;; If the cases above haven't matched, and LEFT is not
+       ;; NULL?, I call myself.
+       ((not (null? left))
+        (merge-aux pred (cdr left) right (cons (car left) result)))
+
+       ;; Same as the previous case -- this time with RIGHT.
+       ((not (null? right))
+        (merge-aux pred left (cdr right) (cons (car right) result)))
+
+       ;; We should never get here.
+       (else #f)))
+
+    (merge-aux pred l r '()))
+
+\end{verbatim}
+
+Let's go through the \verb|COND| clause-by-clause.  First, as our recursive
+base case, XXX
+
+\subsection{Merge Sort}
+
+Recently I've begun a project to implement a number of basic algorithms in Scheme, which I'd like to eventually grow into a free (as in freedom) ebook. Having just done a Binary Search in Scheme, I thought it would be fun to give merge sort a try.
+
+According to the mighty interwebs, merge sort is a good choice for sorting linked lists (a.k.a., Lisp lists). Unfortunately the only Lisp merge sort implementation examples I've been able to find on the web have been recursive, not iterative.
+
+The implementation described here is an iterative, bottom-up merge sort, written in a functional style. (I daren't say the functional style, lest any real Scheme wizards show up and burn me to a crisp.)
+
+First, generate a list of random numbers
+
+In order to have something to sort, we need a procedure that generates a list of random numbers --- note that the docstring is allowed by MIT/GNU Scheme; YMMV with other Schemes.
+
+\begin{verbatim}
+
+(define (make-list-of-random-numbers list-length max)
+  ;; Int Int -> List
+  "Make a list of random integers less than MAX that's LIST-LENGTH long."
+  (letrec ((maker
+            (lambda (list-length max result)
+              (let loop ((n list-length) (result '()))
+                (if (= n 0)
+                    result
+                    (loop (- n 1) (cons (random max) result)))))))
+    (maker list-length max '())))
+
+\end{verbatim}
+
+\section{Then, write a merge procedure}
+
+This implementation of the merge procedure is a straight port of the one described on the Wikipedia Merge Sort page, with one minor difference to make the sort faster 1.
+
+An English description of the merge operation is as follows:
+
+If both items passed in are numbers (or strings), wrap them up in lists and recur. (In this example we only care about sorting numbers)
+
+If both lists are empty, return the result.
+
+If neither list is empty:
+
+If the first item in the first list is ``less than'' the first item in the second list, cons it onto the result and recur.
+
+Otherwise, cons the first item in the second list on the result and recur.
+
+If the first list still has items in it, cons the first item onto the result and recur.
+
+If the second list still has items in it, cons the first item onto the result and recur.
+
+If none of the above conditions are true, return \verb|\#f|. I put
+this here for debugging purposes while writing this code; now that the
+procedure is debugged, it is never reached. (Note: ``debugged'' just
+means I haven't found another bug yet.)
+
+\begin{verbatim}
+
+(define (rml/merge pred l r)
+  (letrec ((merge-aux
+            (lambda (pred left right result)
+              (cond
+               ((and (number? left)
+                     (number? right))
+                (merge-aux pred
+                           (list left)
+                           (list right)
+                           result))
+               ((and (string? left)
+                     (string? right))
+                (merge-aux pred
+                           (list left)
+                           (list right)
+                           result))
+               ((and (null? left)
+                     (null? right))
+                (reverse result))
+               ((and (not (null? left))
+                     (not (null? right)))
+                (if (pred (car left)
+                          (car right))
+                    (merge-aux pred
+                               (cdr left)
+                               right
+                               (cons (car left) result))
+                    (merge-aux pred
+                               left
+                               (cdr right)
+                               (cons (car right) result))))
+               ((not (null? left))
+                (merge-aux pred (cdr left) right (cons (car left) result)))
+               ((not (null? right))
+                (merge-aux pred left (cdr right) (cons (car right) result)))
+               (else #f)))))
+    (merge-aux pred l r '())))
+
+\end{verbatim}
+
+We can run a few merges to get a feel for how it works. The comparison predicate we pass as the first argument will let us sort all kinds of things, but for the purposes of this example we'll stick to numbers:
+
+\begin{verbatim}
+
+> (rml/merge < '(360 388 577) '(10 811 875 995))
+(10 360 388 577 811 875 995)
+
+> (rml/merge < '(8 173 227 463 528 817) '(10 360 388 577 811 875 995))
+(8 10 173 227 360 388 463 528 577 811 817 875 995)
+
+> (rml/merge <
+           '(218 348 486 520 639 662 764 766 886 957 961 964)
+           '(8 10 173 227 360 388 463 528 577 811 817 875 995))
+(8 10 173 218 227 348 360 388 463 486 520 528 577 639 662 764 766 811 817 875 886 957 961 964 995)
+
+\end{verbatim}
+
+\section{Finally, do a bottom up iterative merge sort}
+
+It took me a while to figure out how to do the iterative merge sort in a Schemely fashion. As usual, it wasn't until I took the time to model the procedure on paper that I got somewhere. Here's what I wrote in my notebook:
+
+\begin{verbatim}
+
+;;  XS                   |      RESULT
+;;---------------------------------------------
+
+'(5 1 2 9 7 8 4 3 6)            '()
+    '(2 9 7 8 4 3 6)            '((1 5))
+        '(7 8 4 3 6)            '((2 9) (1 5))
+            '(4 3 6)            '((7 8) (2 9) (1 5))
+                '(6)            '((3 4) (7 8) (2 9) (1 5))
+                 '()            '((6) (3 4) (7 8) (2 9) (1 5))
+
+;; XS is null, and RESULT is not of length 1 (meaning it isn't sorted
+;; yet), so we recur, swapping the two:
+
+'((6) (3 4) (7 8) (2 9) (1 5))  '()
+          '((7 8) (2 9) (1 5))  '((3 4 6))
+                      '((1 5))  '((2 7 8 9) (3 4 6))
+                           '()  '((1 5) (2 7 8 9) (3 4 6))
+
+;; Once more XS is null, but RESULT is still not sorted, so we swap
+;; and recur again
+
+'((1 5) (2 7 8 9) (3 4 6))      '()
+                  '(3 4 6)      '((1 2 5 7 8 9))
+                       '()      '((3 4 6) (1 2 5 7 8 9))
+
+;; Same story: swap and recur!
+
+'((3 4 6) (1 2 5 7 8 9))        '()
+                     '()        '((1 2 3 4 5 6 7 8 9))
+
+;; Finally, we reach our base case: XS is null, and RESULT is of
+;; length 1, meaning that it contains a sorted list
+
+'(1 2 3 4 5 6 7 8 9)
+
+\end{verbatim}
+
+This was a really fun little problem to think about and visualize. It just so happens that it fell out in a functional style; usually I don't mind doing a bit of state-bashing, especially if it's procedure-local. Here's the code that does the sort shown above:
+
+\begin{verbatim}
+
+(define (rml/merge-sort xs pred)
+  (let loop ((xs xs)
+             (result '()))
+    (cond ((and (null? xs)
+                (null? (cdr result)))
+           (car result))
+          ((null? xs)
+           (loop result
+                 xs))
+          ((null? (cdr xs))
+           (loop (cdr xs)
+                 (cons (car xs) result)))
+          (else
+           (loop (cddr xs)
+                 (cons (rml/merge <
+                              (first xs)
+                              (second xs))
+                       result))))))
+
+\end{verbatim}
+
+That's nice, but how does it perform?
+
+A good test of our merge sort is to compare it to the system's sort procedure. In the case of MIT/GNU Scheme, we'll need to compile our code if we hope to get anywhere close to the system's speed. If your Scheme is interpreted, you don't have to bother of course.
+
+To make the test realistic, we'll create three lists of random numbers: one with 20,000 items, another with 200,000, and finally a giant list of 2,000,000 random numbers. This should give us a good idea of our sort's performance. Here's the output of timing first two sorts, 20,000 and 200,000 2:
+
+\begin{verbatim}
+
+;;; Load compiled code
+
+(load "mergesort")
+;Loading "mergesort.so"... done
+;Value: rml/insertion-sort2
+
+;;; Define our lists
+
+(define unsorted-20000 (make-list-of-random-numbers 20000 200000))
+;Value: unsorted-20000
+
+(define unsorted-200000 (make-list-of-random-numbers 200000 2000000))
+;Value: unsorted-200000
+
+;;; Sort the list with 20,000 items
+
+(with-timing-output (rml/merge-sort unsorted-20000 <))
+;Run time:      .03
+;GC time:       0.
+;Actual time:   .03
+
+(with-timing-output (sort unsorted-20000 <))
+;Run time:      .02
+;GC time:       0.
+;Actual time:   .021
+
+;;; Sort the list with 200,000 items
+
+(with-timing-output (rml/merge-sort unsorted-200000 <))
+;Run time:      .23
+;GC time:       0.
+;Actual time:   .252
+
+(with-timing-output (sort unsorted-200000 <))
+;Run time:      .3
+;GC time:       0.
+;Actual time:   .3
+
+As you can see, our sort procedure is on par with the system's for these inputs. Now let's turn up the heat. How about a list with 2,000,000 random numbers?
+;;; Sort the list with 2,000,000 items
+
+(define unsorted-2000000 (make-list-of-random-numbers 2000000 20000000))
+;Value: unsorted-2000000
+
+(with-timing-output (rml/merge-sort4 unsorted-2000000 <))
+;Aborting!: out of memory
+;GC #34: took:   0.80 (100%) CPU time,   0.10 (100%) real time; free: 11271137
+;GC #35: took:   0.70 (100%) CPU time,   0.90  (81%) real time; free: 11271917
+;GC #36: took:   0.60 (100%) CPU time,   0.90  (99%) real time; free: 11271917
+
+(with-timing-output (sort unsorted-2000000 <))
+;Run time:      2.48
+;GC time:       0.
+;Actual time:   2.474
+
+\end{verbatim}
+
+No go. On a MacBook with 4GB of RAM, our merge sort runs out of
+memory, while the system sort procedure works just fine. It seems the
+wizards who implemented this Scheme system knew what they were doing
+after all!
+
+It should be pretty clear at this point why we're running out of memory. In MIT/GNU Scheme, the system sort procedure uses vectors and mutation (and is no doubt highly tuned for the compiler), whereas we take a relatively brain-dead approach that uses lists and lots of cons-ing. I leave it as an exercise for the reader (or perhaps my future self) to rewrite this code so that it doesn't run out of memory.
+
+Footnotes:
+
+1 An earlier implementation started off the sort by
+``exploding'' the list to be sorted so that
+\verb|'(1 2 3)| became \verb|'((1) (2) (3))|. This is convenient for
+testing purposes, but very expensive. It's also unnecessary after the
+first round of merging. We avoid the need to explode the list
+altogether by teaching merge to accept numbers and listify them when
+they appear. We could also do the same for strings and other types as
+necessary.
+
+2 For the definition of the with-timing-output macro, see here.
+
+\section{Quick Sort}
+
+\section{Tree Sort}
+
+\chapter{Searching}
+
+Now that we've sorted a list of elements, we can search it.  It
+turns out that searching through a list of things is much faster if
+you can sort that list first.
+
+In this section we'll look at a particular type of search algorithm
+called binary search.  Binary search is so named because it cuts
+the search space in half with every iteration.
+
+Unlike some other searches, binary search only works on ordered
+lists of things.  That is why we had to go through the trouble of
+sorting our list earlier: so that we could search through it now.
+
+Load the binary search library:
+
+\begin{verbatim}
+(load-module 'binary-search)
+\end{verbatim}
+
+\section{Binary Search}
+
+Binary search is a method for finding a specific item in a sorted list. Here's how it works:
+
+Take a guess that the item you want is in the middle of the current search ``window'' (when you start, the search window is the entire list). 
+
+If the item is where you guessed it would be, return the index (the location of your guess).
+
+If your guess is ``less than'' the item you want (based on a comparison function you choose), recur, this time raising the ``bottom'' of the search window to the midway point. 
+
+If your guess is ``greater than'' the item you want (based on your comparison function), recur, this time lowering the ``top'' of the search window to the midway point. 
+
+In other words, you cut the size of the search window in half every time through the loop. This gives you a worst-case running time of about (/ (log n) (log 2)) steps. This means you can find an item in a sorted list of 20,000,000,000 (twenty billion) items in about 34 steps. 
+
+\section{Reading lines from a file}
+
+Before I could start writing a binary search, I needed a sorted list of items. I decided to work with a sorted list of words from /usr/share/dict/words, so I wrote a couple of little procedures to make a list of words from a subset of that file. (I didn't want to read the entire large file into a list in memory.) 
+
+Note: Both \verb|format| and the Lisp-inspired \verb|\#!optional|
+keyword are available in MIT Scheme; they made writing the re-matches?
+procedure more convenient.
+
+re-matches? checks if a regular expression matches a string (in this case, a line from a file).
+
+make-list-of-words-matching is used to loop over the lines of the words file and return a list of lines matching the provided regular expression. 
+Now I have the tools I need to make my word list. 
+
+\begin{verbatim}
+(load-option 'format)
+
+(define (re-matches? re line #!optional display-matches)
+  ;; Regex String . Boolean -> Boolean
+  "Attempt to match RE against LINE. Print the match if DISPLAY-MATCHES is set."
+  (let ((match (re-string-match re line)))
+    (if match
+        (if (not (default-object? display-matches))
+            (begin (format #t "|~A|~%" (re-match-extract line match 0))
+                   #t)
+            #t)
+        #f)))
+
+(define (make-list-of-words-matching re file)
+  ;; Regex String -> List
+  "Given a regular expression RE, loop over FILE, gathering matches."
+  (call-with-input-file file
+    (lambda (port)
+      (let loop ((source (read-line port)) (sink '()))
+        (if (eof-object? source)
+            sink
+            (loop (read-line port) (if (re-matches? re source)
+                             (cons source sink)
+                             sink)))))))
+
+\end{verbatim}
+
+\section{Writing tests}
+
+Since I am not one of the 10\% of programmers who can implement a correct binary search on paper, I started out by writing a test procedure. The test procedure grew over time as I found bugs and read an interesting discussion about the various edge cases a binary search procedure should handle. These include: 
+
+\begin{itemize}
+\item Empty list 
+\item List has one word 
+\item List has two word 
+\item Word is not there and ``less than'' anything in the list 
+\item Word is not there and ``greater than'' anything in the list 
+\item Word is first item 
+\item Word is last item 
+\item List is all one word 
+\end{itemize}
+
+If multiple copies of word are in list, return the first word found (this could be implemented to return the first or last duplicated word) 
+
+Furthermore, I added a few ``sanity checks'' that check the return values against known outputs. Here are the relevant procedures: 
+
+assert= checks two numbers for equality and prints a result 
+
+assert-equal checks two Scheme objects against each other with equal? and prints a result 
+
+run-binary-search-tests reads in words from a file and runs all of our tests 
+
+\begin{verbatim}
+
+(define (assert= expected got #!optional noise)
+  ;; Int Int -> IO
+  (if (= expected got)
+      (format #t "~A is ~A\t...ok~%" expected got)
+      (format #t "~A is not ~A\t...FAIL~%" expected got)))
+
+(define (assert-equal? expected got #!optional noise)
+  ;; Thing Thing -> IO
+  (if (equal? expected got)
+      (format #t "~A is ~A\t...ok~%" expected got)
+      (format #t "~A is not ~A\t...FAIL~%" expected got)))
+
+(define (run-binary-search-tests)
+  ;; -> IO
+  "Run our binary search tests using known words from the 'words' file.
+This file should be in the current working directory."
+  (with-working-directory-pathname (pwd)
+    (lambda ()
+      (if (file-exists? "words")
+          (begin
+            (format #t "file 'words' exists, making a list...~%")
+            (let* ((unsorted (make-list-of-words-matching "acc" "words"))
+                   (sorted (sort unsorted string<?)))
+              (format #t "doing binary searches...~%")
+              (assert-equal? #f (binary-search "test" '())) ; empty list
+              (assert-equal? #f (binary-search "aardvark" sorted)) ; element absent and too small
+              (assert-equal? #f (binary-search "zebra" sorted)) ; element absent and too large
+              (assert= 0 (binary-search "accusive" '("accusive"))) ; list of length one
+              (assert= 0 (binary-search "acca" sorted)) ; first element of list
+              (assert= 1 (binary-search "aardvark" '("aardvark" "aardvark" "babylon"))) ; multiple copies of word in list
+              (assert= 1 (binary-search "barbaric" '("accusive" "barbaric"))) ; list of length two
+              (assert= 98 (binary-search "acclamator" sorted))
+              (assert= 127 (binary-search "aardvark" (map (lambda (x) "aardvark") test-list))) ; list is all one value
+              (assert= 143 (binary-search "accomplice" sorted))
+              (assert= 254 (binary-search "accustomedly" sorted))
+              (assert= 255 (binary-search "accustomedness" sorted)))))))) ; last element of list
+\end{verbatim}
+
+\section{The binary search procedure}
+
+Finally, here's the binary search procedure; it uses a couple of helper procedures for clarity. 
+
+->int is a helper procedure that does a quick and dirty integer conversion on its argument 
+
+split-difference takes a low and high number and returns the floor of the halfway point between the two 
+
+binary-search takes an optional debug-print argument that I used a lot while debugging. The format statements and the optional argument tests add a lot of bulk --- now that the procedure is debugged, they can probably be removed. (Aside: I wonder how much ``elegant'' code started out like this and was revised after sufficient initial testing and debugging?) 
+
+\begin{verbatim}
+(define (->int n)
+  ;; Number -> Int
+  "Given a number N, return its integer representation.
+N can be an integer or flonum (yes, it's quick and dirty)."
+  (flo:floor->exact (exact->inexact n)))
+
+(define (split-difference low high)
+  ;; Int Int -> Int
+  "Given two numbers, return their rough average."
+  (if (= (- high low) 1)
+      1
+    (->int (/ (- high low) 2))))
+
+(define (binary-search word xs #!optional debug-print)
+  ;; String List -> Int
+  "Do binary search of list XS for WORD. Return the index found, or #f."
+  (if (null? xs)
+      #f
+    (let loop ((low 0) (high (- (length xs) 1)))
+         (let* ((try (+ low (split-difference low high)))
+                (word-at-try (list-ref xs try)))
+           (cond
+            ((string=? word-at-try word) try)
+            ((< (- high low) 1) #f)
+            ((= (- high try) 1) 
+             (if (string=? (list-ref xs low) word)
+                 low
+               #f))
+            ((string<? word-at-try word)
+             (if (not (default-object? debug-print))
+                 (begin (format #f "(string<? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~2%" %
+                                 word-at-try word try high low)
+                        (loop (+ 1 try) high)) ; raise the bottom of the window
+                        (loop (+ 1 try) high)))
+            ((string>? word-at-try word)
+             (if (not (default-object? debug-print))
+                 (begin (format #f "(string>? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~2%" %
+                                 word-at-try word try high low)
+                        (loop low (+ 1 try))) ; lower the top of the window
+                        (loop low (+ 1 try))))
+            (else #f))))))
+\end{verbatim}
+
+\section{Takeaways}
+
+This exercise has taught me a lot. 
+
+Writing correct code is hard. (I'm confident that this code is not correct.) You need to figure out your invariants and edge cases first. I didn't, and it made things a lot harder. 
+
+It's been said a million times, but tests are code. The tests required some debugging of their own. 
+
+Once they worked, the tests were extremely helpful. Especially now
+that I'm at the point where (if this were ``for real'') additional
+features would need to be added, the format calls removed, the
+procedure speeded up, and so on.
+
+I hope this has been useful to some other aspiring Scheme wizards out there. Happy Hacking!    
+
+\section{Binary search in words}
+
+Binary search works like this:
+
+1. Pick the element in the middle of the list.
+2. Is it the word you're looking for?
+
+If yes, you're done.
+
+If no, check it against the element you're looking for:
+
+If it's less than the element you're looking for:
+
+Split the list in half at the current element
+
+Search again, this time using only the high half of the list as
+input
+
+If it's greater than the element you're looking for:
+
+split the list in half at the current element
+
+search again, this time using only the low half of the list as
+input
+
+\section{Binary search in pictures}
+
+%% TODO(rml): Add image showing how binary search works.
+
+\chapter{Trees}
+
+\section{Binary trees}
+
+CSRMs: constructors, selectors, recognizers, and mutators.
+
+Load the library:
+
+\begin{verbatim}
+> (load-module 'binary-tree)
+\end{verbatim}
+
+Basic operations:
+
+\begin{itemize}
+\item creation
+\item insertion
+\item updating (destructive/in-place)
+\item deletion
+\end{itemize}
+
+Walking the tree using higher order functions (see notes from ADuni lectures).
+
+\section{Sorting with treesort}
+
+%% TODO(rml): This is only fast if the tree is balanced, so give the
+%% "slow version" first, since balanced trees are not introduced
+%% yet. Explain why it can be slow.
+
+\section{Balanced binary trees}
+
+%% TODO(rml): Red-black tree or AVL tree? AVL is supposedly simpler to
+%% implement but red-black is said to have superior tree rotation
+%% runtime -- once we have a self-balancing tree of either type we can
+%% write the "fast" treesort!
+
+\section{Balancing Trees}
+
+\section{Searching Trees}
+
+\chapter{Graphs}
+
+\section{Overview of Graphs}
+
+%% TODO(rml): How to represent graphs with another data structure:
+%% matrix, hash table, or association list. We might want to implement
+%% our own hash tables first using balanced binary trees -- that would
+%% be way cool!
+
+%% In other words, it might be cool to build everything from the
+%% bottom up, e.g.:
+
+%% 1. Balanced binary tree
+
+%% 2. Hash Table
+
+%% 3. Graph (using hash table representation)
+
+%% Discussion of common graph algorithms.
+
+%% Traversal: TBD.
+
+%% Search: Dijkstra's Algorithm.
+
+%% Maybe include a discussion of 'longest-path.scm' (implementation is
+%% currently incomplete)
+
+\section{Traversal}
+
+%% TODO(rml): Write up the =longest-path.scm= code here.
+
+\section{Search}
+
+%% TODO(rml): Add winston-horn-network.png image here.
+
+I've been having fun translating some of the code in Winston and
+Horn's \emph{Lisp} into Scheme.  This book is amazing --- clearly
+written, with lots of motivating examples and applications.  As SICP
+is to language implementation, \emph{Lisp} is to application
+development, with chapters covering constraint propagation, forward
+and backward chaining, simulation, object-oriented programming, and so
+on.  And it does include the obligatory Lisp interpreter in one
+chapter, if you're into that sort of thing.
+
+In this installment, based on Chapter 19, we will look at some
+simple strategies for searching for a path between two nodes on a
+network (a graph).  The network we'll be using is shown in the
+diagram above.
+
+Here's the same network, represented as an alist where each
+\verb|CAR:CDR| pair represents a \verb|NODE:NEIGHBORS| relationship:
+
+\begin{verbatim}
+'((f e)
+  (e b d f)
+  (d s a e)
+  (c b)
+  (b a c e)
+  (a s b d)
+  (s a d))
+\end{verbatim}
+
+The high-level strategy the authors use is to traverse the network,
+building up a list of partial paths.  If a partial path ever reaches
+the point where it describes a full path between the two network nodes
+we're after, we've been successful.
+
+As with trees, we can do either a breadth-first or depth-first
+traversal.  Here's what the intermediate partial paths will look like
+for a breadth-first traversal that builds a path between nodes
+\verb|S| and \verb|F|:
+
+\begin{verbatim}
+(s)
+(s a)
+(s d)
+(s a b)
+(s a d)
+(s d a)
+(s d e)
+(s a b c)
+(s a b e)
+(s a d e)
+(s d a b)
+(s d e b)
+'(s d e f)
+\end{verbatim}
+
+Based on that output, we can deduce that every time we visit a node,
+we want to extend our partial paths list with that node.  Here's one
+option --- its only problem is that it will happily build circular
+paths that keep us from ever finding the node we want:
+
+\begin{verbatim}
+
+(define (%buggy-extend path) ;; Builds circular paths
+     (map (lambda (new-node)
+            (cons new-node path))
+          (%get-neighbor (first path))))
+
+\end{verbatim}
+
+(Incidentally, I've become fond of the convention whereby internal
+procedures that aren't part of a public-facing API are prefixed with
+the \verb|\%| character.  This can be found in some parts of the MIT
+Scheme sources, and I believe it's used in Racket as well.  I've
+started writing lots of my procedures using this notation to remind me
+that the code I'm writing is not the real `API', that the design will
+need more work, and that the current code is just a first draft.  I'm
+using that convention here.)
+
+Here's a better version that checks if we've already visited the node
+before adding it to the partial paths list --- as a debugging aid it
+prints out the current path before extending it:
+
+\begin{verbatim}
+
+(define (%extend path)
+    (display (reverse path))
+    (newline)
+    (map (lambda (new-node)
+           (cons new-node path))
+         (filter (lambda (neighbor)
+                   (not (member neighbor path)))
+                 (%get-neighbor (first path)))))
+
+\end{verbatim}
+
+You may have noticed the \verb|\%GET-NEIGHBOR| procedure; it's just
+part of some silly data structure bookkeeping code.  Please feel free
+to deride me in the comments for my use of a global variable.  What
+can I say?  I'm Scheming like it's 1988 over here!  Here's the
+boilerplate:
+
+\begin{verbatim}
+
+(define *neighbors* '())
+
+(define (%add-neighbor! k v)
+  (let ((new-neighbor (cons k v)))
+    (set! *neighbors*
+          (cons new-neighbor *neighbors*))))
+
+(define (%get-neighbor k)
+  (let ((val (assoc k *neighbors*)))
+    (if val
+        (cdr val)
+      '())))
+
+(%add-neighbor! 's '(a d))
+(%add-neighbor! 'a '(s b d))
+(%add-neighbor! 'b '(a c e))
+(%add-neighbor! 'c '(b))
+(%add-neighbor! 'd '(s a e))
+(%add-neighbor! 'e '(b d f))
+(%add-neighbor! 'f '(e))
+
+\end{verbatim}
+
+Now that we have our data structure and a way to extend our partial
+path list (non-circularly), we can write the main search procedure,
+\verb|\%BREADTH-FIRST|.  The authors have a lovely way of explaining
+its operation:
+
+\begin{quote}
+\verb|BREADTH-FIRST| is said to do a breadth-first search because it
+extends all partial paths out to uniform length before extending any
+to a greater length.
+\end{quote}
+
+Here's the code, translated to use a more Schemely, iterative named
+\verb|LET| instead of the linear-recursive definition from the book:
+
+\begin{verbatim}
+
+(define (%breadth-first start finish network)
+  (let ((queue (list (list start))))
+    (let loop ((start start)
+               (finish finish)
+               (network network)
+               (queue queue))
+      (cond ((null? queue) '())         ;Queue empty?
+            ((equal? finish (first (first queue))) ;Finish found?
+             (reverse (first queue)))              ;Return path.
+            (else
+             (loop start
+                   finish               ;Try again.
+                   network
+                   (append
+                    (rest queue)
+                    (extend (first queue))))))))) ;New paths in front.
+
+\end{verbatim}
+
+(A better way to write this procedure would be to implement a generic
+internal search procedure that takes its `breadthiness' or
+`depthiness' as a parameter.  We could then wrap it with nicer
+public-facing search procedures specific names.)
+
+Meanwhile, back at the REPL, we remind ourselves of what
+\verb|*NEIGHBORS*| actually looks like, and then we search for a path
+between the nodes \verb|S| and \verb|F|.
+
+\begin{verbatim}
+
+     > *neighbors*
+     '((f e) (e b d f) (d s a e) (c b) (b a c e) (a s b d) (s a d))
+     > (%breadth-first 's 'f *neighbors*)
+     (s)
+     (s a)
+     (s d)
+     (s a b)
+     (s a d)
+     (s d a)
+     (s d e)
+     (s a b c)
+     (s a b e)
+     (s a d e)
+     (s d a b)
+     (s d e b)
+     '(s d e f)
+
+\end{verbatim}
+
+What fun!  I can almost imagine using a three-dimensional variant of
+these searches for a space wargame with wormhole travel!  Except, you
+know, they'd need to be much faster and more skillfully implemented.
+There's also the tiny requirement to write the surrounding game.
+
+%% TODO(rml): Is this a footnote?
+It shouldn't need to be said, but: Of course the authors knew better;
+they were trying to hide that unnecessary complexity from you until
+later.
+
+\chapter{Doing Things with Strings}
+
+%% TODO(rml): Figure out what the (say) 2-3 most basic algorithms are
+%% that we need to cover.
+
+\part{Variations}
+
+%% TODO(rml): In Part II we will implement variations on the simpler
+%% algorithms from Part I. (Aside: I'm not sure about this section yet.
+
+\part{Programming in the Real World}
+\chapter{Real World: DIY Hash Tables}
+
+In this chapter, we're going to implement our own hash tables.
+
+In day-to-day programming, the hash table is probably the most
+important real-world data structure.
+
+The hash table also gives us a nice real-world proving ground for our
+algorithms skills, since implementing hash tables requires putting
+together several different data structures into one --- in other
+words, it is a \emph{compound data structure}.
+
+%% TODO(rml): Write this chapter.
+
+\chapter{Real World: Regular Expressions}
+
+In this chapter, we're going to implement our own regular expression
+matching library.
+
+%% TODO(rml): Write this chapter.
+
+\chapter{Glossary}
+
+%% TODO(rml): Figure out how to translate this section to LaTeX world.
+
+[1] Iterative process
+
+In terms of Scheme code, code that describes an iterative process
+usually looks like this:
+
+\begin{verbatim}
+    (define (+ a b)
+      (if (= a 0)
+          b
+          (+ (decr a)
+             (incr b))))
+\end{verbatim}
+
+You can visualize the operation of an iterative process like this:
+
+\begin{verbatim}
+    (+ 4 3)
+    (+ 3 4)
+    (+ 2 5)
+    (+ 1 6)
+    (+ 0 7)
+    7
+\end{verbatim}
+
+Notice how the ``shape'' of the successive calls to $+$ stays the same
+``size''?  In other words, it doesn't grow out to the right.
+
+Using Big O notation [3], you can say that $+$ uses $O(1)$ space
+(memory), and $O(n)$ time (CPU).
+
+\section{Recursive Process}
+
+A recursive process is one that consumes growing amounts of stack
+space while it runs.  It terms of Scheme code, code that describes a
+recursive process usually looks like this:
+
+\begin{verbatim}
+
+(define (incr n) (+ n 1))
+(define (decr n) (- n 1))
+
+(define (+ a b)
+  (if (= a 0)
+      b
+      (incr (+ (decr a) b))))
+
+\end{verbatim}
+
+You can visualize the operation of a recursive process like this:
+
+\begin{verbatim}
+
+(+ 3 4)
+(incr (+ (decr 3) 4))
+(incr (incr (+ (decr 2) 4)))
+(incr (incr (incr (+ (decr 1) 4))))
+(incr (incr (incr 4)))
+7
+
+\end{verbatim}
+
+Notice how the ``shape'' of the successive calls to $+$ get
+``larger''?
+
+Using Big O notation, you can say that $+$ uses $O(n)$ time in its
+first argument and $O(n)$ space in its second.
+
+\section{Big O Notation}
+
+``Big O'' notation is a way to talk about the resource usage of an
+algorithm.  This usage can be along several axes:
+
+\begin{enumerate}
+\item Time (CPU --- how many instructions will it take to compute?)
+\item Space (Memory --- how much storage will it use?)
+\end{enumerate}
+
+Instead of ``resource usage'' you can also say the ``complexity'' of
+the algorithm.  This is the term you are likely to find in more
+academic writings.
+
+To be more precise, this notation describes the upper bound of the
+resource usage.  This means that, even in the worst case scenario, the
+algorithm will not use more than a given amount of resources.
+
+For more details, check out the following references:
+
+\begin{itemize}
+\item \url{https://rob-bell.net/2009/06/a-beginners-guide-to-big-o-notation}
+
+\item \url{http://stackoverflow.com/questions/487258/what-is-a-plain-english-explanation-of-big-o-notation}
+
+\item \url{http://bigocheatsheet.com/}
+\end{itemize}
+
+The last page has a nice big graph that makes it easy to visualize the
+different complexities.  Further down the page there are tables that
+list algorithm complexities for various operations (insert, delete,
+search) on data structures such as stacks, lists, hash tables, etc.
+Add this to your bookmarks so you can refer back to it as needed.
+
+\appendix
+\chapter{Loading the book code into a Scheme}
+
+%% TODO(rml): Write this.  You'll need to standardize on an approach
+%% of some kind.
+
+\backmatter{}
+\chapter{Bibliography}
+
+\begin{itemize}
+\item Abelson \& Sussman, \emph{Structure and Interpretation of Computer Programs}, 1st ed.
+
+\item Winston \& Horn, \emph{Lisp}, X ed.
+
+\item Gabriel, Performance and Evaluation of Lisp Systems
+\end{itemize}
+
+\end{document}

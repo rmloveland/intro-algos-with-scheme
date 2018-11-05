@@ -2,6 +2,15 @@
 TAGS
 *.html
 *.pdf
-*.tex
 *.log
 code/load-module.scm
+
+book.aux
+book.dvi
+book.fdb_latexmk
+book.fls
+code/201603.txt
+code/README.md
+code/foo.jpg
+code/merge.lisp
+code/pregexp.md
