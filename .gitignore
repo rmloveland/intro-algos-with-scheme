@@ -9,6 +9,7 @@ book.aux
 book.dvi
 book.fdb_latexmk
 book.fls
+book.toc
 code/201603.txt
 code/README.md
 code/foo.jpg
