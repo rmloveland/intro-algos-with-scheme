@@ -58,9 +58,12 @@ analyses of topics such as ``Big O notation'' and are aimed at an
 academic audience.  As a result, they strive to be comprehensive, and
 they may run to hundreds of pages in length.
 
-This book is different because its goals are different.  First, it is
-an \emph{invitation} to algorithms; this means that we will cover one or
-two common algorithms in each of the following areas:
+This book is different because its goals are different.
+
+First, it is an \emph{invitation} to algorithms; this means that we
+will cover only a few common algorithms that operate on each of the
+following data structures, and leave more advanced topics to other
+texts.  Data structures covered in this book include:
 
 \begin{itemize}
 \item Lists
@@ -71,52 +74,49 @@ two common algorithms in each of the following areas:
 
 You can get surprisingly far with these simple building blocks!
 
-Further, it is an invitation to algorithms \emph{with Scheme}.  This
+Second, it is an invitation to algorithms \emph{with Scheme}.  This
 means that we will use Scheme to describe the algorithms we want the
 computer to perform.  It is my opinion that the notation provided by
 Scheme provides a clear description of many common algorithms.
-
-Once we've covered the basics, we will work on some interesting
-projects, such as building our own hash tables.  This will take us out
-of the realm of ``textbook'' algorithms and into the messy but fun world
-of real programming.  After all, programming isn't much fun unless you
-can get the computer to do stuff you actually care about.
 
 \chapter{Introduction}
 
 What is an \emph{algorithm}?
 
-An algorithm is a recipe for getting a job done by the computer.
-Many algorithms are very simple, since many of the jobs we need a
-computer to do are simple.  For example, we may need to sort a list
-of numbers.
+An algorithm is a recipe for getting a job done.  Many algorithms are
+very simple, since many of the jobs we need a computer to do are
+simple.  For example, we may need to sort a list of numbers, or
+calculate the distance between two towns on a map.
 
 ``Sort a list of numbers'' sounds simple, but there is some complexity
-there that needs to be addressed.  How long is the list?  Is it
-longer than the available memory on our machine?  Are the numbers in
-the list in random order?  Or are the numbers almost sorted already?
+there that needs to be addressed.  How long is the list?  Is it longer
+than the available memory on our machine?  Are the numbers in the list
+in random order?  Or are they almost sorted already?
 
-Sometimes, depending on the answers to these questions, you'll need
-to choose one sorting algorithm or another.  Some take more memory
-(space).  Some require more CPU cycles (time).
+Depending on the answers to these questions, you'll need to choose one
+sorting algorithm over another.  Some take more memory (space).  Some
+require more CPU cycles (time).
 
 Unless you are doing very specialized optimization work, you can
-probably get along very well knowing one or two of the most common
-sorting algorithms, and choosing which one to use based on the needs
-of the problem at hand.
+probably get along very well just knowing one or two of the most
+common algorithms in the area you're currently working in.  If you
+really need something more advanced, you can always look it up and
+implement it.
 
 And that brings us to the point of this book.  We will study one or
-two common algorithms across each of several common data structures.
-Then, we will implement these algorithms in the Scheme programming
-language.  As our mastery increases, we will take on several ``Real
-World'' implementation projects, such as writing our own hash tables
-and our own regular expression matcher.
+two common algorithms of each type (sorting, searching, &c.).  Then,
+we will implement these algorithms in the Scheme programming language.
+As our mastery increases, we will take on several ``Real World''
+implementation projects, such as writing our own hash tables or a
+regular expression matcher using the basic algorithms we've learned.
 
 Along the way, we will observe several themes that repeat:
 
 \begin{enumerate}
-\item \emph{Divide and conquer}: break the problem into pieces, solve a smaller problem.
-\item \emph{Recursion}: Do it again, and again, and again, until you're done.
+\item \emph{Divide and conquer}: break the problem into pieces, solve
+  a smaller problem.
+\item \emph{Recursion}: Do it again, and again, and again, until
+  you're done.
 \end{enumerate}
 
 \chapter{Prerequisites}
@@ -126,33 +126,34 @@ Along the way, we will observe several themes that repeat:
 This book does not try to teach the Scheme language.  We assume you
 have already encountered an introduction to Scheme elsewhere. In
 particular, you should be pretty comfortable with recursion, since
-we'll be using plenty of it.  By ``comfortable with recursion'', we mean
-that you understand code that looks like this:
+we'll be using it a lot (Scheme uses recursion for iteration by
+default).  By ``comfortable with recursion'', we mean that you
+understand code that looks like this:
 
 \begin{verbatim}
-
-(define (+ a b)
-  (if (= a 0)
-      b
-    (+ (decr a)
-       (incr b))))
-
+  (define (+ a b)
+    (if (= a 0)
+        b
+      (+ (decr a)
+         (incr b))))
 \end{verbatim}
 
-A good book that serves this purpose is \emph{The Little Schemer} by Dan
-Friedman \& Matthias Felleisen.  For more recommendations, see the
-Bibliography.
+A good book for learning the basics of Scheme is \emph{The Little
+  Schemer} by Dan Friedman \& Matthias Felleisen.  For more
+reading recommendations, see the Bibliography. % TODO(rml): link
 
 \section{Access to a computer with a Scheme Interpreter}
 
 This book's code has been tested with the following combinations of
 Scheme implementation and operating system:
 
-\begin{tabular}{ l r }
-Larceny        & Windows 10, Linux \\
-Chez (Petite)  & Windows           \\
-Gambit         & Windows, Linux    \\
-Scheme 48      & Windows 10, Linux \\
+%% TODO(rml): Fill in tested version numbers.
+\begin{tabular}{ l m r }
+Larceny        & X     & Windows 10, Linux \\
+Chez (Petite)  & X     & Windows           \\
+Gambit         & X     & Windows, Linux    \\
+Scheme 48      & 1.9.2 & Windows 10, Linux \\
+Kawa           & 3.0   & Windows 10, Linux
 \end{tabular}
 
 \section{Required libraries}
@@ -161,37 +162,72 @@ The portable module system (which has been tested in all of the
 implementation/OS combinations in the previous section) can be
 downloaded from \url{https://github.com/rmloveland/load-module}.
 
-The book's code can be downloaded from the \verb|code| directory in
-\url{https://github.com/rmloveland/intro-algos-with-scheme}.
+The code for working with this book can be found at
+\url{https://github.com/rmloveland/intro-algos-with-scheme/tree/master/code}.
 
 To load the book's code:
 
+%% TODO(rml): Update these instructions.
 \begin{enumerate}
-\item Copy \verb|load-module/load-module.scm| into the book's \verb|intro-algos-with-scheme/code| directory.
+
+\item Copy \verb|load-module/load-module.scm| into the book's
+  \verb|intro-algos-with-scheme/code| directory.
 
 \item Change into the \verb|intro-algos-with-scheme/code| directory.
 
 \item Start your Scheme.
 
-\item Load the module system as follows: \verb|(load "load-module.scm")|
+\item Load the module system as follows:
+  \verb|(load "load-module.scm")|
 
-\item Load the required modules as described at the beginning of each chapter, e.g., \verb|(load-module 'mergesort)|.
+\item Load the required modules as described at the beginning of each
+  chapter.
+  E.g., \verb|(load-module 'mergesort)|.
+
 \end{enumerate}
 
 \section{Typographical Conventions}
 
-Procedure names are written inline with the text like this: \verb|CHAR-READY?|
+Procedure names are written in capital letters like this:
+\verb|CHAR-READY?|
 
-Code samples are set off from the surrounding text like this:
+Code samples are usually set off from the surrounding text like this:
 
 \begin{verbatim}
 (define (double n)
   (+ n n))
 \end{verbatim}
 
+Most procedures are annotated with comments about the input and output
+types we expect.  These comments serve as a form of documentation.
+They makes it a little easier to remember (at least part of) what a
+procedure does without having to read the entire text of the
+procedure.
+
+For example, given the following procedure we can see that it takes a
+two Numbers and returns a Number.
+
+\begin{verbatim}
+  (define (plus a b)
+    ;; Num Num -> Num
+    (+ a b))
+\end{verbatim}
+
+Procedures that are meant to be ``internal'' A.K.A. not part of a
+user-visible API are prefixed with a \verb|^| character, e.g.,
+
+\begin{verbatim}
+  (define (^merge pred a b)
+    ;; Pred List List -> List
+    ;; Note: this implementation is a no-op.
+    '())
+\end{verbatim}
+
+%% TODO(rml): Finish filling this in -- look at an ORA book for ideas.
+
 \mainmatter{}
 \part{Basics}
-\chapter{Lists, Sorting, and Searching}
+\chapter{Sorting, Searching, and Shuffling Lists}
 
 The list data structure is ubiquitous in Scheme programming.  One of
 the most common patterns is to gather up a list of elements, and
@@ -201,37 +237,52 @@ When we say that something is a ``list'' in Scheme, we mean that it's
 actually a linked list, which has the following structure:
 
 \begin{verbatim}
-> (visualize (list 'Apple 'Banana))
+  > (visualize (list 'Apple 'Banana))
 
- ---    ---          ---   ---
-| CAR | CDR | ---> | CAR | CDR | ---> NIL
- ---    ---          ---   ---
-  |                   |
- 'Apple            'Banana
+   ---    ---          ---   ---
+  | CAR | CDR | ---> | CAR | CDR | ---> NIL
+   ---    ---          ---   ---
+    |                   |
+   'Apple            'Banana
 \end{verbatim}
 
 As you can see from the diagram, each element of the linked list has
 two ``cells'':
 
 \begin{enumerate}
-\item The first cell holds the contents of that element, e.g., \verb|'Apple|.
+
+\item The first cell holds the contents of that element, e.g.,
+  \verb|'Apple|.
+
 \item The second cell points to the next element of the list.
+
 \end{enumerate}
 
 In code, we'd write this as: \verb|'(Apple Banana)|.  Or more
 verbosely,
 
 \begin{verbatim}
-(cons 'Apple (cons 'Banana '()))
+  (cons 'Apple (cons 'Banana '()))
 \end{verbatim}
 
 In other languages we'd need to represent this linked list structure
 explicitly, whereas in Scheme it's built-in.
 
+For example, in a C-like language the representation of a linked list
+might look something like the following:
+
+%% TODO(rml): Fill in this implementation.
+\begin{verbatim}
+  struct node { }
+\end{verbatim}
+
 In the sections that follow we'll implement common operations on
 lists.
 
 \section{Sorting}
+
+
+\subsection{Merge Sort}
 
 In this section we'll implement the merge sort algorithm.
 
@@ -240,153 +291,147 @@ chapter, you should have no problem learning more about (and
 implementing your own versions of) other sorting algorithms that you
 encounter.
 
-We'll start with Merge Sort for the following reasons:
+We start with merge sort for the following reasons:
 
 \begin{enumerate}
-\item It performs well, and provides a good tradeoff between
-  implementation complexity, performance, and CPU and memory usage.
+\item It provides a good enough tradeoff between implementation
+  complexity, performance, and CPU and memory usage\footnote{As you
+    learn more about algorithms, you will find that everything
+    involves tradeoffs.  There is no ``best'', there is only ``best in
+    what context?''}.
 \item It is a good example of the ``divide and conquer'' strategy for
   designing algorithms.
 \item It suits Scheme (and other Lisps) due to the way lists are
-  implemented in the language.
+  implemented by the language.
 \end{enumerate}
 
-In this section we'll look at several implementations of merge sort,
-starting with the naive recursive version you can easily find on the
-internet, followed by an iterative\footnote{An iterative process is
-  one that does not consume growing amounts of stack space while it
-  runs.} implementation.
+We'll look at several implementations of merge sort, starting with the
+naive recursive version you can easily find on the internet, followed
+by an iterative\footnote{An iterative process is one that does not
+  consume growing amounts of stack space while it runs.}
+implementation that is necessarily more complex, but which performs
+better.
 
 Let's go ahead and load the code:
 
 \begin{verbatim}
-> (load-module 'mergesort)
+  > (load-module 'mergesort)
 \end{verbatim}
 
-\subsection{The architecture of a merge sort implementation}
+\subsubsection{The architecture of a merge sort implementation}
 
-Merge sort is most easily implemented with a two-piece architecture:
+Merge sort is most easily implemented in two parts that work together:
 
 \begin{enumerate}
-\item \verb|MERGE|, a lower-level ``helper'' procedure that merges two
-  partially sorted lists.
-\item \verb|MERGE-SORT|, a top-level ``driver'' procedure that
-  internally calls \verb|MERGE| repeatedly to get the list sorted.
+
+\item \verb|^MERGE|, an internal ``helper'' procedure that merges two
+  partially sorted lists.  \verb|^MERGE| handles splicing two sublists
+  together in an ordering determined by a predicate such as
+  \verb|<|. In other words, it walks both lists, putting things in
+  pairwise order based on which of them is (in the case of \verb|<|)
+  less than the other.  However, it doesn't fully sort the lists; it
+  only works on one item from each list at a time.  That's why we need
+  the \verb|MERGE-SORT| procedure.
+
+\item \verb|MERGE-SORT|, a user-visible procedure that calls
+  \verb|^MERGE| repeatedly to get the list sorted.  Sometimes a
+  procedure like this that calls another internal-only procedure in a
+  loop is referred to as a ``driver''.
+
 \end{enumerate}
 
-Let's look at each of these procedures in turn.
-
-\verb|MERGE| handles splicing two sublists together in an ordering
-determined by a predicate such as \verb|<|.
-
-In other words, assuming we use \verb|<| as our sorting predicate,
-\verb|MERGE| walks both lists, putting things in pairwise order (in
-this case numbers) based on which of them are ``less than'' the other.
-
-It doesn't fully sort the lists; it only works on one item from each
-list at a time.  That's why we need the \verb|MERGE-SORT| driver
-procedure.
-
-Here are examples showing some expected inputs and outputs:
+Here are examples showing some expected inputs and outputs of
+\verb|^MERGE|:
 
 \begin{verbatim}
-> (merge < '(2 191) '(18 45))
-(2 18 45 191)
+  > (^merge < '(2 191) '(18 45))
+  (2 18 45 191)
 
-> (merge string<? '("scheme" "hacking") '("is" "fun"))
-("is" "fun" "scheme" "hacking")
+  > (^merge string<? '("scheme" "hacking") '("is" "fun"))
+  ("is" "fun" "scheme" "hacking")
 \end{verbatim}
 
-The actual \verb|MERGE-SORT| procedure can be thought of as a
-``driver'' for \verb|MERGE|.  It handles calling \verb|MERGE|
+The user-facing \verb|MERGE-SORT| procedure can be thought of as a
+``driver'' for \verb|^MERGE|.  It handles calling \verb|^MERGE|
 repeatedly and splicing the partially sorted lists returned by
-successive calls to \verb|MERGE| together into a final list that is
+successive calls to \verb|^MERGE| together into a final list that is
 fully sorted.
 
 Here are examples showing some expected inputs and outputs:
 
 \begin{verbatim}
-> (merge-sort '(17 51 55 13 12 75 98 48 98 89 68 86 89 51) <)
-(12 13 17 48 51 51 55 68 75 86 89 89 98 98)
-
-> (merge-sort '("i" "am" "a" "little" "teapot") string<?)
-("a" "am" "i" "little" "teapot")
+  > (merge-sort '(17 51 55 13 12 75 98 48 98 89 68 86 89 51) <)
+  (12 13 17 48 51 51 55 68 75 86 89 89 98 98)
 \end{verbatim}
 
-\subsection{How the merge procedure works}
+\subsubsection{How the MERGE procedure works}
 
-\verb|MERGE| splices two lists together in a pairwise ordering
-determined by a predicate such as \verb|<|.
+As we said above, \verb|^MERGE| splices two lists together in a
+pairwise ordering determined by a predicate.  For the sake of
+simplicity, we will assume that we are only working with lists of
+numbers.  This means the only predicates we'll accept are those that
+operate on numbers such as \verb|<|.
 
-It walks two lists, call them $A$ and $B$, comparing the elements of
-each list in turn.  It keeps another list, \verb|RESULT|, where it stores
-the output.  If the current element from $A$ is less than the current
-element from $B$, \verb|MERGE| pushes it onto the output list.  Otherwise,
-it pushes the current element from $B$ onto the output list.
+It walks two lists, let's call them $A$ and $B$, and compares the
+elements of each list in turn.  It keeps another list, \verb|RESULT|,
+where it stores the output.  If the current element from $A$ is less
+than the current element from $B$, \verb|^MERGE| pushes it onto the
+output list.  Otherwise, it pushes the current element from $B$ onto
+the output list.
 
-Once \verb|MERGE| has traversed both of its input lists $A$ and $B$,
+Once \verb|^MERGE| has traversed both of its input lists $A$ and $B$,
 and processed all the elements of each, it returns its result.
 
-As noted above, the output of \verb|MERGE| is *not* a sorted list.  It has
-been put into ``pairwise order''.  This is a fancy way of saying that we
-only compared two elements at a time, one each from $A$ and $B$, as we
-were building it.
+As noted above, the output of \verb|^MERGE| is not a sorted list.  It
+has been put into ``pairwise order''.  This is a fancy way of saying
+that we only compared two elements at a time, one each from $A$ and
+$B$, as we were building it.
 
-\subsection{Implementing the merge procedure}
+Based on our description of the merge algorithm above, the
+implementation is fairly straightforward, but there are a number of
+cases to handle, namely:
 
-Let's begin implementing \verb|MERGE| by reminding ourselves of its
-specification.  It takes as its arguments a predicate and two
-lists, and it returns a pairwise ordered list.
+\begin{enumerate}
 
-The following code shows a way of annotating our program code
-that serves as a form of documentation.  It makes it a little
-easier to remember what a procedure does when you've been away
-from it for a while.
+\item If LEFT and RIGHT are both numbers, ``listify'' them so
+  MERGE-AUX can work with them.
+
+\item If LEFT is just a number, ``listify'' it so MERGE-AUX can work with
+  it.
+
+\item Likewise, if RIGHT is just a number, ``listify'' it for
+  MERGE-AUX.
+
+\item If LEFT and RIGHT are empty, we're done merging. Return the
+  result.
+
+\item If LEFT and RIGHT still have elements to be processed, call PRED
+  and run them through MERGE-AUX again.
+
+\item If the cases above haven't matched, and LEFT is not NULL?, call
+  MERGE-AUX again.
+
+\item If the cases above haven't matched, and RIGHT is not NULL?, call
+  MERGE-AUX again.
+
+\end{enumerate}
 
 \begin{verbatim}
-(define (merge pred A B)
-  ;; Pred List List -> List
-  (let ((return '()))
-    return))
-\end{verbatim}
-
-This meets the spec, in that it takes the right arguments and returns
-a list, but it doesn't actually do anything.
-
-Based on our above description of the merge algorithm, the
-implementation is straightforward, if a bit long:
-
-\begin{verbatim}
-
-(define (merge pred l r)
+  (define (^merge pred l r)
+    ;; Procedure List List -> List
     (define (merge-aux pred left right result)
       (cond
-       ;; If LEFT and RIGHT are both numbers, listify them so
-       ;; MERGE-AUX can work with them.
-       ((and (atom? left)
-             (atom? right))
+       ((and (number? left)     ; Case 1.
+             (number? right))
         (merge-aux pred (list left) (list right) result))
-
-       ;; If LEFT is just a number, listify it so MERGE-AUX
-       ;; can work with it.
-       ((atom? left)
+       ((number? left)          ; Case 2.
         (merge-aux pred (list left) right result))
-
-       ;; Likewise, if RIGHT is just a number, listify it for
-       ;; MERGE-AUX.
-       ((atom? right)
+       ((number? right)         ; Case 3.
         (merge-aux pred left (list right) result))
-
-       ;; If LEFT and RIGHT are empty, we're done merging.
-       ;; Return the result.
-       ((and (null? left)
+       ((and (null? left)       ; Case 4.
              (null? right))
         (reverse result))
-
-       ;; If LEFT and RIGHT still have elements to be
-       ;; processed, call PRED and run them through MERGE-AUX
-       ;; again.
-       ((and (not (null? left))
+       ((and (not (null? left)) ; Case 5.
              (not (null? right)))
         (if (pred (car left)
                   (car right))
@@ -394,44 +439,41 @@ implementation is straightforward, if a bit long:
                        (cdr left)
                        right
                        (cons (car left) result))
-            (merge-aux pred
-                       left
-                       (cdr right)
-                       (cons (car right) result))))
-
-       ;; If the cases above haven't matched, and LEFT is not
-       ;; NULL?, I call myself.
-       ((not (null? left))
+          (merge-aux pred
+                     left
+                     (cdr right)
+                     (cons (car right) result))))
+       ((not (null? left))      ; Case 6.
         (merge-aux pred (cdr left) right (cons (car left) result)))
-
-       ;; Same as the previous case -- this time with RIGHT.
-       ((not (null? right))
+       ((not (null? right))     ; Case 7.
         (merge-aux pred left (cdr right) (cons (car right) result)))
-
-       ;; We should never get here.
-       (else #f)))
-
+       (else #f)))              ; We should never get here.
     (merge-aux pred l r '()))
-
 \end{verbatim}
 
-Let's go through the \verb|COND| clause-by-clause.  First, as our recursive
-base case, XXX
+\subsubsection{Merge Sort}
 
-\subsection{Merge Sort}
+Recently I've begun a project to implement a number of basic
+algorithms in Scheme, which I'd like to eventually grow into a free
+(as in freedom) ebook. Having just done a Binary Search in Scheme, I
+thought it would be fun to give merge sort a try.
 
-Recently I've begun a project to implement a number of basic algorithms in Scheme, which I'd like to eventually grow into a free (as in freedom) ebook. Having just done a Binary Search in Scheme, I thought it would be fun to give merge sort a try.
+According to the mighty interwebs, merge sort is a good choice for
+sorting linked lists (a.k.a., Lisp lists). Unfortunately the only Lisp
+merge sort implementation examples I've been able to find on the web
+have been recursive, not iterative.
 
-According to the mighty interwebs, merge sort is a good choice for sorting linked lists (a.k.a., Lisp lists). Unfortunately the only Lisp merge sort implementation examples I've been able to find on the web have been recursive, not iterative.
-
-The implementation described here is an iterative, bottom-up merge sort, written in a functional style. (I daren't say the functional style, lest any real Scheme wizards show up and burn me to a crisp.)
+The implementation described here is an iterative, bottom-up merge
+sort, written in a functional style. (I daren't say the functional
+style, lest any real Scheme wizards show up and burn me to a crisp.)
 
 First, generate a list of random numbers
 
-In order to have something to sort, we need a procedure that generates a list of random numbers --- note that the docstring is allowed by MIT/GNU Scheme; YMMV with other Schemes.
+In order to have something to sort, we need a procedure that generates
+a list of random numbers --- note that the docstring is allowed by
+MIT/GNU Scheme; YMMV with other Schemes.
 
 \begin{verbatim}
-
 (define (make-list-of-random-numbers list-length max)
   ;; Int Int -> List
   "Make a list of random integers less than MAX that's LIST-LENGTH long."
@@ -442,28 +484,34 @@ In order to have something to sort, we need a procedure that generates a list of
                     result
                     (loop (- n 1) (cons (random max) result)))))))
     (maker list-length max '())))
-
 \end{verbatim}
 
-\section{Then, write a merge procedure}
+\subsubsection{Then, write a merge procedure}
 
-This implementation of the merge procedure is a straight port of the one described on the Wikipedia Merge Sort page, with one minor difference to make the sort faster 1.
+This implementation of the merge procedure is a straight port of the
+one described on the Wikipedia Merge Sort page, with one minor
+difference to make the sort faster 1.
 
 An English description of the merge operation is as follows:
 
-If both items passed in are numbers (or strings), wrap them up in lists and recur. (In this example we only care about sorting numbers)
+If both items passed in are numbers (or strings), wrap them up in
+lists and recur. (In this example we only care about sorting numbers)
 
 If both lists are empty, return the result.
 
 If neither list is empty:
 
-If the first item in the first list is ``less than'' the first item in the second list, cons it onto the result and recur.
+If the first item in the first list is ``less than'' the first item in
+the second list, cons it onto the result and recur.
 
-Otherwise, cons the first item in the second list on the result and recur.
+Otherwise, cons the first item in the second list on the result and
+recur.
 
-If the first list still has items in it, cons the first item onto the result and recur.
+If the first list still has items in it, cons the first item onto the
+result and recur.
 
-If the second list still has items in it, cons the first item onto the result and recur.
+If the second list still has items in it, cons the first item onto the
+result and recur.
 
 If none of the above conditions are true, return \verb|\#f|. I put
 this here for debugging purposes while writing this code; now that the
@@ -471,7 +519,6 @@ procedure is debugged, it is never reached. (Note: ``debugged'' just
 means I haven't found another bug yet.)
 
 \begin{verbatim}
-
 (define (rml/merge pred l r)
   (letrec ((merge-aux
             (lambda (pred left right result)
@@ -499,23 +546,23 @@ means I haven't found another bug yet.)
                                (cdr left)
                                right
                                (cons (car left) result))
-                    (merge-aux pred
-                               left
-                               (cdr right)
-                               (cons (car right) result))))
+                  (merge-aux pred
+                             left
+                             (cdr right)
+                             (cons (car right) result))))
                ((not (null? left))
                 (merge-aux pred (cdr left) right (cons (car left) result)))
                ((not (null? right))
                 (merge-aux pred left (cdr right) (cons (car right) result)))
                (else #f)))))
     (merge-aux pred l r '())))
-
 \end{verbatim}
 
-We can run a few merges to get a feel for how it works. The comparison predicate we pass as the first argument will let us sort all kinds of things, but for the purposes of this example we'll stick to numbers:
+We can run a few merges to get a feel for how it works. The comparison
+predicate we pass as the first argument will let us sort all kinds of
+things, but for the purposes of this example we'll stick to numbers:
 
 \begin{verbatim}
-
 > (rml/merge < '(360 388 577) '(10 811 875 995))
 (10 360 388 577 811 875 995)
 
@@ -526,15 +573,16 @@ We can run a few merges to get a feel for how it works. The comparison predicate
            '(218 348 486 520 639 662 764 766 886 957 961 964)
            '(8 10 173 227 360 388 463 528 577 811 817 875 995))
 (8 10 173 218 227 348 360 388 463 486 520 528 577 639 662 764 766 811 817 875 886 957 961 964 995)
-
 \end{verbatim}
 
-\section{Finally, do a bottom up iterative merge sort}
+\subsubsection{Finally, do a bottom up iterative merge sort}
 
-It took me a while to figure out how to do the iterative merge sort in a Schemely fashion. As usual, it wasn't until I took the time to model the procedure on paper that I got somewhere. Here's what I wrote in my notebook:
+It took me a while to figure out how to do the iterative merge sort in
+a Schemely fashion. As usual, it wasn't until I took the time to model
+the procedure on paper that I got somewhere. Here's what I wrote in my
+notebook:
 
 \begin{verbatim}
-
 ;;  XS                   |      RESULT
 ;;---------------------------------------------
 
@@ -569,42 +617,49 @@ It took me a while to figure out how to do the iterative merge sort in a Schemel
 ;; length 1, meaning that it contains a sorted list
 
 '(1 2 3 4 5 6 7 8 9)
-
 \end{verbatim}
 
-This was a really fun little problem to think about and visualize. It just so happens that it fell out in a functional style; usually I don't mind doing a bit of state-bashing, especially if it's procedure-local. Here's the code that does the sort shown above:
+This was a really fun little problem to think about and visualize. It
+just so happens that it fell out in a functional style; usually I
+don't mind doing a bit of state-bashing, especially if it's
+procedure-local. Here's the code that does the sort shown above:
 
 \begin{verbatim}
-
-(define (rml/merge-sort xs pred)
-  (let loop ((xs xs)
-             (result '()))
-    (cond ((and (null? xs)
-                (null? (cdr result)))
-           (car result))
-          ((null? xs)
-           (loop result
-                 xs))
-          ((null? (cdr xs))
-           (loop (cdr xs)
-                 (cons (car xs) result)))
-          (else
-           (loop (cddr xs)
-                 (cons (rml/merge <
-                              (first xs)
-                              (second xs))
-                       result))))))
-
+  (define (rml/merge-sort xs pred)
+    (let loop ((xs xs)
+               (result '()))
+         (cond ((and (null? xs)
+                     (null? (cdr result)))
+                (car result))
+               ((null? xs)
+                (loop result
+                      xs))
+               ((null? (cdr xs))
+                (loop (cdr xs)
+                      (cons (car xs) result)))
+               (else
+                (loop (cddr xs)
+                      (cons (rml/merge <
+                                       (first xs)
+                                       (second xs))
+                            result))))))
 \end{verbatim}
 
 That's nice, but how does it perform?
 
-A good test of our merge sort is to compare it to the system's sort procedure. In the case of MIT/GNU Scheme, we'll need to compile our code if we hope to get anywhere close to the system's speed. If your Scheme is interpreted, you don't have to bother of course.
+A good test of our merge sort is to compare it to the system's
+built-in sort procedure. In the case of MIT/GNU Scheme, we'll need to
+compile our code if we hope to get anywhere close to the system's
+speed. If your Scheme is interpreted, you don't have to bother of
+course.
 
-To make the test realistic, we'll create three lists of random numbers: one with 20,000 items, another with 200,000, and finally a giant list of 2,000,000 random numbers. This should give us a good idea of our sort's performance. Here's the output of timing first two sorts, 20,000 and 200,000 2:
+To make the test realistic, we'll create three lists of random
+numbers: one with 20,000 items, another with 200,000, and finally a
+giant list of 2,000,000 random numbers. This should give us a good
+idea of our sort's performance. Here's the output of timing first two
+sorts, 20,000 and 200,000 2:
 
 \begin{verbatim}
-
 ;;; Load compiled code
 
 (load "mergesort")
@@ -642,8 +697,13 @@ To make the test realistic, we'll create three lists of random numbers: one with
 ;Run time:      .3
 ;GC time:       0.
 ;Actual time:   .3
+\end{verbatim}
 
-As you can see, our sort procedure is on par with the system's for these inputs. Now let's turn up the heat. How about a list with 2,000,000 random numbers?
+As you can see, our sort procedure is on par with the system's for
+these inputs. Now let's turn up the heat. How about a list with
+2,000,000 random numbers?
+
+\begin{verbatim}
 ;;; Sort the list with 2,000,000 items
 
 (define unsorted-2000000 (make-list-of-random-numbers 2000000 20000000))
@@ -667,7 +727,13 @@ memory, while the system sort procedure works just fine. It seems the
 wizards who implemented this Scheme system knew what they were doing
 after all!
 
-It should be pretty clear at this point why we're running out of memory. In MIT/GNU Scheme, the system sort procedure uses vectors and mutation (and is no doubt highly tuned for the compiler), whereas we take a relatively brain-dead approach that uses lists and lots of cons-ing. I leave it as an exercise for the reader (or perhaps my future self) to rewrite this code so that it doesn't run out of memory.
+It should be pretty clear at this point why we're running out of
+memory. In MIT/GNU Scheme, the system sort procedure uses vectors and
+mutation (and is no doubt highly tuned for the compiler), whereas we
+take a relatively brain-dead approach that uses lists and lots of
+cons-ing. I leave it as an exercise for the reader (or perhaps my
+future self) to rewrite this code so that it doesn't run out of
+memory.
 
 Footnotes:
 
@@ -682,11 +748,13 @@ necessary.
 
 2 For the definition of the with-timing-output macro, see here.
 
-\section{Quick Sort}
+\subsection{Quick Sort}
 
-\section{Tree Sort}
+\subsection{Tree Sort}
 
-\chapter{Searching}
+\subsection{Insertion Sort}
+
+\section{Searching}
 
 Now that we've sorted a list of elements, we can search it.  It
 turns out that searching through a list of things is much faster if
@@ -706,32 +774,50 @@ Load the binary search library:
 (load-module 'binary-search)
 \end{verbatim}
 
-\section{Binary Search}
+\subsection{Binary Search}
 
-Binary search is a method for finding a specific item in a sorted list. Here's how it works:
+Binary search is a method for finding a specific item in a sorted
+list. Here's how it works:
 
-Take a guess that the item you want is in the middle of the current search ``window'' (when you start, the search window is the entire list). 
+Take a guess that the item you want is in the middle of the current
+search ``window'' (when you start, the search window is the entire
+list).
 
-If the item is where you guessed it would be, return the index (the location of your guess).
+If the item is where you guessed it would be, return the index (the
+location of your guess).
 
-If your guess is ``less than'' the item you want (based on a comparison function you choose), recur, this time raising the ``bottom'' of the search window to the midway point. 
+If your guess is ``less than'' the item you want (based on a
+comparison function you choose), recur, this time raising the
+``bottom'' of the search window to the midway point.
 
-If your guess is ``greater than'' the item you want (based on your comparison function), recur, this time lowering the ``top'' of the search window to the midway point. 
+If your guess is ``greater than'' the item you want (based on your
+comparison function), recur, this time lowering the ``top'' of the
+search window to the midway point.
 
-In other words, you cut the size of the search window in half every time through the loop. This gives you a worst-case running time of about (/ (log n) (log 2)) steps. This means you can find an item in a sorted list of 20,000,000,000 (twenty billion) items in about 34 steps. 
+In other words, you cut the size of the search window in half every
+time through the loop. This gives you a worst-case running time of
+about (/ (log n) (log 2)) steps. This means you can find an item in a
+sorted list of 20,000,000,000 (twenty billion) items in about 34
+steps.
 
-\section{Reading lines from a file}
+\subsubsection{Reading lines from a file}
 
-Before I could start writing a binary search, I needed a sorted list of items. I decided to work with a sorted list of words from /usr/share/dict/words, so I wrote a couple of little procedures to make a list of words from a subset of that file. (I didn't want to read the entire large file into a list in memory.) 
+Before I could start writing a binary search, I needed a sorted list
+of items. I decided to work with a sorted list of words from
+/usr/share/dict/words, so I wrote a couple of little procedures to
+make a list of words from a subset of that file. (I didn't want to
+read the entire large file into a list in memory.)
 
 Note: Both \verb|format| and the Lisp-inspired \verb|\#!optional|
 keyword are available in MIT Scheme; they made writing the re-matches?
 procedure more convenient.
 
-re-matches? checks if a regular expression matches a string (in this case, a line from a file).
+re-matches? checks if a regular expression matches a string (in this
+case, a line from a file).
 
-make-list-of-words-matching is used to loop over the lines of the words file and return a list of lines matching the provided regular expression. 
-Now I have the tools I need to make my word list. 
+make-list-of-words-matching is used to loop over the lines of the
+words file and return a list of lines matching the provided regular
+expression.  Now I have the tools I need to make my word list.
 
 \begin{verbatim}
 (load-option 'format)
@@ -758,12 +844,15 @@ Now I have the tools I need to make my word list.
             (loop (read-line port) (if (re-matches? re source)
                              (cons source sink)
                              sink)))))))
-
 \end{verbatim}
 
-\section{Writing tests}
+\subsubsection{Writing tests}
 
-Since I am not one of the 10\% of programmers who can implement a correct binary search on paper, I started out by writing a test procedure. The test procedure grew over time as I found bugs and read an interesting discussion about the various edge cases a binary search procedure should handle. These include: 
+Since I am not one of the 10\% of programmers who can implement a
+correct binary search on paper, I started out by writing a test
+procedure. The test procedure grew over time as I found bugs and read
+an interesting discussion about the various edge cases a binary search
+procedure should handle. These include:
 
 \begin{itemize}
 \item Empty list 
@@ -776,18 +865,22 @@ Since I am not one of the 10\% of programmers who can implement a correct binary
 \item List is all one word 
 \end{itemize}
 
-If multiple copies of word are in list, return the first word found (this could be implemented to return the first or last duplicated word) 
+If multiple copies of word are in list, return the first word found
+(this could be implemented to return the first or last duplicated
+word)
 
-Furthermore, I added a few ``sanity checks'' that check the return values against known outputs. Here are the relevant procedures: 
+Furthermore, I added a few ``sanity checks'' that check the return
+values against known outputs. Here are the relevant procedures:
 
-assert= checks two numbers for equality and prints a result 
+assert= checks two numbers for equality and prints a result
 
-assert-equal checks two Scheme objects against each other with equal? and prints a result 
+assert-equal checks two Scheme objects against each other with equal?
+and prints a result
 
-run-binary-search-tests reads in words from a file and runs all of our tests 
+run-binary-search-tests reads in words from a file and runs all of our
+tests
 
 \begin{verbatim}
-
 (define (assert= expected got #!optional noise)
   ;; Int Int -> IO
   (if (= expected got)
@@ -826,15 +919,23 @@ This file should be in the current working directory."
               (assert= 255 (binary-search "accustomedness" sorted)))))))) ; last element of list
 \end{verbatim}
 
-\section{The binary search procedure}
+\subsubsection{The binary search procedure}
 
-Finally, here's the binary search procedure; it uses a couple of helper procedures for clarity. 
+Finally, here's the binary search procedure; it uses a couple of
+helper procedures for clarity.
 
-->int is a helper procedure that does a quick and dirty integer conversion on its argument 
+->int is a helper procedure that does a quick and dirty integer
+conversion on its argument
 
-split-difference takes a low and high number and returns the floor of the halfway point between the two 
+split-difference takes a low and high number and returns the floor of
+the halfway point between the two
 
-binary-search takes an optional debug-print argument that I used a lot while debugging. The format statements and the optional argument tests add a lot of bulk --- now that the procedure is debugged, they can probably be removed. (Aside: I wonder how much ``elegant'' code started out like this and was revised after sufficient initial testing and debugging?) 
+binary-search takes an optional debug-print argument that I used a lot
+while debugging. The format statements and the optional argument tests
+add a lot of bulk --- now that the procedure is debugged, they can
+probably be removed. (Aside: I wonder how much ``elegant'' code
+started out like this and was revised after sufficient initial testing
+and debugging?)
 
 \begin{verbatim}
 (define (->int n)
@@ -880,22 +981,26 @@ N can be an integer or flonum (yes, it's quick and dirty)."
             (else #f))))))
 \end{verbatim}
 
-\section{Takeaways}
+\subsubsection{Takeaways}
 
 This exercise has taught me a lot. 
 
-Writing correct code is hard. (I'm confident that this code is not correct.) You need to figure out your invariants and edge cases first. I didn't, and it made things a lot harder. 
+Writing correct code is hard. (I'm confident that this code is not
+correct.) You need to figure out your invariants and edge cases
+first. I didn't, and it made things a lot harder.
 
-It's been said a million times, but tests are code. The tests required some debugging of their own. 
+It's been said a million times, but tests are code. The tests required
+some debugging of their own.
 
 Once they worked, the tests were extremely helpful. Especially now
 that I'm at the point where (if this were ``for real'') additional
 features would need to be added, the format calls removed, the
 procedure speeded up, and so on.
 
-I hope this has been useful to some other aspiring Scheme wizards out there. Happy Hacking!    
+I hope this has been useful to some other aspiring Scheme wizards out
+there. Happy Hacking!
 
-\section{Binary search in words}
+\subsubsection{Binary search in words}
 
 Binary search works like this:
 
@@ -920,9 +1025,11 @@ split the list in half at the current element
 search again, this time using only the low half of the list as
 input
 
-\section{Binary search in pictures}
+\subsubsection{Binary search in pictures}
 
 %% TODO(rml): Add image showing how binary search works.
+
+\section{Shuffling}
 
 \chapter{Trees}
 
@@ -947,18 +1054,22 @@ Basic operations:
 
 Walking the tree using higher order functions (see notes from ADuni lectures).
 
-\section{Sorting with treesort}
-
-%% TODO(rml): This is only fast if the tree is balanced, so give the
-%% "slow version" first, since balanced trees are not introduced
-%% yet. Explain why it can be slow.
-
 \section{Balanced binary trees}
 
 %% TODO(rml): Red-black tree or AVL tree? AVL is supposedly simpler to
 %% implement but red-black is said to have superior tree rotation
 %% runtime -- once we have a self-balancing tree of either type we can
 %% write the "fast" treesort!
+
+%% TODO(rml): Mention that when trees are balanced, then TREE-SORT can
+%% be fast.  Add a link back to the TREE-SORT section from here.
+
+\section{More on TREE-SORT}
+
+%% TODO(rml): Mention tree-sort here, and note that this is only fast
+%% if the tree is already balanced, so give the "slow version" first,
+%% since balanced trees are not introduced yet. Explain why it can be
+%% slow.
 
 \section{Balancing Trees}
 
@@ -1058,12 +1169,10 @@ option --- its only problem is that it will happily build circular
 paths that keep us from ever finding the node we want:
 
 \begin{verbatim}
-
 (define (%buggy-extend path) ;; Builds circular paths
      (map (lambda (new-node)
             (cons new-node path))
           (%get-neighbor (first path))))
-
 \end{verbatim}
 
 (Incidentally, I've become fond of the convention whereby internal
@@ -1198,7 +1307,11 @@ It shouldn't need to be said, but: Of course the authors knew better;
 they were trying to hide that unnecessary complexity from you until
 later.
 
-\chapter{Doing Things with Strings}
+\section{Graph coloring}
+
+\section{Finding the shortest path between nodes}
+
+\chapter{Strings}
 
 %% TODO(rml): Figure out what the (say) 2-3 most basic algorithms are
 %% that we need to cover.
@@ -1208,8 +1321,8 @@ later.
 %% TODO(rml): In Part II we will implement variations on the simpler
 %% algorithms from Part I. (Aside: I'm not sure about this section yet.
 
-\part{Programming in the Real World}
-\chapter{Real World: DIY Hash Tables}
+\part{The Real World}
+\chapter{A hash table library}
 
 In this chapter, we're going to implement our own hash tables.
 
@@ -1223,7 +1336,7 @@ words, it is a \emph{compound data structure}.
 
 %% TODO(rml): Write this chapter.
 
-\chapter{Real World: Regular Expressions}
+\chapter{A regular expression library}
 
 In this chapter, we're going to implement our own regular expression
 matching library.
@@ -1234,7 +1347,7 @@ matching library.
 
 %% TODO(rml): Figure out how to translate this section to LaTeX world.
 
-[1] Iterative process
+\section{Iterative process}
 
 In terms of Scheme code, code that describes an iterative process
 usually looks like this:
@@ -1345,11 +1458,15 @@ Add this to your bookmarks so you can refer back to it as needed.
 \chapter{Bibliography}
 
 \begin{itemize}
+
 \item Abelson \& Sussman, \emph{Structure and Interpretation of Computer Programs}, 1st ed., 1986.
 
-\item Winston \& Horn, \emph{Lisp}, XXX.
+\item Winston \& Horn, \emph{Lisp}, 198?.
 
 \item Gabriel, \emph{Performance and Evaluation of Lisp Systems}, 1985.
+
+\item ???, \emph{Compared to What?}, ???.
+
 \end{itemize}
 
 \end{document}
