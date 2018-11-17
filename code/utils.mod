@@ -20,6 +20,7 @@
    flatten
    mapconcat
    filter
+   seq
 
    ;; Files
    read-file

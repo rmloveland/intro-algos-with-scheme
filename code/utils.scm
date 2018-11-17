@@ -107,7 +107,7 @@
   (and (map (lambda (elem) (list? elem)) x)
        (list? x)))
 
-(define (.. start end)
+(define (seq start end)
   (let loop ((start start)
              (end end)
              (xs '()))
