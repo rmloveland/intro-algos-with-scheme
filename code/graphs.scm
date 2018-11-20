@@ -15,20 +15,18 @@
 
 ;; We can either define the graph statically...
 
-(define *graph* '((f e)
-                  (e b d f)
-                  (d s a e)
-                  (c b)
-                  (b a c e)
-                  (a s b d)
-                  (s a d)))
+;; (define *graph* '((f e)
+;;                   (e b d f)
+;;                   (d s a e)
+;;                   (c b)
+;;                   (b a c e)
+;;                   (a s b d)
+;;                   (s a d)))
 
 ;; ... or build it up stepwise.
 
 (define (make-graph)
   '())
-
-(define *neighbors* (make-graph))
 
 (define (add-neighbor! k v graph)
   (let ((new-neighbor (cons k v)))
@@ -40,13 +38,14 @@
      (let ((new-neighbor (cons k v)))
        (push! new-neighbor ?graph)))))
 
-(add-neighbor! 's '(a d) *neighbors*)
-(add-neighbor! 'a '(s b d) *neighbors*)
-(add-neighbor! 'b '(a c e) *neighbors*)
-(add-neighbor! 'c '(b) *neighbors*)
-(add-neighbor! 'd '(s a e) *neighbors*)
-(add-neighbor! 'e '(b d f) *neighbors*)
-(add-neighbor! 'f '(e) *neighbors*)
+;; (define *neighbors* (make-graph))
+;; (add-neighbor! 's '(a d) *neighbors*)
+;; (add-neighbor! 'a '(s b d) *neighbors*)
+;; (add-neighbor! 'b '(a c e) *neighbors*)
+;; (add-neighbor! 'c '(b) *neighbors*)
+;; (add-neighbor! 'd '(s a e) *neighbors*)
+;; (add-neighbor! 'e '(b d f) *neighbors*)
+;; (add-neighbor! 'f '(e) *neighbors*)
 
 (define (get-neighbor k)
   ;; List -> Any
