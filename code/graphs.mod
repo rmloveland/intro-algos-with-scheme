@@ -7,6 +7,8 @@
    get-neighbor
    extend-path
    find-path-between
-   find-path-between))
+   find-path-between)
+  (requires
+   utils))
 
 ;; eof
