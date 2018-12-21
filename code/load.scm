@@ -8,4 +8,5 @@
   (load-module 'pregexp)
   (load-module 'apropos)
   (load-module 'binary-search)
-  (load-module 'binary-tree))
+  (load-module 'binary-tree)
+  (load-module 'graphs))
