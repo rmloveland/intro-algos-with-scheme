@@ -171,6 +171,17 @@
    ((print self)
     (format "#<kons: ~A . ~A>" (kar self) (kdr self)))))
 
+;; usage
+
+(define *pare* (kons 'a 'b))
+
+(pare? *pare*)                          ; => #t
+
+(kar *pare*)                            ; => a
+
+(set-kdr! *pare* 'c)                    ; => 'unspecified
+(kdr *pare*)                            ; => c
+
 ;; ------------------------
 ;; POINT object
 
