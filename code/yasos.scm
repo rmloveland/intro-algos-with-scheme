@@ -138,7 +138,7 @@
     ((string? obj) (string-length obj))
     ((char?   obj) 1)
     (else 
-      (error "Operation not supported: size" obj)))))
+      (error "Operation not supported: size" obj))))
 
 
 
