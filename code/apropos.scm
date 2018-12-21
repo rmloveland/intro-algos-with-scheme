@@ -6,12 +6,15 @@
   ;; XXX: Add code for others here? COND-EXPAND?
   oblist)
 
-;; Kawa
-(cond-expand (oblist)
-             (kawa
-              (begin
-                (define (oblist)
-                  (environment-fold (interaction-environment) cons '())))))
+;; We need to define an OBLIST procedure for all Schemes that don't
+;; provide it: Kawa, JScheme, etc.  Unfortunately it's not clear how
+;; to accomplish this portably (I haven't been able to get COND-EXPAND
+;; to work).
+'(cond-expand (oblist)
+              (kawa
+               (begin
+                 (define (oblist)
+                   (environment-fold (interaction-environment) cons '())))))
 
 (define (apropos regexp)
   ;; Regexp -> List
