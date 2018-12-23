@@ -1926,3 +1926,67 @@ all and only valid IP addresses.
 **** References
 
 \nocite{sre,nregex,kleene:regexp}
+
+*** apropos
+
+*** assert
+
+*** awk
+
+*** binary-search
+
+*** binary-tree
+
+*** destructive-ops
+
+*** enum
+
+*** example
+
+*** format
+
+*** graphs
+
+*** io
+
+*** let-optionals
+
+*** load-module
+
+*** load
+
+*** mergesort
+
+*** set
+
+*** strings
+
+*** utils
+
+*** uuid
+
+*** xml
+
+*** srfi-0: COND-EXPAND, feature-based conditional expansion
+
+*** srfi-2: AND-LET*
+
+*** srfi-8: RECEIVE, binding to multiple values
+
+*** srfi-9: Defining record types
+
+*** srfi-13: String libraries
+
+*** srfi-14: Character-set library
+
+*** srfi-16: CASE-LAMBDA, syntax for procedures of variable arity
+
+*** srfi-19: Time data types and procedures
+
+*** srfi-25: Multi-dimensional array primitives
+
+*** srfi-28: Basic format strings
+
+*** srfi-43: Vector library
+
+*** srfi-69: Hash tables
