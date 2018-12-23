@@ -1,0 +1,1928 @@
+* Notes
+
+** Idea: Instrumentation of intermediate variables
+
+It would be nice if, when we want to inspect the intermediate values
+of a variable, rather than having to write code like this:
+
+    (define (%merge-sort xs pred trace?)
+      (let loop ((xs xs) (result '()))
+           ...
+           (if trace?
+             (begin
+               (display (first xs))
+               (newline)
+               (display (second xs))
+               (newline)
+               (newline)
+               (loop ...))
+            (loop ...))))
+
+we could instead write code like this:
+
+    (define (%merge-sort xs pred trace?)
+      (instrumented-let loop ((xs xs) (result '()))
+              ... normal algorithm ...
+              ...))
+
+In this hypothetical reality, `INSTRUMENTED-LET` watches the values of
+all variables and prints their value each time through the loop.
+
+I guess it will be implemented as syntax, but we'll see.
+
+Also, it's not clear that this is the best name for it.
+
+Oh!  And actually, it might be better to implement this in a similar
+fashion to `LOAD-MODULE`, where it just rewrites whole batches of
+Scheme code to generate the output needed, rather than asking the user
+to manually rewrite the text of procedures.
+
+** How to list all bound symbols in various Schemes
+
++ Larceny: `oblist`
++ Chez: `oblist`
++ Gambit: ?
++ Chibi: ?
++ MIT Scheme: ?
++ Chicken: ?
++ Kawa: `environment-fold`
++ JScheme: ?
+
+** How to load R5RS `SYNTAX-RULES` in Gambit
+
+    (load "~~/lib/syntax-case")
+
+** How to load `SYNTAX-RULES` in JScheme
+
+    (load "elf/basic.scm")
+    (load "elf/mbe.scm")
+
+** Bugs and known limitations
+
+** Things to do
+
++ Add a pathname library?
+
++ Add foof-loop?  (may not be really necessary)
+
++ Implement X11 protocol support? (See Common Lisp CLX lib)
+
++ Maybe break out `LET-OPTIONALS` into a separate library?
+
++ Consider stealing interesting things from MIT Scheme such as
+  `STAR-PARSER`
+
++ Add various interesting codez from
+  <https://mumble.net/~campbell/scheme/>
+
++ Implement "library aliases", so you can load SRFI-69 code by typing
+  e.g. `(load-module 'hash-table)`
+
+** Supported Schemes
+
+*** Larceny Scheme 0.99
+
++ uuid
++ xml
++ srfi-8
++ srfi-9
++ srfi-0
++ srfi-16
++ srfi-19
++ srfi-28
++ srfi-2
++ srfi-43
++ srfi-69
++ apropos
++ assert
++ binary-search
++ binary-tree
++ destructive-ops
++ format
++ let-optionals
++ mergesort
++ pregexp
+
+*** Chez Scheme 9.5
+
++ utils
++ srfi-9
++ srfi-0
++ srfi-2
++ apropos
++ assert
++ binary-search
++ binary-tree
++ destructive-ops
++ format
++ let-optionals
++ mergesort
++ pregexp
++ srfi-16
++ srfi-19
++ srfi-28
++ srfi-8
+
+*** JScheme 7.2
+
+Note: You must load support for R5RS `define-syntax` into JScheme as
+follows before you can use `LOAD-MODULE`.
+
+    (use-module "elf/basic.scm")
+    (use-module "elf/mbe.scm")
+
++ pregexp
++ destructive-ops
++ utils
++ assert
++ format
+
+*** Scheme 48 1.9.2
+
++ utils
++ apropos
++ assert
++ format
++ binary-search
++ binary-tree
++ destructive-ops
++ let-optionals
++ mergesort
++ pregexp
++ srfi-0
++ srfi-16
++ srfi-28
++ srfi-2
++ srfi-43
++ srfi-69
++ srfi-8
++ srfi-9
++ utils
++ uuid
++ xml
+
+*** Kawa 3.0 (git describe: 3.0-0-g39797ea94)
+
+** Larceny `read-line` behavior vs. Chez vs. Scheme48
+
+There seems to be some difference in the way the same user implementation of `READ-LINE` entered at the top-level behaves in Larceny 1.3 vs. Chez 9.5 vs. Scheme48 1.9.
+
+In Larceny, if I use the built-in `READ-LINE`, the following code works as expected:
+
+```
+(define (map-lines file)
+  (call-with-input-file file
+    (lambda (port)
+      (let loop ((line (read-line port))
+                 (lines '()))
+        (if (eof-object? line)
+            (reverse lines)
+            (loop (read-line port)
+                  (cons line lines)))))))
+```
+
+```
+> (map-lines "awk-data.txt")
+("Beth\t4.00\t0"
+ "Dan\t\t3.75\t0"
+ "Kathy\t4.00\t10"
+ "Mark\t5.00\t20"
+ "Mary\t5.50\t22"
+ "Susie\t4.25\t18")
+```
+
+If I enter the following implementation of `READ-LINE` at the Larceny top-level, the `MAP-LINES` output changes -- a new empty string is added in between each line.
+
+```
+(define (read-line port)
+  ;; Port -> String
+  (let ((sep #\newline))
+    (let loop ((chars '())
+               (this-char (read-char port))
+               (next-char (peek-char port)))
+      (cond
+       ((eof-object? next-char) next-char)
+       ((char=? next-char sep) (list->string (reverse chars)))
+       (else (loop (cons this-char chars)
+                   (read-char port)
+                   (peek-char port)))))))
+```
+
+```
+> (map-lines "awk-data.txt")
+("Beth\t4.00\t"
+ ""
+ "Dan\t\t3.75\t"
+ ""
+ "Kathy\t4.00\t1"
+ ""
+ "Mark\t5.00\t2"
+ ""
+ "Mary\t5.50\t2"
+ ""
+ "Susie\t4.25\t1"
+ "")
+```
+
+If I switch to Chez 9.5, which apparently does not export its own version of `READ-LINE` to the top-level by default, and use the above user implementations of `READ-LINE` and `MAP-LINES`, it works as expected:
+
+```
+> (map-lines "awk-data.txt")
+("Beth\t4.00\t0"
+"Dan\t\t3.75\t0"
+"Kathy\t4.00\t10"
+"Mark\t5.00\t20" 
+"Mary\t5.50\t22" 
+"Susie\t4.25\t18")
+```
+
+In Scheme 48 1.9, which also does not export its own version of `READ-LINE` to the top-level by default, the user implementations of `READ-LINES` and `MAP-LINES` behave as expected (similarly to Chez, and differently from Larceny):
+
+```
+> (map-lines "awk-data.txt")
+("Beth\t4.00\t0"
+"Dan\t\t3.75\t0"
+"Kathy\t4.00\t10"
+"Mark\t5.00\t20" 
+"Mary\t5.50\t22" 
+"Susie\t4.25\t18")
+```
+
+** Scheme Prelude User Manual
+
+*** YASOS: Scheming  with  Objects
+
+
+
+There is a saying--attributed to Norman Adams--that "Objects are a
+poor man's closures." In this article we discuss what closures are and
+how objects and closures are related, show code samples to make these
+abstract ideas concrete, and implement a Scheme Object System which
+solves the problems we uncover along the way. 
+
+
+
+**** THE CLASSICAL OBJECT MODEL
+
+
+Before discussing object oriented programming in Scheme, it pays to
+take a look at the classical model so that we have something to
+compare with and in order to clarify some of the terminology.  One of
+the problems that the OO movement created for itself was the use of
+new terms to get away from older concepts and the confusion this has
+caused.  So before going further I would like to give some of my own
+definitions and a simple operational model.  The model is not strictly
+correct as most compiled systems use numerous short cuts and special
+optimization tricks, but it is close enough for most practical
+purposes and has been used to implement OO programming in imperative
+languages. 
+
+An object "instance" consists of local (encapsulated) state and a
+reference to shared code which operates on its state.  The easy way to
+think of this is as a C struct or Pascal record which has one field
+reserved for a pointer to its shared code environment and other slots
+for its instance variables.  Each procedure in this shared environment
+is called a "method." A "class" is code which is can generate
+instances (new records) by initializing their fields, including a
+pointer to the instance's shared method environment.  The environment
+just maps method names to their values (their code).  Each method is a
+procedure which takes the record it is operating on as its first,
+sometimes hidden, argument.  The first argument is called the
+"reciever" and typically aliased to the name "self" within the
+procedure's code. 
+
+In order to make code management easy, object oriented systems such as
+Actor or Smalltalk wish to deal with code as objects and the way this
+is done is by making each class an object instance as well.  In order
+to manipulate the class's code, however a "meta-class" is typically
+defined and in some cases a meta-meta...  Well, you get the idea.
+Many people have spent a great deal of time in theories of how to
+"ground" such systems without infinite recursion.  To confuse things
+further, many object systems have an object named "object" and a class
+object named "class"--so that the class of the "class" object is
+`class'. 
+
+By making every data object an instance of the OO system, uniformity
+demands that numbers are added, e.g. 1 + 2 by "sending the message" +
+to the object 1 with the argument 2.  This has the advantage that + is
+polymorphic--it can be applied to any data object.  Unfortunately,
+polymorphism also makes optimization hard in that the compiler can no
+longer make assumptions about + and may not be able to do constant
+folding or inlining. 
+
+The set of methods an object responds to is called a "protocol".
+Another way of saying this is that the functions or operations that
+are invokeable on an object make up its interface.  More than one
+class of object may respond to the same protocol--i.e. many different
+types of objects have the same operation names available. 
+
+
+
+
+**** OBJECT BASED MESSAGE PASSING
+
+
+So how can this "message passing" be implemented with lexical
+closures?  And what are these closure things anyway? 
+
+References within a function to variables outside of the local
+scope--free references--are resolved by looking them up in the
+environment in which the function finds itself.  When a language is
+lexically scoped, you see the shape of the environment when you
+read--lex--the code.  In Scheme, when a function is created it
+remembers the environment in which it was created.  Free names are
+looked up in that environment, so the environment is said to be
+"closed over" when the function is created.  Hence the term "closure."
+
+
+An example may help here:
+
+(define (CURRIED-ADD x) (lambda (y) (+ x y))
+
+(define ADD8 (curried-add 8))
+
+(add8 3)	-> 11
+
+
+
+When add8 is applied to its argument, we are doing ((lambda (y) (+ x y)) 3)
+
+The function add8 remembers that X has the value 8.  It gets the value
+Y when it is applied to 3.  It finds that + is the addition function.
+So (add8 3) evaluates to 11. 
+
+(define ADD5 (curried-add 5)) makes a new function which shares the
+curried-add code (lambda (y) (+ x y)), but remembers that in its
+closed over environment, X has the value 5. 
+
+Now that we have a way to create data objects, closures, which share
+code but have different data, we just need a "dispatching function" to
+which we can pass the symbols we will use for messages:
+
+(define (MAKE-POINT the-x the-y)
+  (lambda (message)
+     (case message
+        ((x)  (lambda () the-x)) ;; return a function which returns the answer
+        ((y)  (lambda () the-y))
+        ((set-x!) 
+             (lambda (new-value)
+                     (set! the-x new-value)  ;; do the assignment
+                      the-x))                ;; return the new value
+        ((set-y!) 
+             (lambda (new-value)
+                     (set! the-y new-value)
+                      the-y))
+       (else (error "POINT: Unknown message ->" message))
+) )  )
+
+
+
+(define p1 (make-point 132 75))
+
+(define p2 (make-point 132 57))
+
+((p1 'x))		-> 132
+
+((p1 'set-x!) 5)	-> 5
+
+
+We can even change the message passign style to function calling style:
+
+(define (x obj) ((obj 'x))
+
+(define (set-x! obj new-val) ((obj 'set-x!) new-val))
+
+
+(set-x! p1 12) 	-> 12 
+
+(x p1) 		-> 12
+
+(x p2)		-> 132	;; p1 and p2 share code but have different local data
+
+
+Using Scheme's lexical scoping, we can also define make-point as:
+
+(define (MAKE-POINT the-x the-y)
+
+  (define (get-x) the-x)	;; a "method"
+
+  (define (get-y) the-y)
+
+  (define (set-x! new-x) 
+     (set! the-x new-x)
+     the-x)
+
+  (define (set-y! new-y) 
+     (set! the-y new-y)
+     the-y)
+
+  (define (self message)
+     (case message
+        ((x)   	  get-x) ;; return the local function
+        ((y)  	  get-y)
+        ((set-x!) set-x!)
+        ((set-y!) set-y!)
+        (else (error "POINT: Unknown message ->" message))))
+
+  self	 ;; the return value of make-point is the dispatch function
+)
+
+
+
+
+**** ADDING INHERITANCE
+
+
+"Inheritance" means that one object may be specialized by adding to
+and/or shadowing another's behavior.  It is said that "object based"
+programming together with inheritance is "object oriented" programming.
+How can we add inheritance to the above picture?  By delegating to
+another object! 
+
+
+(define (MAKE-POINT-3D a b the-z)
+  (let ( (point (make-point a b)) )
+
+   (define (get-z) the-z)
+
+   (define (set-z! new-value)
+      (set! the-z new-value)
+      the-z)
+
+   (define (self message)
+     (case message
+         ((z) 		get-z)
+         ((set-z!) 	set-z!)
+         (else (point message))))
+
+  self
+)
+
+(define p3 (make-point-3d 12 34 217))
+
+(x p3)		-> 12
+
+(z p3)		-> 217
+
+(set-x! p3 12)	-> 12
+
+(set-x! p2 12)	-> 12
+
+(set-z! p3 14)	-> 14
+
+Note that in this style, we are not required to have a single distinguished
+base object, "object"--although we may do so if we wish.
+
+
+
+
+**** WHAT IS WRONG WITH THE ABOVE PICTURE ?
+
+
+While the direct strategy above is perfectly adequate for OO
+programming, there are a couple of rough spots.  For example, how can
+we tell which functions are points and which are not?  We can define a
+POINT?  predicate, but not all Scheme data objects will take a 'point?
+message.  Most will generate error messages, but some will just "do
+the wrong thing."
+
+(define (POINT? obj) (and (procedure? obj) (obj 'point?)))
+
+(point? list) 	-> (point?)  ;; a list with the symbol 'point?
+
+We want a system in which all objects participate and in which we can
+mix styles.  Building dispatch functions is repetitive and can
+certainly be automated--and let's throw in multiple inheritance while
+we are at it.  Also, it is generally a good design principle to
+separate interface from implementation, so we will. 
+
+
+
+**** ONE SET OF SOLUTIONS
+
+The following is one of a large number of possible implementations.
+Most Scheme programmers I know have written at least one object system
+and some have written several.  Let's first look at the interface, then
+how it is used, then how it was implemented.
+
+In order to know what data objects are "instances", we have a
+predicate, INSTANCE?, which takes a single argument and answers #t or
+#f.  
+
+For each kind of object is also useful to have a predicate, so we
+define a predicate maker: (DEFINE-PREDICATE <opname?>) which by default
+answers #f.  
+
+To define operations which operate on any data, we need a default
+behavior for data objects which don't handle the operation:
+(DEFINE-OPERATION (opname self arg ...) default-body).  If
+we don't supply a default-behavior, the default default-behavior
+is to generate an error.
+
+We certainly need to return values which are instances of our object
+system: (OBJECT operation... ), where an operation has the form:
+((opname self arg ...) body).  There is also a LET-like form for
+multiple inheritance:
+   (OBJECT-WITH-ANCESTORS ( (ancestor1 init1) ...) 
+	operation ...).
+In the case of multiple inherited operations with the same identity,
+the operation used is the one found in the first ancestor in the
+ancestor list.
+
+And finally, there is the "send to super" problem, where we want to
+operate as an ancestor, but maintain our own self identity {more on
+this below}:  (OPERATE-AS component operation composite arg ...).
+
+Note that in this system, code which creates instances is just code, so
+there there is no need to define "classes" and no meta-<anything>!
+
+
+**** EXAMPLES
+
+O.K., let's see how this fits together.  First, another look at
+points. ***See LISTING: Points revisited***
+
+(define P2 (make-point 123 32131))
+(define P3 (make-point-3d 32 121 3232))
+(size "a string")	-> 8
+(size p2)		-> 2
+(size p3)		-> 3
+(point? p2)		-> #t
+(point? p3)		-> #t
+(point? "a string")	-> #f
+(x p2)			-> 123
+(x p3)			-> 32
+(x "a string")		-> ERROR: Operation not handled: x "a string"
+(print p2 #t)		#<point: 123 32131>
+(print p3 #t)   	#<3D-point: 32 121 3232>
+(print "a string" #t) 	"a string"
+
+Things to notice...
+  Interface is separate from implementation
+  All objects participate
+  Inheritance is simplified
+  Print unifies treatment of objects--each decides how it is to be displayed
+  Default behaviors are useful
+  
+
+Now lets look at a more interesting example, a simplified savings
+account with history and passwords.
+
+
+***** See LISTING: Bank accounts ***
+
+
+(define FRED  (make-person "Fred" 19 "573-19-4279" #xFadeCafe))
+(define SALLY
+  (make-account "Sally" 26 "629-26-9742" #xFeedBabe 263 bank-password))
+
+(print fred #t)		#<Person: Fred age: 19>
+(print sally #t)	#<Bank-Customer Sally>
+(person? sally)		-> #t
+(bank-account? sally)	-> #t
+(ssn fred  #xFadeCafe)	-> "573-19-4279"
+(ssn sally #xFeedBabe)	-> "629-26-9742"
+(add sally 130) 	New balance: $393
+(add sally 55)		New balance: $448
+
+; the bank can act in Sally's behalf
+(get-account-history sally bank-password)  		--> (448 393 263)
+(withdraw sally 100 (get-pin sally bank-password))	New balance: $348
+(get-account-history sally bank-password)          	--> (348 448 393 263)
+
+;; Fred forgets
+(ssn fred 'bogus)	Bad password: bogus	;; Fred gets another chance
+
+;; Sally forgets
+(ssn sally 'bogus)	CALL THE POLICE!!	;; A more serious result..
+
+Now we see the reason we need OPERATE-AS.  The when the bank-account
+object delegates the SSN operation to its ancestor, person, SELF is
+bound to the bank-account object--not the person object.  This means
+that while the code for SSN is inherited from person, the BAD-PASSWORD
+operation of the bank-account is used.
+
+This is an important behavior to have in an object system.  If there
+were no OPERATE-AS, code would have to be duplicated in order to
+implement the stricter form of BAD-PASSWORD.  With OPERATE-AS, we can
+safely share code while keeping operations localized within the
+inheritance hierarchy.
+
+
+
+**** OUR IMPLEMENTATION
+
+Given the sophisticated behavior of our object system, the
+implementation is surprisingly small.
+
+(See LISTING: yasos)
+
+Unlike some other languages, Scheme does not have a standard way of
+defining opaque types.  In order to distinguish data objects which are
+instances of our object system, we just uniquely tag a closure.  As we
+are only introducing one new datatype it is not much work to hide this
+by rewriting Scheme's WRITE and DISPLAY routines. 
+
+In order to allow lexical scoping of objects and operations, the
+values of operations, rather than their names, are used in the
+dispatch functions created for objects.  Those of you who have used
+languages such as Smalltalk or Actor may have been bitten by the
+inadvertant name collisions in the single, global environment.
+
+Note that there are no global tables.  A general rule of thumb is that
+for less than 100 elements, linear search beats hashing.  While we can
+speed up operation dispatch by some simple caching, the general
+performance for this system will be pretty good up through moderately
+large systems.  Also, we can optimize the implementation with no
+change to the interface.  If our systems start getting too slow, its
+time to smarten the compiler.
+
+
+
+**** HOW THIS COMPARES TO THE CLASSICAL MODEL
+
+It is time to compare this implementation to the model given at the
+beginning of this article.
+
+One thing you may notice right away is the power of closures.  The
+object system is small and simpler than the class model.  There are no
+grounding problems.  No "Meta".  I find it interesting that
+Whitewater's Actor 4.0 implements code sharing between classes (which
+they call multiple inheritance) in an attempt to get more of the
+benefits that closures provide directly.
+
+The Scheme solution is also more general.  It keeps lexical scoping,
+and one can freely mix OO with functional & imperative styles.
+
+Programming Environment work still has to be done for code management
+& debugging (e.g. doing an object inspector), but OO helps here just
+as in other OO systems.
+
+Separating the interface from the implementation is a better software
+engineering solution than the classical model.  We can define our
+"protocols" independently of their implementation.  This helps us hide
+our implementation.  One might think that object oriented programming
+in general would solve the problems here, but this has not been the
+case because people still use inheritance to share code rather than
+just to share abstractions.  An example of this is the complex
+behavior of Smalltalk dictionaries because they inherit the
+implementation of Sets.  While code sharing is a benefit of OO it is
+still considered bad form when your code breaks because of a change in
+the implementation of an inherited abstraction.
+
+Finally, I would like to point out that one can implement other OO
+models directly in Scheme, including smaller, simpler ones!  You can
+also implement the classical model (e.g. see D. Friedman, M. Wand, &
+C. Haynes: _Essentials of Programming Languages_, McGraw Hill, 1992). 
+
+Remember, your programming language should be part of the solution, not
+part of your problems.  Scheme for success!
+
+**** LISTING: Points revisited
+
+;;---------------------
+;; general operations
+;;---------------------
+
+(define-operation (PRINT obj port) 
+  (format port  ;; *** see LISTING: format ***
+          ;; if an instance does not have a PRINT operation..
+          (if (instance? obj) "#<INSTANCE>" "~s") 
+          obj
+) )
+
+(define-operation (SIZE obj)
+  ;; default behavior
+  (cond   
+    ((vector? obj) (vector-length obj))
+    ((list?   obj) (length obj))
+    ((pair?   obj) 2)
+    ((string? obj) (string-length obj))
+    ((char?   obj) 1)
+    (else 
+      (error "Operation not supported: size" obj))
+) )
+
+
+;;----------------
+;; point interface
+;;----------------
+
+(define-predicate POINT?)  ;; answers #f (false) by default
+(define-operation (X obj))
+(define-operation (Y obj))
+(define-operation (SET-X! obj new-x))
+(define-operation (SET-Y! obj new-y))
+
+
+;;---------------------
+;; point implementation
+;;---------------------
+
+(define (MAKE-POINT the-x the-y)
+  (object
+     ((POINT? self) #t) ;; yes, this is a point object
+     ((X self) the-x)
+     ((Y self) the-y)
+     ((SET-X! self val)
+      (set! the-x val)
+      the-x)
+     ((SET-Y! self val)
+      (set! the-y val)
+      the-y)
+     ((SIZE self) 2)
+     ((PRINT self port)
+      (format port "#<point: ~a ~a>" (x self) (y self)))
+) )
+
+;;-----------------------------
+;; 3D point interface additions
+;;-----------------------------
+
+(define-operation (Z obj))
+(define-operation (SET-Z! obj new-z))
+
+
+;;------------------------
+;; 3D point implementation
+;;------------------------
+
+(define (MAKE-POINT-3D the-x the-y the-z)
+   (object-with-ancestors ( (a-point (make-point the-x the-y)) )
+      ((Z self) the-z)
+      ((SET-Z! self val) (set! the-z val) the-z)
+      ;; override inherited SIZE and PRINT operations
+      ((SIZE self) 3)
+      ((PRINT self port)
+       (format port "#<3D-point: ~a ~a ~a>" (x self) (y self) (z self)))
+)  )
+
+*****------------------------------------------------------------
+
+**** LISTING: Bank accounts
+
+;;-----------------
+;; person interface
+;;-----------------
+
+(define-predicate PERSON?)
+
+(define-operation (NAME obj))
+(define-operation (AGE obj))
+(define-operation (SET-AGE! obj new-age))
+(define-operation (SSN obj password)) ;; Social Security # is protected
+(define-operation (NEW-PASSWORD obj old-passwd new-passwd))
+(define-operation (BAD-PASSWORD obj bogus-passwd)
+  ;; assume internal (design) error
+  (error (format #f "Bad Password: ~s given to ~a~%" 
+                    bogus-passwd
+		    (print obj #f)))
+)
+
+
+;;----------------------
+;; person implementation
+;;----------------------
+
+(define (MAKE-PERSON a-name an-age a-SSN the-password)
+  (object
+    ((PERSON? self) #t)
+    ((NAME self) a-name)
+    ((AGE self) an-age)
+    ((SET-AGE! self val) (set! an-age val) an-age)
+    ((SSN self password)
+     (if (equal? password the-password)
+         a-SSN
+	 (bad-password self password))
+    )
+    ((NEW-PASSWORD obj old-passwd new-passwd)
+     (cond
+       ((equal? old-passwd the-password) (set! the-password new-passwd) self)
+       (else (bad-password self old-passwd))
+    ))
+    ((BAD-PASSWORD self bogus-passwd)
+     (format #t "Bad password: ~s~%" bogus-passwd))  ;; let user recover
+    ((PRINT self port)
+	 (format port "#<Person: ~a age: ~a>" (name self) (age self)))
+) )
+
+;;--------------------------------------------
+;; account-history and bank-account interfaces
+;;--------------------------------------------
+
+(define-predicate BANK-ACCOUNT?)
+
+(define-operation (CURRENT-BALANCE account pin))
+(define-operation (ADD obj amount))
+(define-operation (WITHDRAW obj amount pin))
+(define-operation (GET-PIN account master-password))
+(define-operation (GET-ACCOUNT-HISTORY account master-password))
+
+;;-------------------------------
+;; account-history implementation
+;;-------------------------------
+;; put access to bank database and report generation here
+
+(define (MAKE-ACCOUNT-HISTORY initial-balance a-PIN master-password)
+  ;; history is a simple list of balances -- no transaction times
+  (letrec ( (history (list initial-balance)) 
+            (balance (lambda () (car history))) ; balance is a function
+            (remember 
+              (lambda (datum) (set! history (cons datum history))))
+          )
+    (object
+      ((BANK-ACCOUNT? self) #t)
+      ((ADD self amount) ;; bank will accept money without a password
+       (remember (+ amount (balance)))
+       ;; print new balance
+       (format #t "New balance: $~a~%" (balance)) 
+      )
+      ((WITHDRAW self amount pin)
+       (cond
+          ((not (equal? pin a-pin)) (bad-password self pin))
+	  ((< (- (balance) amount) 0)
+	   (format #t 
+	          "No overdraft~% Can't withdraw more than you have: $~a~%"
+		  (balance))
+          )
+	  (else
+	    (remember (- (balance) amount))
+            (format #t "New balance: $~a~%" (balance)))
+      ))
+      ((CURRENT-BALANCE self password)
+       (if (or (eq? password master-password) (equal? password a-pin))
+           (format #t "Your Balance is $~a~%" (balance))
+	   (bad-password self password)
+      )
+      ;; only bank has access to account history
+      ((GET-ACCOUNT-HISTORY account password) 
+       (if (eq? password master-password)
+           history
+	   (bad-password self password)
+      ))
+) ) )
+
+;;----------------------------
+;; bank-account implementation
+;;----------------------------
+
+(define (MAKE-ACCOUNT a-name an-age a-SSN a-PIN initial-balance master-password)
+
+  (object-with-ancestors 
+
+     ( (customer (make-person a-name an-age a-SSN a-PIN))
+       (account  (make-account-history initial-balance a-PIN master-password))
+     )
+
+    ((GET-PIN self password)
+     (if (eq? password master-password)
+	 a-PIN
+	 (bad-password self password)
+    ))
+    ((GET-ACCOUNT-HISTORY self password)
+     (operate-as account get-account-history self password)
+    )
+    ;; our bank is very conservative...
+    ((BAD-PASSWORD self bogus-passwd)
+     (format #t "~%CALL THE POLICE!!~%")  
+    )
+    ;; protect the customer as well
+    ((SSN self password) 
+     (operate-as customer SSN self password)
+    )
+    ((PRINT self port)
+     (format port "#<Bank-Customer ~a>" (name self)))
+) )
+
+
+*** pregexp: Portable Regular Expressions for Scheme
+
+by [Dorai Sitaram](http://ds26gte.github.com)
+
+`pregexp.scm` is a portable library for *regular expressions* (aka *regexps* or *regexes*) that runs in any Scheme that complies with R4RS, R5RS or R6RS.  It provides regular expressions modeled on Perl's, and includes such powerful directives as:
+
+- numeric and nongreedy quantifiers
+- capturing and non-capturing clustering
+- POSIX character classes
+- selective case- and space-insensitivity
+- backreferences
+- alternation
+- backtrack pruning
+- positive and negative lookahead and lookbehind
+- in addition to the more basic directives familiar to all regexp users
+
+To use, simply load the file `pregexp.scm` into your Scheme.
+
+**** Introduction
+
+A *regexp* is a string that describes a pattern.  A regexp matcher tries to *match* this pattern against (a portion of) another string, which we will call the *text string*.  The text string is treated as raw text and not as a pattern.
+
+Most of the characters in a regexp pattern are meant to match occurrences of themselves in the text string. Thus, the pattern `"abc"` matches a string that contains the characters `a`, `b`, `c` in succession.
+
+In the regexp pattern, some characters  act as *metacharacters*, and some character sequences act as *metasequences*.  That is, they specify something other than their literal selves.  For example, in the pattern `"a.c"`, the characters `a` and `c` do stand for themselves but the *metacharacter* `.` can match *any* character (other than newline).  Therefore, the pattern `"a.c"` matches an `a`, followed by *any* character, followed by a `c`.
+
+If we needed to match the character `.` itself, we *escape* it, ie, precede it with a backslash (`\`).  The character sequence `\.` is thus a *metasequence*, since it doesn't match itself but rather just `.`.
+
+So, to match `a` followed by a literal `.` followed by `c`, we use the regexp pattern `"a\\.c"`.
+
+The double backslash is an artifact of Scheme strings, not the regexp pattern itself.  When we want a literal backslash inside a Scheme string, we must escape it so that it shows up in the string at all. Scheme strings use backslash as the escape character, so we end up with two backslashes --- one Scheme-string backslash to escape the regexp backslash, which then escapes the dot.  Another character that would need escaping inside a Scheme string is `"`. Another example of a metasequence is `\t`, which is a readable way to represent the tab character.
+
+We will call the string representation of a regexp the *U-regexp*, where *U* can be taken to mean *Unix-style* or *universal*, because this notation for regexps is universally familiar.  Our implementation uses an intermediate tree-like representation called the *S-regexp*, where *S* can stand for *Scheme*, *symbolic*, or *s-expression*.  S-regexps are more verbose and less readable than U-regexps, but they are much easier for Scheme's recursive procedures to navigate.
+
+**** Regexp procedures provided by `pregexp.scm`
+
+`pregexp.scm` provides the following procedures:
+
+- `pregexp`
+- `pregexp-match-positions`
+- `pregexp-match`
+- `pregexp-split`
+- `pregexp-replace`
+- `pregexp-replace*`
+- `pregexp-quote`
+
+All the identifiers introduced by `pregexp.scm` have the prefix `pregexp-`, so they are unlikely to clash with other names in Scheme, including those of any natively provided regexp operators.
+
+***** `pregexp`
+
+The procedure `pregexp` takes
+a U-regexp, which is a string, and returns
+an S-regexp, which is a tree.
+
+
+    (pregexp "c.r")
+    => (:sub (:or (:seq #\c :any #\r)))
+
+There is rarely any need to look at the S-regexps returned by `pregexp`.
+
+***** `pregexp-match-positions`
+
+The procedure `pregexp-match-positions` takes
+a
+regexp pattern and a text string, and returns a *match* if the regexp *matches* (some part of) the text string.
+
+The regexp may be either a U- or an S-regexp.
+(`pregexp-match-positions` will internally compile a
+U-regexp to an S-regexp before proceeding with the
+matching.  If you find yourself calling
+`pregexp-match-positions` repeatedly with the same
+U-regexp, it may be advisable to explicitly convert the
+latter into an S-regexp once beforehand, using
+`pregexp`, to save needless recompilation.)
+
+`pregexp-match-positions` returns `#f` if the regexp did not
+match the string; and a list of *index pairs* if it
+did match.  Eg,
+
+
+    (pregexp-match-positions "brain" "bird")
+    => #f
+
+    (pregexp-match-positions "needle" "hay needle stack")
+    => ((4 . 10))
+
+In the second example, the integers 4 and 10 identify
+the substring that was matched. 4 is the starting
+(inclusive) index and 10 the ending (exclusive) index of
+the matching substring.
+
+
+    (substring "hay needle stack" 4 10)
+    => "needle"
+
+Here, `pregexp-match-positions`'s return list contains only
+one index pair, and that pair represents the entire
+substring matched by the regexp.  When we discuss
+subpatterns later, we will see how a single match
+operation can yield a list of *submatches*.
+
+`pregexp-match-positions` takes optional third
+and fourth arguments that specify the indices of
+the text string within which the matching should
+take place.
+
+
+    (pregexp-match-positions "needle"
+      "his hay needle stack -- my hay needle stack -- her hay needle stack"
+      24 43)
+    => ((31 . 37))
+
+Note that the returned indices are still reckoned
+relative to the full text string.
+
+***** `pregexp-match`
+
+The procedure `pregexp-match` is called
+like `pregexp-match-positions`
+but instead of returning index pairs it returns the
+matching substrings:
+
+
+    (pregexp-match "brain" "bird")
+    => #f
+
+    (pregexp-match "needle" "hay needle stack")
+    => ("needle")
+
+`pregexp-match` also takes optional third and
+fourth arguments, with the same meaning as does
+`pregexp-match-positions`.
+
+***** `pregexp-split`
+
+The procedure `pregexp-split` takes
+two arguments, a
+regexp pattern and a text string, and returns a list of
+substrings of the text string, where the pattern identifies the
+delimiter separating the substrings.
+
+
+    (pregexp-split ":" "/bin:/usr/bin:/usr/bin/X11:/usr/local/bin")
+    => ("/bin" "/usr/bin" "/usr/bin/X11" "/usr/local/bin")
+
+    (pregexp-split " " "pea soup")
+    => ("pea" "soup")
+
+If the first argument can match an empty string, then
+the list of all the single-character substrings is returned.
+
+
+    (pregexp-split "" "smithereens")
+    => ("s" "m" "i" "t" "h" "e" "r" "e" "e" "n" "s")
+
+To identify one-or-more spaces as the delimiter,
+take care to use the regexp `" +"`, not `" *"`.
+
+
+    (pregexp-split " +" "split pea     soup")
+    => ("split" "pea" "soup")
+
+    (pregexp-split " *" "split pea     soup")
+    => ("s" "p" "l" "i" "t" "p" "e" "a" "s" "o" "u" "p")
+
+***** `pregexp-replace`
+
+The procedure `pregexp-replace` replaces
+the
+matched portion of the text string by another
+string.  The first argument is the pattern,
+the second the text string, and the third
+is the *insert string* (string to be inserted).
+
+
+    (pregexp-replace "te" "liberte" "ty")
+    => "liberty"
+
+If the pattern doesn't occur in the text
+string, the returned string is identical (`eq?`)
+to the text string.
+
+***** `pregexp-replace*`
+
+The procedure `pregexp-replace*` replaces
+all
+matches in the text string by the insert
+string:
+
+
+    (pregexp-replace* "te" "liberte egalite fraternite" "ty")
+    => "liberty egality fratyrnity"
+
+As with `pregexp-replace`, if the pattern doesn't
+occur in the text string, the returned string is
+identical (`eq?`) to the text string.
+
+***** `pregexp-quote`
+
+The procedure `pregexp-quote` takes
+an arbitrary string and returns a U-regexp
+(string) that precisely represents it.  In particular,
+characters in the input string that could serve as
+regexp metacharacters are escaped with a
+backslash, so that they safely match only themselves.
+
+
+    (pregexp-quote "cons")
+    => "cons"
+
+    (pregexp-quote "list?")
+    => "list\\?"
+
+`pregexp-quote` is useful when building a composite
+regexp from a mix of regexp strings and verbatim strings.
+
+**** The regexp pattern language
+
+Here is a complete description of the regexp pattern
+language recognized by the `pregexp` procedures.
+
+***** Basic assertions
+
+The *assertions* `^` and `$` identify the
+beginning and the end of the text string respectively.
+They ensure that their adjoining regexps match at
+one or other end of the text string.
+Examples:
+
+
+    (pregexp-match-positions "^contact" "first contact")
+    => #f
+
+The regexp fails to match because `contact` does not
+occur at the beginning of the text string.
+
+
+    (pregexp-match-positions "laugh$" "laugh laugh laugh laugh")
+    => ((18 . 23))
+
+The regexp matches the *last* `laugh`.
+
+The metasequence `\b` asserts that
+a *word boundary* exists.
+
+
+    (pregexp-match-positions "yack\\b" "yackety yack")
+    => ((8 . 12))
+
+The `yack` in `yackety` doesn't end at a word
+boundary so it isn't matched.  The second `yack` does
+and is.
+
+The metasequence `\B` has the opposite effect
+to `\b`.   It asserts that a word boundary
+does not exist.
+
+
+    (pregexp-match-positions "an\\B" "an analysis")
+    => ((3 . 5))
+
+The `an` that doesn't end in a word boundary
+is matched.
+
+***** Characters and character classes
+
+Typically a character in the regexp matches the same
+character in the text string.  Sometimes it is
+necessary or convenient to use a regexp
+metasequence to refer to a single character.
+Thus, metasequences `\n`, `\r`, `\t`, and `\.`
+match the newline, return, tab and period characters
+respectively.
+
+The *metacharacter* period (`.`) matches
+any character other than newline.
+
+
+    (pregexp-match "p.t" "pet")
+    => ("pet")
+
+It also matches `pat`, `pit`, `pot`, `put`,
+and `p8t` but not `peat` or `pfffft`.
+
+A *character class* matches any one character from
+a set of characters.  A typical format for this
+is the *bracketed character class* `[`...`]`,
+which matches any one character from the non-empty sequence
+of characters enclosed within the brackets.
+
+Requiring
+a bracketed character class to be non-empty is not a limitation,
+since an
+empty character class
+can be more easily represented by an empty string.
+
+Thus `"p[aeiou]t"` matches `pat`, `pet`, `pit`,
+`pot`, `put` and nothing else.
+
+Inside the brackets, a hyphen (`-`) between two
+characters specifies the ascii range between the characters.
+Eg, `"ta[b-dgn-p]"` matches `tab`, `tac`, `tad`, *and*
+`tag`, *and* `tan`, `tao`, `tap`.
+
+An initial caret (`^`) after the left bracket inverts
+the set specified by the rest of the contents, ie, it
+specifies the set of characters *other than* those
+identified in the brackets.  Eg, `"do[^g]"` matches
+all three-character sequences starting with `do`
+except `dog`.
+
+Note that the metacharacter `^` inside brackets means
+something quite different from what it means outside.
+Most other metacharacters (`.`, `*`, `+`, `?`,
+etc) cease to be metacharacters when inside brackets,
+although you may still escape them for peace of
+mind.  `-` is a metacharacter only when it's
+inside brackets, and neither the first nor the last character.
+
+Bracketed character classes cannot contain other
+bracketed character classes (although they contain
+certain other types of character classes --- see
+below).  Thus a left bracket (`[`)
+inside a bracketed character class doesn't have to be a
+metacharacter; it can stand for itself.  Eg,
+`"[a[b]"` matches `a`, `[`, and `b`.
+
+Furthermore, since empty bracketed character classes
+are disallowed, a right bracket (`]`) immediately occurring
+after the opening left bracket
+also doesn't need to be a metacharacter.  Eg,
+`"[]ab]"` matches `]`, `a`, and `b`.
+
+****** Some frequently used character
+classes
+
+Some standard character classes can be conveniently
+represented as metasequences instead of as explicit
+bracketed expressions.  `\d` matches a  digit
+(`[0-9]`); `\s` matches a whitespace character; and
+`\w` matches a character that could be part of a
+"word".
+
+Following regexp custom, we identify "word" characters as `[A-Za-z0-9_]`, although these are too restrictive for what a Schemer might consider a "word".
+
+The upper-case versions of these metasequences stand
+for the inversions of the corresponding character
+classes.  Thus `\D` matches a non-digit, `\S` a
+non-whitespace character, and `\W` a
+non-"word" character.
+
+Remember to include a double backslash when putting
+these metasequences in a Scheme string:
+
+
+    (pregexp-match "\\d\\d"
+      "0 dear, 1 have 2 read catch 22 before 9")
+    => ("22")
+
+These character classes can be used inside
+a bracketed expression.  Eg,
+`"[a-z\\d]"` matches a lower-case letter
+or a digit.
+
+****** POSIX character classes
+
+A *POSIX character class* is a special metasequence of the form `[:...:]` that can be used only inside a bracketed expression.  The POSIX classes supported are:
+
+- `[:alnum:]`: letters and digits
+- `[:alpha:]`: letters
+- `[:algor:]`: the letters `c`, `h`, `a` and `d`
+- `[:ascii:]`: 7-bit ascii characters
+- `[:blank:]`: widthful whitespace, ie, space and tab
+- `[:cntrl:]`: "control" characters, viz, those with code `<` 32
+- `[:digit:]`: digits, same as `\d`
+- `[:graph:]`: characters that use ink
+- `[:lower:]`: lower-case letters
+- `[:print:]`: ink-users plus widthful whitespace
+- `[:space:]`: whitespace, same as `\s`
+- `[:upper:]`: upper-case letters
+- `[:word:]`: letters, digits, and underscore, same as `\w`
+- `[:xdigit:]`: hex digits
+
+For example, the regexp  `"[[:alpha:]_]"`
+matches a letter or underscore.
+
+
+    (pregexp-match "[[:alpha:]_]" "--x--")
+    => ("x")
+
+    (pregexp-match "[[:alpha:]_]" "--_--")
+    => ("_")
+
+    (pregexp-match "[[:alpha:]_]" "--:--")
+    => #f
+
+The POSIX class notation is valid *only* inside a
+bracketed expression.  For instance, `[:alpha:]`,
+when not inside a bracketed expression, will *not*
+be read as the letter class.
+Rather it is (from previous principles) the character
+class containing the characters `:`, `a`, `l`,
+`p`, `h`.
+
+
+    (pregexp-match "[:alpha:]" "--a--")
+    => ("a")
+
+    (pregexp-match "[:alpha:]" "--_--")
+    => #f
+
+By placing a caret (`^`) immediately after
+`[:`, you get the inversion of that POSIX
+character class.  Thus, `[:^alpha]`
+is the class containing all characters
+except the letters.
+
+***** Quantifiers
+
+The *quantifiers* `*`, `+`, and
+`?` match respectively: zero or more, one or more,
+and zero or one instances of the preceding subpattern.
+
+
+    (pregexp-match-positions "c[ad]*r" "cadaddadddr")
+    => ((0 . 11))
+    (pregexp-match-positions "c[ad]*r" "cr")
+    => ((0 . 2))
+
+    (pregexp-match-positions "c[ad]+r" "cadaddadddr")
+    => ((0 . 11))
+    (pregexp-match-positions "c[ad]+r" "cr")
+    => #f
+
+    (pregexp-match-positions "c[ad]?r" "cadaddadddr")
+    => #f
+    (pregexp-match-positions "c[ad]?r" "cr")
+    => ((0 . 2))
+    (pregexp-match-positions "c[ad]?r" "car")
+    => ((0 . 3))
+
+****** Numeric quantifiers
+
+You can use braces to specify much finer-tuned
+quantification than is possible with `*`, `+`, `?`.
+
+The quantifier `{m}` matches *exactly* `m`
+instances of the preceding *subpattern*.  `m`
+must be a nonnegative integer.
+
+The quantifier `{m,n}` matches at least `m`
+and at most `n` instances.  `m` and
+`n` are nonnegative integers with `m <=
+n`.  You may omit either or both numbers, in which case
+`m` defaults to 0 and `n` to
+infinity.
+
+It is evident that `+` and `?` are abbreviations
+for `{1,}` and `{0,1}` respectively.
+`*` abbreviates `{,}`, which is the same
+as `{0,}`.
+
+
+    (pregexp-match "[aeiou]{3`" "vacuous")
+    => ("uou")
+
+    (pregexp-match "[aeiou]{3}" "evolve")
+    => #f
+
+    (pregexp-match "[aeiou]{2,3}" "evolve")
+    => #f
+
+    (pregexp-match "[aeiou]{2,3}" "zeugma")
+    => ("eu")
+
+****** Non-greedy quantifiers
+
+The quantifiers described above are *greedy*, ie,
+they match the  maximal number of instances that would
+still lead to an overall match for the full pattern.
+
+(pregexp-match "<.*>" "<tag1> <tag2> <tag3>")
+=> ("<tag1> <tag2> <tag3>")
+
+
+To make these quantifiers *non-greedy*, append
+a `?` to them.  Non-greedy quantifiers match
+the minimal number of instances needed to ensure an
+overall match.
+
+    (pregexp-match "<.*?>" "<tag1> <tag2> <tag3>")
+    => ("<tag1>")
+
+The non-greedy quantifiers are respectively: `*?`, `+?`, `??`, `{m?}`, `{m,n?}`. Note the two uses of the metacharacter `?`.
+
+***** Clusters
+
+Clustering, ie, enclosure within parens `(`...`)`, identifies the enclosed *subpattern* as a single entity.  It causes the matcher to *capture* the *submatch*, or the portion of the string matching the subpattern, in addition to the overall match.
+
+
+    (pregexp-match "([a-z]+) ([0-9]+), ([0-9]+)" "jan 1, 1970")
+    => ("jan 1, 1970" "jan" "1" "1970")
+
+Clustering also causes a following quantifier to treat
+the entire enclosed subpattern as an entity.
+
+
+    (pregexp-match "(poo )*" "poo poo platter")
+    => ("poo poo " "poo ")
+
+The number of submatches returned is always equal
+to the number of subpatterns specified in the
+regexp, even if a particular subpattern happens
+to match more than one substring or no substring
+at all.
+
+
+    (pregexp-match "([a-z ]+;)*" "lather; rinse; repeat;")
+    => ("lather; rinse; repeat;" " repeat;")
+
+Here the `*`-quantified subpattern matches three
+times, but it is the last submatch that is returned.
+
+It is also possible for a quantified subpattern to
+fail to match, even if the overall pattern matches.
+In such cases, the failing submatch is represented
+by `#f`.
+
+
+    (define date-re
+      ;match `month year' or `month day, year'.
+      ;subpattern matches day, if present
+      (pregexp "([a-z]+) +([0-9]+,)? *([0-9]+)"))
+
+    (pregexp-match date-re "jan 1, 1970")
+    => ("jan 1, 1970" "jan" "1," "1970")
+
+    (pregexp-match date-re "jan 1970")
+    => ("jan 1970" "jan" #f "1970")
+
+****** Backreferences
+
+Submatches can be used in the insert string argument of
+the procedures `pregexp-replace` and
+`pregexp-replace*`.  The insert string can use `\n`
+as a *backreference* to refer back to the *n*th
+submatch, ie, the substring that matched the *n*th
+subpattern.   `\0` refers to the entire match,
+and it can also be specified as `\&`.
+
+
+    (pregexp-replace "_(.+?)_"
+      "the _nina_, the _pinta_, and the _santa maria_"
+      "*\\1*")
+    => "the *nina*, the _pinta_, and the _santa maria_"
+
+    (pregexp-replace* "_(.+?)_"
+      "the _nina_, the _pinta_, and the _santa maria_"
+      "*\\1*")
+    => "the *nina*, the *pinta*, and the *santa maria*"
+
+    ;recall: \S stands for non-whitespace character
+
+    (pregexp-replace "(\\S+) (\\S+) (\\S+)"
+      "eat to live"
+      "\\3 \\2 \\1")
+    => "live to eat"
+
+Use `\\` in the insert string to specify a literal
+backslash.  Also, `\$` stands for an empty string,
+and is useful for separating a backreference `\n`
+from an immediately following number.
+
+Backreferences can also be used within the regexp
+pattern to refer back to an already matched subpattern
+in the pattern.  `\n` stands for an exact repeat
+of the *n*th submatch.\f{\ifx\newenvironment\PLAINTEX
+`\0`\else
+{\tt\\0}\fi
+, which is useful in
+an insert string, makes no  sense within the regexp
+pattern, because the entire regexp has not matched yet
+that you could refer back to it.}
+
+
+    (pregexp-match "([a-z]+) and \\1"
+      "billions and billions")
+    => ("billions and billions" "billions")
+
+Note that the backreference is not simply a repeat
+of the previous subpattern.  Rather it is a repeat of
+the particular  substring already matched by the
+subpattern.
+
+In the above example, the backreference can only match
+`billions`.  It will not match `millions`, even
+though the subpattern it harks back to --- `([a-z]+)`
+---  would have had no problem doing so:
+
+
+    (pregexp-match "([a-z]+) and \\1"
+      "billions and millions")
+    => #f
+
+The following corrects doubled words:
+
+
+    (pregexp-replace* "(\\S+) \\1"
+      "now is the the time for all good men to to come to the aid of of the party"
+      "\\1")
+    => "now is the time for all good men to come to the aid of the party"
+
+The following marks all immediately repeating patterns
+in a number string:
+
+    (pregexp-replace* "(\\d+)\\1"
+      "123340983242432420980980234"
+      "{\\1,\\1`")
+    => "12{3,3}40983{24,24}3242{098,098}0234"
+
+****** Non-capturing clusters
+
+It is often required to specify a cluster
+(typically for quantification) but without triggering
+the capture of submatch information.  Such
+clusters are called *non-capturing*.  In such cases,
+use `(?:` instead of `(` as the cluster opener.  In
+the following example, the  non-capturing cluster
+eliminates the "directory" portion of a given
+pathname, and the capturing cluster  identifies the
+basename.
+
+```
+(pregexp-match "^(?:[a-z]*/)*([a-z]+)$"
+  "/usr/local/bin/mzscheme")
+=> ("/usr/local/bin/mzscheme" "mzscheme")
+```
+
+****** Cloisters
+
+The location between the `?` and the `:` of a
+non-capturing cluster is called a *cloister*.\f{A
+useful, if terminally cute, coinage from the abbots of
+Perl~\cite{pperl}.}  You can put *modifiers*
+there that will cause the enclustered subpattern to be
+treated specially.  The modifier `i` causes the
+subpattern to match *case-insensitively*:
+
+```
+(pregexp-match "(?i:hearth)" "HeartH")
+=> ("HeartH")
+```
+
+The modifier `x` causes the subpattern to match
+space-insensitively, ie, spaces and
+comments within the
+subpattern are ignored.  Comments are introduced
+as usual with a semicolon (`;`) and extend till
+the end of the line.  If you need
+to include a literal space or semicolon in
+a space-insensitized subpattern, escape it
+with a backslash.
+
+```
+(pregexp-match "(?x: a   lot)" "alot")
+=> ("alot")
+
+(pregexp-match "(?x: a  \\  lot)" "a lot")
+=> ("a lot")
+
+(pregexp-match "(?x:
+   a \\ man  \\; \\   ; ignore
+   a \\ plan \\; \\   ; me
+   a \\ canal         ; completely
+   )"
+ "a man; a plan; a canal")
+=> ("a man; a plan; a canal")
+```
+
+The global variable `*pregexp-comment-char*`
+contains the comment character (`#\;`).
+For Perl-like comments,
+
+```
+(set! *pregexp-comment-char* #\#)
+```
+
+You can put more than one modifier in the cloister.
+
+```
+(pregexp-match "(?ix:
+   a \\ man  \\; \\   ; ignore
+   a \\ plan \\; \\   ; me
+   a \\ canal         ; completely
+   )"
+ "A Man; a Plan; a Canal")
+=> ("A Man; a Plan; a Canal")
+```
+
+A minus sign before a modifier inverts its meaning.
+Thus, you can use `-i` and `-x` in a *subcluster* to overturn the insensitivities caused by an
+enclosing cluster.
+
+```
+(pregexp-match "(?i:the (?-i:TeX)book)"
+  "The TeXbook")
+=> ("The TeXbook")
+```
+
+This regexp will allow any casing for `the`
+and `book` but insists that `TeX` not be
+differently cased.
+
+***** Alternation
+\label{alternation}
+
+You can specify a list of *alternate*
+subpatterns by separating them by \p/|/.   The \p/|/
+separates subpatterns in the nearest enclosing cluster
+(or in the entire pattern string if there are no
+enclosing parens).
+
+\q@
+(pregexp-match "f(ee|i|o|um)" "a small, final fee")
+=> ("fi" "i")
+
+(pregexp-replace* "([yi])s(e[sdr]?|ing|ation)"
+   "it is energising to analyse an organisation
+   pulsing with noisy organisms"
+   "\\1z\\2")
+=> "it is energizing to analyze an organization
+   pulsing with noisy organisms"
+@
+
+Note again that if you wish
+to use clustering merely to specify a list of alternate
+subpatterns but do not want the submatch, use `(?:`
+instead of `(`.
+
+\q@
+(pregexp-match "f(?:ee|i|o|um)" "fun for all")
+=> ("fo")
+@
+
+An important thing to note about alternation is that
+the leftmost matching alternate is picked regardless of
+its length.  Thus, if one of the alternates is a prefix
+of a later alternate, the latter may not have
+a chance to match.
+
+\q@
+(pregexp-match "call|call-with-current-continuation"
+  "call-with-current-continuation")
+=> ("call")
+@
+
+To allow the longer alternate to have a shot at
+matching, place it before the shorter one:
+
+\q@
+(pregexp-match "call-with-current-continuation|call"
+  "call-with-current-continuation")
+=> ("call-with-current-continuation")
+@
+
+In any case, an overall match for the entire regexp is
+always preferred to an overall nonmatch.  In the
+following, the longer alternate still wins, because its
+preferred shorter prefix fails to yield an overall
+match.
+
+\q@
+(pregexp-match "(?:call|call-with-current-continuation) constrained"
+  "call-with-current-continuation constrained")
+=> ("call-with-current-continuation constrained")
+@
+
+***** Backtracking
+
+We've already seen that greedy quantifiers match
+the maximal number of times, but the overriding priority
+is that the overall match succeed.  Consider
+
+```
+(pregexp-match "a*a" "aaaa")
+```
+
+The regexp consists of two subregexps,
+`a*` followed by `a`.
+The subregexp `a*` cannot be allowed to match
+all four `a`'s in the text string `"aaaa"`, even though
+`*` is a greedy quantifier.  It may match only the first
+three, leaving the last one for the second subregexp.
+This ensures that the full regexp matches successfully.
+
+The regexp matcher accomplishes this via a process
+called *backtracking*.  The matcher
+tentatively allows the greedy quantifier
+to match all four `a`'s, but then when it becomes
+clear that the overall match is in jeopardy, it
+backtracks to a less greedy match of *three* `a`'s.  If even this fails, as in the
+call
+
+```
+(pregexp-match "a*aa" "aaaa")
+```
+
+the matcher backtracks even further.  Overall
+failure is conceded only when all possible backtracking
+has been tried with no success.
+
+Backtracking is not restricted to greedy quantifiers.
+Nongreedy quantifiers match as few instances as
+possible, and progressively backtrack to more and more
+instances in order to attain an overall match.  There
+is backtracking in alternation too, as the more
+rightward alternates are tried when locally successful
+leftward ones fail to yield an overall match.
+
+****** Disabling backtracking
+
+Sometimes it is efficient to disable backtracking.  For
+example, we may wish  to  *commit* to a choice, or
+we know that trying alternatives is fruitless.  A
+nonbacktracking regexp is enclosed in `(?>`...`)`.
+
+```
+(pregexp-match "(?>a+)." "aaaa")
+=> #f
+```
+
+In this call, the subregexp `?>a+` greedily matches
+all four `a`'s, and is denied the opportunity to
+backpedal.  So the overall match is denied.  The effect
+of the regexp is therefore to match one or more `a`'s
+followed by something that is definitely non-`a`.
+
+***** Looking ahead and behind
+
+You can have assertions in your pattern that look *ahead* or *behind* to ensure that a subpattern does
+or does not occur.   These "look around" assertions are
+specified by putting the subpattern checked for in a
+cluster whose leading characters are: `?=` (for positive
+lookahead), `?!` (negative lookahead), `?<=`
+(positive lookbehind), `?<!` (negative lookbehind).
+Note that the subpattern in the assertion  does not
+generate a match in the final result.  It merely allows
+or disallows the rest of the match.
+
+****** Lookahead
+
+Positive lookahead (`?=`) peeks ahead to ensure that
+its subpattern *could* match.
+
+```
+(pregexp-match-positions "grey(?=hound)"
+  "i left my grey socks at the greyhound")
+=> ((28 . 32))
+```
+
+The regexp `"grey(?=hound)"` matches `grey`, but
+only if it is followed by `hound`.  Thus, the first
+`grey` in the text string is not matched.
+
+Negative lookahead (`?!`) peeks ahead
+to ensure that its subpattern could not possibly match.
+
+```
+(pregexp-match-positions "grey(?!hound)"
+  "the gray greyhound ate the grey socks")
+=> ((27 . 31))
+```
+
+The regexp `"grey(?!hound)"` matches `grey`, but
+only if it is *not* followed by `hound`.  Thus
+the `grey` just before `socks` is matched.
+
+****** Lookbehind
+
+Positive lookbehind (`?<=`) checks that its subpattern *could* match
+immediately to the left of the current position in
+the text string.
+
+```
+(pregexp-match-positions "(?<=grey)hound"
+  "the hound in the picture is not a greyhound")
+=> ((38 . 43))
+```
+
+The regexp `(?<=grey)hound` matches `hound`, but only if it is
+preceded by `grey`.
+
+Negative lookbehind
+(`?<!`) checks that its subpattern
+could not possibly match immediately to the left.
+
+```
+(pregexp-match-positions "(?<!grey)hound"
+  "the greyhound in the picture is not a hound")
+=> ((38 . 43))
+```
+
+The regexp `(?<!grey)hound` matches `hound`, but only if
+it is *not* preceded by `grey`.
+
+Lookaheads and lookbehinds can be convenient when they
+are not confusing.
+
+**** An extended example
+
+Here's an extended example from
+Friedl~\cite[p 189]{friedl:regex}
+that covers many of the features described
+above.  The problem is to fashion a regexp that will
+match any and only IP addresses or *dotted
+quads*, ie, four numbers separated by three dots, with
+each number between 0 and 255.  We will use the
+commenting mechanism to build the final regexp with
+clarity.  First, a subregexp `n0-255` that matches 0
+through 255.
+
+```
+(define n0-255
+  "(?x:
+  \\d          ;  0 through   9
+  | \\d\\d     ; 00 through  99
+  | [01]\\d\\d ;000 through 199
+  | 2[0-4]\\d  ;200 through 249
+  | 25[0-5]    ;250 through 255
+  )")
+```
+
+The first two alternates simply get all single- and
+double-digit numbers.  Since 0-padding is allowed, we
+need to match both 1 and 01.  We need to be careful
+when getting 3-digit numbers, since numbers above 255
+must be excluded.  So we fashion alternates to get 000
+through 199, then 200 through 249, and finally 250
+through 255.\f{Note that
+\ifx\\PLAINTEX
+`n0-255`
+\else
+\var{n0-255}
+\fi
+lists prefixes as
+preferred alternates, something we cautioned against in
+sec \ref{alternation}.  However, since we intend
+to anchor this subregexp explicitly to force an overall
+match, the order of the alternates does not matter.}
+
+An IP-address is a string that consists of
+four `n0-255`s with three dots separating
+them.
+
+```
+(define ip-re1
+  (string-append
+    "^"        ;nothing before
+    n0-255     ;the first n0-255,
+    "(?x:"     ;then the subpattern of
+    "\\."      ;a dot followed by
+    n0-255     ;an n0-255,
+    ")"        ;which is
+    "{3`"      ;repeated exactly 3 times
+    "$"        ;with nothing following
+    ))
+}
+
+Let's try it out.
+
+```
+(pregexp-match ip-re1
+  "1.2.3.4")
+=> ("1.2.3.4")
+
+(pregexp-match ip-re1
+  "55.155.255.265")
+=> #f
+```
+
+which is fine, except that we also
+have
+
+```
+(pregexp-match ip-re1
+  "0.00.000.00")
+=> ("0.00.000.00")
+```
+
+All-zero sequences are not valid IP addresses!
+Lookahead to the rescue.  Before starting to match
+`ip-re1`, we look ahead to ensure we don't have all
+zeros.  We could use positive lookahead
+to ensure there *is* a digit other than
+zero.
+
+```
+(define ip-re
+  (string-append
+    "(?=.*[1-9])" ;ensure there's a non-0 digit
+    ip-re1))
+```
+
+Or we could use negative lookahead to
+ensure that what's ahead isn't composed
+of *only* zeros and dots.
+
+```
+(define ip-re
+  (string-append
+    "(?![0.]*$)" ;not just zeros and dots
+                 ;(note: dot is not metachar inside [])
+    ip-re1))
+```
+
+The regexp `ip-re` will match
+all and only valid IP addresses.
+
+```
+(pregexp-match ip-re
+  "1.2.3.4")
+=> ("1.2.3.4")
+
+(pregexp-match ip-re
+  "0.0.0.0")
+=> #f
+```
+
+**** References
+
+\nocite{sre,nregex,kleene:regexp}
