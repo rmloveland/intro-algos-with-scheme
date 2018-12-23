@@ -1,5 +1,6 @@
 ;;; -*- Mode: Scheme -*-
 
+(load-module 'srfi-2)
 (load-module 'assert)
 
 (assert equal? (and-let* () 1) 1 "1 equals 1")

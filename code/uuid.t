@@ -1,5 +1,6 @@
 ;;; -*- Mode: Scheme -*-
 
+(load-module 'uuid)
 (load-module 'pregexp)
 (load-module 'assert)
 
