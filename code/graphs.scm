@@ -28,10 +28,6 @@
 (define (make-graph)
   '())
 
-(define (add-neighbor! k v graph)
-  (let ((new-neighbor (cons k v)))
-    (push! new-neighbor `,graph)))
-
 (define-syntax add-neighbor!
   (syntax-rules ()
     ((_ k v ?graph)
