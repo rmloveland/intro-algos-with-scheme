@@ -52,7 +52,7 @@
 ;;; - ERROR
 ;;;
 ;;; - %LATIN1->CHAR %CHAR->LATIN1
-;;; - LET-OPTIONALS* and :OPTIONAL macros for parsing, checking & defaulting
+;;; - LET-OPTIONALS* and OPTIONAL* macros for parsing, checking & defaulting
 ;;;   optional arguments from rest lists.
 ;;; - BITWISE-AND for CHAR-SET-HASH
 ;;; - The SRFI-19 DEFINE-RECORD-TYPE record macro
@@ -172,7 +172,7 @@
 ;;; and everything will be copacetic.
 
 (define (char-set-hash cs . maybe-bound)
-  (let* ((bound (:optional maybe-bound 4194304 (lambda (n) (and (integer? n)
+  (let* ((bound (optional* maybe-bound 4194304 (lambda (n) (and (integer? n)
 								(exact? n)
 								(<= 0 n)))))
 	 (bound (if (zero? bound) 4194304 bound))	; 0 means default.
@@ -702,7 +702,7 @@
 ;;; explicit-renaming macro system), or port the simple, high-level
 ;;; definition, which is less efficient.
 ;;;
-;;; - :OPTIONAL macro
+;;; - OPTIONAL* macro
 ;;; Very simply defined using an R5RS high-level macro.
 ;;;
 ;;; Implementations that can arrange for the base char sets to be immutable

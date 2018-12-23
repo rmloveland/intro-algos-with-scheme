@@ -3,7 +3,7 @@
 (define (check-arg pred val caller)
   (if (not (pred val)) (error val caller)))
 
-(define-syntax :optional
+(define-syntax optional*
   (syntax-rules ()
     ((:optional rest default-exp)
      (let ((maybe-arg rest))
