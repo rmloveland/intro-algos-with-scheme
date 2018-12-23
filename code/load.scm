@@ -1,12 +1,40 @@
 (begin
   (load "load-module.scm")
-  (load-module 'utils)
-  (load-module 'destructive-ops)
-  (load-module 'format)
-  (load-module 'assert)
-  (load-module 'mergesort)
-  (load-module 'pregexp)
-  (load-module 'apropos)
-  (load-module 'binary-search)
-  (load-module 'binary-tree)
-  (load-module 'graphs))
+  (for-each (lambda (m) (load-module m))
+            '(apropos
+              assert
+              awk
+              binary-search
+              binary-tree
+              destructive-ops
+              format
+              graphs
+              io
+              mergesort
+              pregexp
+              set
+              strings
+              utils
+              xml
+              yasos
+              let-optionals
+
+              ;; SRFIs
+              srfi-0
+              srfi-2
+              srfi-8
+              srfi-9
+
+              ;; The following two modules are broken.  They depend on
+              ;; LET-OPTIONALS but apparently macro use does not match
+              ;; the SRFI's definition
+
+              ;; srfi-13
+              ;; srfi-14
+
+              srfi-16
+              ;; srfi-19 ; Broken in JScheme, uses (unsupported) exact number
+              srfi-25
+              srfi-28
+              srfi-43
+              srfi-69)))
