@@ -1,6 +1,38 @@
 * Notes                                            -*- Mode: Outline -*-
 
-** Idea: Instrumentation of intermediate variables
+** Things to do
+
+- Add a pathname library?
+
+- Add foof-loop?  (may not be really necessary)
+
+- Implement X11 protocol support? (See Common Lisp CLX lib)
+
+- Maybe break out `LET-OPTIONALS` into a separate library?
+
+- Consider stealing interesting things from MIT Scheme such as
+  `STAR-PARSER`
+
+- Add various interesting codez from
+  <https://mumble.net/~campbell/scheme/>
+
+- Implement "library aliases", so you can load SRFI-69 code by typing
+  e.g. `(load-module 'hash-table)`
+
+** Bugs and known limitations
+
+** How to list all bound symbols in various Schemes
+
+- Larceny: `oblist`
+- Chez: `oblist`
+- Gambit: ?
+- Chibi: ?
+- MIT Scheme: ?
+- Chicken: ?
+- Kawa: `environment-fold`
+- JScheme: ?
+
+** Idea: TRACE-LET, for tracing of intermediate variables
 
 It would be nice if, when we want to inspect the intermediate values
 of a variable, rather than having to write code like this:
@@ -37,17 +69,6 @@ fashion to `LOAD-MODULE`, where it just rewrites whole batches of
 Scheme code to generate the output needed, rather than asking the user
 to manually rewrite the text of procedures.
 
-** How to list all bound symbols in various Schemes
-
-+ Larceny: `oblist`
-+ Chez: `oblist`
-+ Gambit: ?
-+ Chibi: ?
-+ MIT Scheme: ?
-+ Chicken: ?
-+ Kawa: `environment-fold`
-+ JScheme: ?
-
 ** How to load R5RS `SYNTAX-RULES` in Gambit
 
     (load "~~/lib/syntax-case")
@@ -57,71 +78,50 @@ to manually rewrite the text of procedures.
     (load "elf/basic.scm")
     (load "elf/mbe.scm")
 
-** Bugs and known limitations
-
-** Things to do
-
-+ Add a pathname library?
-
-+ Add foof-loop?  (may not be really necessary)
-
-+ Implement X11 protocol support? (See Common Lisp CLX lib)
-
-+ Maybe break out `LET-OPTIONALS` into a separate library?
-
-+ Consider stealing interesting things from MIT Scheme such as
-  `STAR-PARSER`
-
-+ Add various interesting codez from
-  <https://mumble.net/~campbell/scheme/>
-
-+ Implement "library aliases", so you can load SRFI-69 code by typing
-  e.g. `(load-module 'hash-table)`
-
 ** Supported Schemes
 
 *** Larceny Scheme 0.99
 
-+ uuid
-+ xml
-+ srfi-8
-+ srfi-9
-+ srfi-0
-+ srfi-16
-+ srfi-19
-+ srfi-28
-+ srfi-2
-+ srfi-43
-+ srfi-69
-+ apropos
-+ assert
-+ binary-search
-+ binary-tree
-+ destructive-ops
-+ format
-+ let-optionals
-+ mergesort
-+ pregexp
+- uuid
+- xml
+- srfi-8
+- srfi-9
+- srfi-0
+- srfi-16
+- srfi-19
+- srfi-28
+- srfi-2
+- srfi-43
+- srfi-69
+- apropos
+- assert
+- binary-search
+- binary-tree
+- destructive-ops
+- format
+- let-optionals
+- mergesort
+- pregexp
 
 *** Chez Scheme 9.5
 
-+ utils
-+ srfi-9
-+ srfi-0
-+ srfi-2
-+ apropos
-+ assert
-+ binary-search
-+ binary-tree
-+ destructive-ops
-+ format
-+ let-optionals
-+ mergesort
-+ pregexp
-+ srfi-16
-+ srfi-19
-+ srfi-28
-+ srfi-8
+- utils
+- srfi-9
+- srfi-0
+- srfi-2
+- apropos
+- assert
+- binary-search
+- binary-tree
+- destructive-ops
+- format
+- let-optionals
+- mergesort
+- pregexp
+- srfi-16
+- srfi-19
+- srfi-28
+- srfi-8
 
 *** JScheme 7.2
 
@@ -131,39 +131,39 @@ follows before you can use `LOAD-MODULE`.
     (use-module "elf/basic.scm")
     (use-module "elf/mbe.scm")
 
-+ pregexp
-+ destructive-ops
-+ utils
-+ assert
-+ format
+- pregexp
+- destructive-ops
+- utils
+- assert
+- format
 
 *** Scheme 48 1.9.2
 
-+ utils
-+ apropos
-+ assert
-+ format
-+ binary-search
-+ binary-tree
-+ destructive-ops
-+ let-optionals
-+ mergesort
-+ pregexp
-+ srfi-0
-+ srfi-16
-+ srfi-28
-+ srfi-2
-+ srfi-43
-+ srfi-69
-+ srfi-8
-+ srfi-9
-+ utils
-+ uuid
-+ xml
+- utils
+- apropos
+- assert
+- format
+- binary-search
+- binary-tree
+- destructive-ops
+- let-optionals
+- mergesort
+- pregexp
+- srfi-0
+- srfi-16
+- srfi-28
+- srfi-2
+- srfi-43
+- srfi-69
+- srfi-8
+- srfi-9
+- utils
+- uuid
+- xml
 
 *** Kawa 3.0 (git describe: 3.0-0-g39797ea94)
 
-** Larceny `read-line` behavior vs. Chez vs. Scheme48
+** READ-LINE behavior: Larceny vs. Chez vs. Scheme48
 
 There seems to be some difference in the way the same user implementation of `READ-LINE` entered at the top-level behaves in Larceny 1.3 vs. Chez 9.5 vs. Scheme48 1.9.
 
@@ -248,7 +248,7 @@ In Scheme 48 1.9, which also does not export its own version of `READ-LINE` to t
 "Susie\t4.25\t18")
 ```
 
-** Scheme Prelude User Manual
+** The Scheme Prelude User Manual
 
 *** YASOS: Scheming  with  Objects
 
@@ -1938,10 +1938,6 @@ all and only valid IP addresses.
 *** binary-tree
 
 *** destructive-ops
-
-*** enum
-
-*** example
 
 *** format
 
