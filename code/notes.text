@@ -19,6 +19,9 @@
 - Implement "library aliases", so you can load SRFI-69 code by typing
   e.g. `(load-module 'hash-table)`
 
+- Incorporate some elements of the Scheme Prelude from Programming
+  Praxis
+
 ** Bugs and known limitations
 
 ** How to list all bound symbols in various Schemes
@@ -29,8 +32,9 @@
 - Chibi: ?
 - MIT Scheme: ?
 - Chicken: ?
-- Kawa: `environment-fold`
-- JScheme: ?
+- Kawa 3.0: `environment-fold`
+- JScheme 7.2: ?
+- Scheme 48 1.9
 
 ** Idea: TRACE-LET, for tracing of intermediate variables
 
@@ -247,6 +251,1285 @@ In Scheme 48 1.9, which also does not export its own version of `READ-LINE` to t
 "Mary\t5.50\t22" 
 "Susie\t4.25\t18")
 ```
+
+** The JScheme Manual
+
+*** User Manual
+
+**** Downloading JScheme
+
+Downloading the jscheme.jar file
+
+The simplest way to access Jscheme is just to download the jscheme.jar file and put it on your classpath.
+
+Once jscheme.jar is downloaded, you can put it in your classpath, and run it as an interpreter:
+
+    % java jscheme.REPL
+    > (* 12345679 8)
+    98765432
+    > (exit)
+    %
+
+or as a Scheme->Java compiler:
+
+    % cat > Hello.scm
+    (display "Hello World") (newline)
+    ^D
+    % java jsint.Compile Hello.scm
+    % javac Hello.java
+    % java Hello
+    Hello World
+    %
+
+**** Downloading the source distribution from the CVS server
+
+If you want the entire source distribution, then you can use the anonymous CVS download facilities at sourceforge.net to download and build Jscheme. Jscheme sourceforge site You can download the source code directly using anonymous CVS as follows:
+
+    % cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/jscheme login
+     (when prompted for a password for anonymous, simply press the Enter key)
+    % cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/jscheme co jscheme
+
+Occasionally, Sourceforge changes the name of the cvs host (its happened twice so far). If the above instructions don't work, try the official sourceforge instructions. You can then build jscheme.jar from the source as follows:
+
+Under Linux or Mac OS X: Run the src/build/bootstrap script from the toplevel of the jscheme folder, after making sure that the JDK has been installed on your system:
+
+      % cd jscheme
+      % bin/make
+      %
+      % java -cp lib/jscheme.jar jscheme.REPL
+      > (java.util.Date.)
+      Mon Jan 07 14:53:23 EST 2002
+      > ....
+
+Under Windows: Run the build/bootstrap.bat script from the toplevel of the jscheme folder, after making sure that the JDK has been installed on your system:
+
+      % cd jscheme
+      % bin/make
+      %
+      % java -cp lib/jscheme.jar jscheme.REPL
+      ....
+
+This creates a file jscheme.jar in the jscheme/lib folder.
+
+**** The JScheme Command Line
+
+Assuming that jscheme.jar is on your classpath, you can invoke a Scheme interpreter using
+
+    % java jscheme.REPL file1 file2 file3 ... '(expr1)' '(expr2)'
+    > ...
+
+Jscheme can also be supplied command line arguments that will load several files (file1, file2, ...) and evaluate several expressions ( (expr1) (expr2) ...). The files and expressions are loaded or evaluated in the order they appear on the command line. Thus the following command
+
+    % java jscheme.REPL file1 '(expr1)' file2 '(expr2)' file3 ...
+    >
+
+is equivalent to
+
+    % java jscheme.REPL 
+    > (load "file1")
+    > (expr1)
+    > (load "file2")
+    > (expr2)
+    > (load "file3")
+    > ...
+
+Finally, you can make pass command line arguments to a Scheme procedure using the "-main" argument to specify the procedure name and the sequence of arguments, as follows:
+
+    % java jscheme.REPL test.scm -main rundemo a "this is a test" 123
+    >
+
+The arguments are passed as an array of strings to the procedure whose name specified after the "-main" argument. That is, this is equivalent to:
+
+    % java jscheme.REPL
+    > (load "test.scm")
+    > (rundemo a "this is a test" 123)
+
+**** The JScheme compiler
+
+The JScheme compiler provides one way of compiling a Scheme program Prog.scm into a Java class, Prog.java The compiled program can be loaded into another program using
+
+(packagename.Prog.load)
+
+which behaves exactly the same as
+
+(load "packagepath/Prog.scm")
+
+You can also specify a main procedure in the Scheme program which will
+get compiled into a main method of the Java program. We now give an
+example to illustrate this process.
+
+First we create a test file to compile. Note that the compiler
+requires you to explicitly import all classes, even the java.lang
+classes (you could also use the full name java.lang.System.out$). Also
+note that you can access the command line args by writing a procedure
+main with one paramter args. This will be compiled into the public
+static void main method of the class and provides a way of accessing
+the argument array.
+
+    % cd demo/test
+    % cat > Prog.scm
+    (import "java.lang.System")
+    (import "java.lang.reflect.Array")
+    (define (main args)
+      (.println System.out$ (java.util.Date.))
+      (.println System.out$ (Array.get args 0))
+      (System.exit 0)
+     )
+    ^D
+    % cd ../..
+
+Now we compile the program (using the -p switch to set the package and the -v switch to specify verbose output). After compiling to java, we compile the java to byte codes and then run the program
+
+    % java jsint.Compile -v -p demo.test Prog.scm
+    % javac Prog.java
+    % java demo.test.Prog "Hello, World"
+    Sat Apr 13 10:42:25 EDT 2002
+    Hello, World
+    %
+
+Compiler switches:
+
+    "-p PACKAGE" is the switch for setting the package name for the compiled Jscheme program.
+    "-v" ... verbose mode 
+
+The JScheme Applet
+
+If you download the source distribution, then you can visit the file
+   
+src/contrib/jswebapp/jscheme/demo/JSchemeEvaluator.html
+
+which provides an applet for writing and running Scheme code.
+
+**** Calling JScheme from Java
+
+Using a Single Static JScheme Evaluator
+
+Jscheme can be called from Java using the JS class which evaluate expressions in a single statically defined JScheme evaluator.
+
+For example, you can:
+
+    Initialize an application by loading Scheme expressions from a file:
+
+          JS.load(new java.io.FileReader("app.init"));
+        
+
+    Run the Scheme procedure (describe) to describe the current object like this:
+
+        JS.call("describe", this);
+        
+
+    If you need to call a procedure with more than three arguments use apply().
+    Evalute a string as an expression:
+
+        String query = "(+ (expt (Math.sin 2.0) 2) (expt (Math.cos 2.0) 2))";
+        System.out.println(query + " = " + JS.eval(query));
+        
+
+Unit test:
+
+   (assert (equal? (+ 2 3) (JS.eval '(+ 2 3))))
+   (assert (= (+ 2 3) (JS.eval "(+ 2 3)")))
+   (assert (= (+ 2 3) (JS.call "+" 2 3)))
+   (assert (= (+ 2 3) (JS.call + 2 3)))
+   (assert (= (+ 2 3) (JS.apply "+" (JS.list 2 3))))
+   (JS.load "(define (f x) (+ x (g x))) (define (g x) (* x 3))")
+   (assert (= (f 3) 12))
+
+**** Using an Independent JScheme Evaluator
+
+A better approach is to use the new `jscheme.JScheme` class which
+allows you to create an independent JScheme evaluator that can be used
+just as the static JS class above.
+
+    jscheme.JScheme js = new jscheme.JScheme();
+    js.eval("....")
+    js.call(a, b,c,d,e);
+    ...
+
+*** Reference Manual
+
+Jscheme is a dialect of Scheme which features a simple and comprehensive interface to Java.
+
+- It allows one to access all methods, constructors, and fields for
+  any Java classes by name.
+
+- It provides access to Java literals, Java scalar operations, Java
+  threads, and Java exception handling.
+
+- Jscheme supports all of the R4RS specification of Scheme, with two
+  exceptions: continuations are only partially supported and strings
+  are immutable.
+
+The following sections provide a simple description of the syntax and
+semantics of Jscheme and highlight those few points where Jscheme
+differs from R4RS Scheme:
+
+- Syntax: Literals, Quasi-strings, and s-expressions
+- Control: Special Forms, Exception Handling, and Multi-threading
+- Java Access: the JavaDot notation
+- Built-ins: The R4RS primitives supported by Jscheme
+- Modules: The Jscheme module system
+
+**** Syntax
+
+JScheme syntax agrees with R4RS Scheme syntax except for the syntax
+for literals (which incorporates all of the Java literal syntax as
+well as most of R4RS literal syntax) and string syntax (JScheme allows
+multi-line strings and various sorts of quasi-strings as well).
+
+- Literals
+- Quasi-strings
+- S-expressions
+
+***** Literals
+
+Jscheme Literals are as in Scheme with a few extensions (shown in red)
+which allow a simpler interface with Java.
+
+Jscheme also has support for quasi-strings and a heavier but more
+powerful strong quasi-string notation. These both provide a simple way
+to generate complex string data in Scheme (e.g. generating HTML, SQL
+queries, Java code, Jython code,....)
+
+The null pointer value:
+
+    #null
+
+Boolean values -- the true and false values:
+
+    #t
+    #f
+
+Integer values: we allow all Java syntax for integers, e.g.
+
+         12               -- an integer, the default 
+         040              -- octal
+         0xFFCCAA         -- hex
+         132L             -- a long
+
+Floating point values: we allow all Java floating point syntax,
+
+     
+        123.45            -- a double, the default  
+          1.2345E-2       -- scientific notation for doubles
+        123.45F           -- a float
+         42D              -- a double 
+
+Characters: Jscheme allows either Scheme syntax or Java syntax, where the latter has a prepended # sign:
+
+        #\space           -- scheme syntax
+        #\a               -- scheme syntax  
+        #'a'              -- java-like syntax 
+        #'\n'             -- java-like syntax
+        #'\040'           -- octal escapes
+        #'\u4FA3'         -- unicode escapes 
+
+Strings and Symbols: as in Scheme
+
+        "ab\n\040\uAAC4" -- a string with various Java escapes
+        car             -- a symbol 
+        Math.sin        -- a symbol 
+
+***** Quasi-string notation
+
+Quasi-strings provide a mechanism for constructing a complex string where parts of the string are generated by evaluating Scheme expressions.
+
+Quasi-string notation is now the default in Jscheme. There are two flavors of quasi-strings, regular and strong.
+
+****** Regular Quasi-strings
+
+The regular notation allows you to write code in which {...} denotes a
+string (instead of "...."). The quasi-string notation also allows you
+to escape into Scheme using [...] to generate an expression which will
+be inserted into the string. In quasi-strings you quote the curly
+braces {} and the square brackets [] which you want to appear
+literally in the string by preceding them with a backslash:
+
+           \{   \}  \[  \]
+
+You don't need to quote the double quotes, which is convenient for
+HTML generation.
+
+For example, the following procedure creates an li element with class attribute c:
+
+    > (define (li c x) {<li class="[c]">[x]</li>})
+    li
+
+    > (li 'warning {<a href="#licence">Licensing information</a>})
+    <li class="warning"> <a href="#licence">Licensing information</a> </li>
+
+The quasistring notation is converted (at read time) into the
+following scheme code
+
+      (define (li c x) (string-append "<li class=\"" c "\">" x "</li>"))
+
+Because []{} have a special role in Jscheme, they must not appear in
+variables or symbols. There is one exception which is that the pair of
+characters [] may appear inside symbols names, thus
+
+    (define types '(Object Object[] java.lang.String[]))
+
+is allowed.
+
+****** Strong Quasi-string notation
+
+One problem with the quasi-string notation is that you still need to
+quote the close curly braces and open square brackets that occur
+within. This is inconvenient when generating program code that
+contains many curly braces and square brackets (e.g. javascript, CSS,
+or Java code).
+
+The Strong Quasi-string notation provides a simple solution. The idea
+is to use #{ and }# instead of { and }, and to escape from the strong
+quasi-strings using #[ and ]# instead of [ and ]. For example, we
+write a program that generates a Java class
+
+    > (define  (prog version)
+    #{
+         public class Test {
+            int [] a = new int[] { 1,2,3,4,5};
+            String version = "#[ version ]#";
+
+           public static void main(String[] args) {;}
+        }
+    }#
+    )
+    (lambda prog (version)...)
+
+
+    > (begin (display (prog "abc 6/16/04")) (newline) (newline) 'yes)
+
+         public class Test {
+            int [] a = new int[] { 1,2,3,4,5};
+            String version = "abc 6/16/04";
+
+           public static void main(String[] args) {;}
+        }
+
+
+    yes
+
+    >
+
+Nothing prevents you from nesting quasi-strings inside
+strong-quasi-string escapes, or vice-versa, e.g.
+
+     #{ some text #[ (list 'and 'an {excape "here" with reg quasi-strings }) ]# more text }#
+
+The idea is that strong quasi-strings are useful when quoting program
+text, but standard quasi-strings are more convenient for other
+text.
+
+***** S-expressions
+
+JScheme syntax is identical to R4RS Scheme syntax except for the
+literal and quasi-string syntax described above. In particular, a
+JScheme program is a sequence of s-expressions.
+
+An S-expression is one of the following:
+
+- A literal
+
+- Boolean, char, short, int, long, float, double, string
+
+- A quasistring
+
+        {...[---]...[---]...   }  or
+
+        #{...#[---]#...#[---]#...   }
+
+- A sequence of zero or more sexpressions enclosed in parentheses:
+
+        (S1 S2 ... Sn)
+
+- A quoted or quasi-quoted expression (as in R4RS Scheme):
+
+            '(a b c (()) (de f))
+
+            `( 1 () ,(+ 3 4) ,@(3 (4 5) 6) apple )
+
+- A vector (as in R4RS Scheme):
+
+         #(1   'red   1.2)
+
+**** Control
+***** Special Forms and Macros inherited from Scheme
+
+Jscheme adopts the standard special forms and macros of R4RS Scheme
+and adds a few (in blue) to improve the Java interface (e.g. tryCatch):
+
+    (quote EXPR) or ' EXPR -- intuitively, the quote indicates that
+    the EXPR is to be treated as data and should not be evaluated. The
+    precise semantics are a little more involved as we must state what
+    syntax is allowed inside (e.g. quotes, Java Literals, vectors,
+    ...) and how that syntax is treated.
+
+    (begin EXPR1 EXPR2 ... EXPRn) -- this evaluates the expressions in
+    order, first EXPR1, then EXPR2. The value of the last expression
+    is returned. The non-final expresssions only affect program state
+    by their side effects.
+
+    (if EXPR1 EXPR2 EXPR3) -- this first evaluates EXPR1 to get a
+    value V. If V is equal to the boolean value #f, then EXPR2 is
+    evaluated, otherwise EXPR3 is evaluated.
+
+    (if EXPR1 EXPR2) -- this is implemented as (if EXPR1 EXPR2 #f)
+
+    (or EXPR1 EXPR2 ...) -- The expressions are evaluated in order
+    until either one evaluates to a value V not equal to #f or all
+    expressions are evaluated. In the former case, V is returned, in
+    the latter #f is returned.
+
+    (and EXPR1 EXPR2 ...) -- The expressions are evaluated in order
+    until one of the expressions evaluates to #f or the end of the
+    list is reached. If there are no expressions, then #t is returned;
+    otherwise, the value of the last expression to be evaluated is
+    returned.
+
+    (set! VAR EXPR) -- Here VAR must be a global or local scheme
+    variable or a Java Literal representing a static Java variable. In
+    each case, the EXPR is evaluated and its value is assigned to the
+    variable.
+
+    (define VAR EXPR ) -- This adds the VAR to the (local or global)
+    environment, and assigns it the value V obtained by evaluating
+    EXPR.
+
+    (define (VAR0 VAR1 ... VARN) EXPR1 ... EXPRN ) -- this is
+    equivalent to (define VAR0 (lambda (VAR1 ... VARN) EXPR1 ... EXPRN))
+
+    (lambda (V1 ... VN) EXPR1 ... EXPRM) -- this creates a closure
+    C. When the closure is applied to N values A1 ... An, a new
+    environment is created in which Ai is bound to Vi, and the
+    expressions are evaluated in order, the value of the last
+    expression is returned.
+
+    (lambda (V1 ... VN . R) EXPR1 ... EXPRM) -- This closure can be
+    applied to a N or more arguments. R is then bound to the list
+    containing all arguments after the Nth.
+
+    (lambda R EXPR1 ... EXPRM) -- This closure can be applied to a
+    list of 0 or more arguments. R is bound to the list of arguments.
+
+    (cond (EXPR1a EXPR1b ... EXPR1z) .... (EXPRNa ... EXPRNz))
+
+    (quasiquote EXPR) or ` EXPR -- the quasiquote
+
+    (unquote EXPR) or , EXPR -- (must appear in quasiquoted
+    expression)
+
+    (unquote-splicing EXPR) or ,@ EXPR -- (must appear in quasiquoted
+    expression)
+
+    (let ((V1 EXPR1) .... (Vn EXPRN)) E1 ... EM)
+
+    (let V0 ((V1 EXPR1) .... (Vn EXPRN)) E1 ... EM)
+
+    (let* ((V1 EXPR1) .... (Vn EXPRN)) E1 ... EM)
+
+    (letrec ((V1 EXPR1) .... (Vn EXPRN)) E1 ... EM)
+
+    (case EXPR ((C1a ... C1z) EXPR1) .... (Vn EXPRN)) E1 ... EM)
+
+    (do ((V1 EXPR1) .... (Vn EXPRN)) E1 ... EM)
+
+    (delay EXPR)
+
+***** JScheme extensions to the control structure of Scheme
+
+
+(tryCatch EXPR F) this evaluates the EXPR to obtain a return value V;
+if, however, a Java exception E is thrown, it calls (F E) to obtain a
+return value, e.g.,
+
+      (define (string->double S) 
+          (tryCatch (Double. S) (lambda (e)
+             (throw (RuntimeError. "Number format error")))))
+      (string->double "1.2e3")
+      (string->double "1.2e 3")
+
+(define-macro name (lambda ...)) When the macro "name" is applied to
+its arguments, it generates an expression which is then passed back to
+the evaluator.
+
+      (define-macro (newif Test Then Else) `(if ,Test ,Then ,Else))
+      (define-macro when (lambda (Test . Actions) `(if ,Test (begin . ,Actions))))
+
+Thunks are runnable objects. This allows Jscheme to easily implement
+multi-threading.
+
+    (define (loop N D) 
+        (tryCatch (begin (Thread.sleep D) (display N) (newline) (loop (+ N 1) D))
+                  (lambda (e) (display (list "thread interrupted" e)) (newline))))
+    (define s (Thread. (lambda() (loop 0 1000L))))
+    (define t (Thread. (lambda() (loop 0 5000L))))
+    (.start s)
+    (.start t)
+    (.suspend t)
+    (.resume t)
+    (.stop s)
+    (.stop t)
+
+(define-method ....) -- this has the same syntax as define except that
+the parameters can have the form (NAME Type) instead of just NAME,
+where Type is a Java class name, e.g.
+
+    (define-method (iterate (items Iterator) action)
+      (if (.hasNext items)
+          (begin (action (.next items))
+                 (iterate items action))))
+
+    (define-method (iterate (items Collection) action)
+      (iterate (.iterator items) action))
+
+    (define-method (iterate (items Map) action)
+      (iterate (.entrySet items) action))
+
+    (define-method (iterate (items jsint.Pair) action)
+      (action (car items))
+      (let ((items (cdr items)))
+        (if (pair? items) (iterate items action))))
+
+    (define-method (iterate (items Object[]) action)
+      (let loop ((i 0) 
+                 (L (vector-length items)))
+        (if (< i L) (begin (action (vector-ref items i)) (loop (+ i 1) L)))))
+
+    (define (printit x) (.println System.$out x))
+    (iterate '(1 2 3 4) printit)
+    (iterate (list->vector '(1 2 3 4)) printit)
+    ...
+
+(time EXPR [OptionalNumRepeats]) This little macro lets you time
+operations.
+
+**** Java Access
+
+***** The Java Dot Notation
+
+The Java Dot Notation provides Jscheme with full access to all Java
+constructors, methods, and fields for all Java classes on the current
+classpath. The syntax is very simple as explained in the box below and
+demonstrated in the examples on the rest of this page.
+
+Java literals have the same syntax as Java members except for a
+possible "." or "$" prefix or suffix. Overloaded methods and
+constructors are disambiguated dynamically at runtime. Adding a "#" to
+the end of a Javadot symbol allows access to private fields, methods,
+and constructors (and to members with protected, package, and public
+visibility as well).
+
+Syntax	Type of Member	Example
+"." at the end 	constructor	(Font. NAME STYLE SIZE)
+"." at the beginning 	instance member	(.setFont COMP FONT)
+"." at beginning and "$" at the end 	instance field	(.first$ '(1 2))
+"." only in the middle 	static member	(Math.round 123.456)
+".class" suffix 	Java class	Font.class
+"$" at the end 	static field	Font.BOLD$
+"$" in the middle 	inner class	java.awt.geom.Point2D$Double.class
+"$" at the beginning 	packageless class	$ParseDemo.class
+"#" at the end 	private access	(.jsint.Symbol.name$# 'a)
+
+***** Examples of Java Literals
+
+The import statement allows Java package names to be omitted in Java literals, just as in Java:
+
+(import "java.awt.*")	; => import java.awt.*;
+
+A constructor is signified by trailing "." as in "Class."  The
+particular constructor is determined dynamically by analyzing the
+types of the arguments. The Scheme and corresponding Java would be:
+
+(define win (Frame. "Hello"))
+(define L (java.awt.Label. "Hi"))
+
+Frame win = new Frame("Hello");
+Label L  = new Label("Hi");
+
+An instance method is signified by a leading "." as in ".Name" The
+examples would be written in Scheme and Java as:
+
+(.resize win1 200 300)
+(.Container.resize win2 200 300)
+(.java.awt.Component.resize win3 200 300)
+
+win1.resize(200, 300);
+((Container) win2).resize(200,300);
+((java.awt.Component) win3).resize(200,300);
+
+A static method is signified by "." only in the middle as in
+"Class.Name".  The examples would be written in Scheme and Java as:
+
+(System.exit 0)
+(java.lang.Math.sin 3.1415926) 	
+
+System.exit(0);
+java.lang.Math.sin(3.1415926)
+
+A static variable is signified by a "$" at the end and no leading "."
+as in "Class.Name$".  The examples would be written in Scheme and Java
+as:
+
+(.println System.out$ "hi")
+(set! U.useJavaSyntax$ #t)
+
+System.out.println("hi");
+U.useJavaSyntax = true;
+
+An instance variable is signified by a "$" at the end and a leading
+"." as in ".Class.Name$" or ".Name$".  Instance variables are viewed
+as get/set functions, while static variables are viewed as Scheme
+variables which can be evaluated and set!'d.  The examples would be
+written in Scheme and Java as:
+
+(define a (.Pair.first$ x))
+(define b (.SubPair.first$ x))
+(define c(.Pair.first$ x newval))
+(define d (.SubPair.first$ x newval))
+
+(define L '(1 2 3))
+(define e (.first$ L))
+(.first$ L 5)
+
+Object a=((Pair)x).first
+Object b=((SubPair)x).first
+Object c=((Pair)x).first = newval;
+Object d=((SubPair)x).first = newval;
+
+Pair L = new Pair(new Integer("1"),
+         new Pair(new Integer("2"),
+         new Pair(new Integer("3"),Pair.EMPTY)));
+Object e = L.first;
+L.first= 5;
+
+The suffix ".class" signifies a class literal.  The examples would be
+written in Scheme and Java as:
+
+(define c1 Object.class)
+(define c2 Line2D$Float.class)
+(define c3 int.class)
+(define c4 float[][].class )
+(define c5 Float[].class)
+
+Class c1 = Object.class;
+Class c2 = Line2D.Float.class;
+Class c3 = int.class;
+Class c4 = float[][].class;
+Class c5 = Float[][].class;
+
+Note that in Jscheme, "$" is used to indicate inner classes rather
+than "." as used by Java.
+
+Jscheme also provides a mechanism for precisely and unambiguously
+specifying a method or constructor by giving its name, class, and
+argument types as shown below:
+
+(define win
+  (constructor "Frame" "String"))
+
+(define frame-add 
+  (method "add" "Frame" "Component"))
+
+**** Built-ins
+
+Jscheme adopts almost all of the [standard
+procedures](http://web.archive.org/web/20170517193646/http://people.csail.mit.edu/jaffer/r4rs_8.html)
+of [R4RS
+Scheme](http://web.archive.org/web/20170515071905/http://people.csail.mit.edu/jaffer/r4rs_toc.html).
+
+It does not fully implement call/cc. Also, while JScheme provides
+string mutators string-set! and string-fill!, JScheme strings are
+implemented as Java Strings which are considered immutable, so use
+these procedures carefully.
+
+The only R4RS primitives that are not fully supported are
+
+    (call-with-current-continuation ) ONLY PARTIALLY IMPLEMENTED
+    (complex? ) NOT IMPLEMENTED
+    (rational? ) UNIMPLEMENTED
+    (real? ) UNIMPLEMENTED 
+
+A list of all essential R4RS primitives is provided below.
+
+    (exact->inexact n ) -- converts an exact number n to an inexact number
+    (inexact->exact x ) -- converts an inexact number x to an exact number
+    (* x y ... z) multiplies a sequence of numbers
+    (+ x y ... z ) adds a sequence of numbers
+    (- x y ) subtracts two numbers
+    (/ x y ) divides two numbers
+    (< x y ) compares two numbers, returns #t if x is less than y
+    (<=x y ) compares two numbers, returns #t if x is less than or equal to y
+    (= x y) compares two numbers, returns #t if x is equal to y
+    (> x y ) compares two numbers, returns #t if x is greater than y
+    (>= x y ) compares two numbers, returns #t if x is greater than or equal to y
+    (abs x ) the absolute value of x
+    (acos x ) the arc cosine of x
+    (append x y) appends two lists x y to get a new list
+    (apply f arguments ) applies the function f to the list of arguments
+    (asin x) the arc sine of x
+    (assoc x alist) alist is a list of pairs (key value), if x is one of those keys, the value is returned. equal? is used to compare x and key.
+    (assq x alist) Same as assoc, but eq? is used to compare x and key.
+    (assv x alist) Same as assoc, but eqv? is used to compare x and key.
+    (atan x) the arc tangent of x
+    (boolean? b ) #t if b is a boolean value: #t or #f
+    (caaaar ) (lambda (x) (car (car (car (car x)))))
+    (caaadr ) (lambda (x) (car (car (car (cdr x)))))
+    (caaar ) (lambda (x) (car (car (car x))))
+    (caadar ) (lambda (x) (car (car (cdr (car x)))))
+    (caaddr ) (lambda (x) (car (car (cdr (cdr x)))))
+    (caadr ) (lambda (x) (car (car (cdr x))))
+    (caar ) (lambda (x) (car (car x)))
+    (cadaar ) (lambda (x) (car (cdr (car (car x)))))
+    (cadadr ) (lambda (x) (car (cdr (car (cdr x)))))
+    (cadar ) (lambda (x) (car (cdr (car x))))
+    (caddar ) (lambda (x) (car (cdr (cdr (car x)))))
+    (cadddr ) (lambda (x) (car (cdr (cdr (cdr x)))))
+    (caddr ) (lambda (x) (car (cdr (cdr x))))
+    (cadr ) (lambda (x) (car (cdr x)))
+    (call-with-current-continuation ) ONLY PARTIALLY IMPLEMENTED
+    (call-with-input-file )
+    (call-with-output-file )
+    (car L ) the first element in the list L (src)
+    (cdaaar ) (lambda (x) (cdr (car (car (car x)))))
+    (cdaadr ) (lambda (x) (cdr (car (car (cdr x)))))
+    (cdaar ) (lambda (x) (cdr (car (car x))))
+    (cdadar ) (lambda (x) (cdr (car (cdr (car x)))))
+    (cdaddr ) (lambda (x) (cdr (car (cdr (cdr x)))))
+    (cdadr ) (lambda (x) (cdr (car (cdr x))))
+    (cdar ) (lambda (x) (cdr (car x)))
+    (cddaar ) (lambda (x) (cdr (cdr (car (car x)))))
+    (cddadr ) (lambda (x) (cdr (cdr (car (cdr x)))))
+    (cddar ) (lambda (x) (cdr (cdr (car x))))
+    (cdddar ) (lambda (x) (cdr (cdr (cdr (car x)))))
+    (cddddr ) (lambda (x) (cdr (cdr (cdr (cdr x)))))
+    (cdddr ) (lambda (x) (cdr (cdr (cdr x))))
+    (cddr ) (lambda (x) (cdr (cdr x)))
+    (cdr L ) the list obtained by removing the first element from the list L
+    (ceiling x ) return the smallest integer greater than or equal to x
+    (char->integer )
+    (char-alphabetic? )
+    ((char-ci<=? C1 C2) ) case-insensitive comparison of characters C1,C2
+    (char-ci )
+    (char-ci=? )
+    (char-ci>=? )
+    (char-ci>? )
+    (char-downcase )
+    (char-lower-case? )
+    (char-numeric? )
+    (char-upcase )
+    (char-upper-case? )
+    (char-whitespace? )
+    ((char<=? C1 C2) ) case-sensitive comparison of characters
+    (char )
+    (char=? )
+    (char>=? )
+    (char>? )
+    (char? )
+    (close-input-port )
+    (close-output-port )
+    (complex? ) NOT IMPLEMENTED
+    (cons x L ) the list obtained by adding x to the beginning of the list L (src)
+    (cos x) the cosine of x in radians
+    ((current-input-port) )
+    ((current-output-port) )
+    (display T ) print the term T on the Java console
+    ((eof-object? X) ) returns true if X is the end of file object returned by read
+    ((eq? A B) ) returns #t when A and B are both #null or when they are both the same object
+    (equal? x y) returns #t if x and y are both #null or represent the same numbers, or are ".equals" as Java objects, or are lists whose corresponding elements are "equal?", or are arrays whose corresponding elements are "equal?". or are
+    ((eqv? A B) ) returns #t if x and y are both #null or represent the same numbers, or are ".equals" as Java objects.
+    ((eval T) ) this evaluates the expression T in the current toplevel environment. The expression T is an expression formed from symbols and objects cons'd together.
+    (even? x) #t if x is an even number
+    ((exact? x) ) #t if x is a byte, short, or int
+    (exp x ) the exponential function applied to x
+    (expt n e ) raise n to the power e
+    (floor x) return the largest integer less than x
+    (for-each P L ) apply the procedure P to every element of the list L
+    (force )
+    (gcd x y ) find the greatest common divisor of x and y
+    ((inexact? x) ) #t if x is a float or double
+    ((input-port? x) )
+    ((integer->char i) ) converts i to 16 bit unicode character
+    (interaction-environment)Return the current interaction environment.
+    (integer? x ) #t if x is an integer
+    (lcm x y) return the least common multiple of x and y
+    (length L) return the length of the list L
+    (list x y ... z) make a list from the elements x, y, ... z
+    ((list->string Cs) ) converts the list Cs of characters to a string
+    ((list->vector Os) ) converts the list Os of objects to a vector
+    ((list-ref L N ) returns the (N+1)st element of L. So (list-ref L 0) returns the first element of L.
+    (list-tailL N ) returns the list obtained by removing the first N elements from L
+    (list? L) returns #t if L is a list
+    (load F) reads and interprets the Scheme expressions in the file F in the current toplevel environment
+    (log x) the natural log function applied to x
+    (macroexpand X)
+    (make-string )
+    (make-vector )
+    (map F L) return the list obtained by applying the function F to every element of the list L
+    (max a b c ... d) find the largest of the numbers a, b, ..., d
+    (member x L) return #t if x is a member of the list L
+    (memq )
+    (memv )
+    (min a b c ... d) find the smallest of the numbers a, b, ..., d
+    (modulo n d) return the remainder of n divided by d
+    (negative? x) return #t if x is a negative number
+    (newline) write a newline on the Java console
+    (not b) negates the truth value b
+    (null-environment )
+    (null? L ) return #t if L is the empty list
+    (number->string )
+    (number? x ) return #t if x is a number
+    (odd? x) return #t if x is an odd number
+    (open-input-file )
+    (open-output-file )
+    (output-port? )
+    (pair? L) return #t if L is a pair.
+    (peek-char )
+    (positive? x) return #t if x is a positive number
+    (procedure? p) return #t if p is a procedure
+    (quotient x y ) return the integer quotient of x divided by y
+    (rational? ) UNIMPLEMENTED
+    (read )
+    (read-char )
+    (real? ) UNIMPLEMENTED
+    (remainder x y) return the remainder of x divided by y
+    (reverse L) reverse the list L
+    (round x) return the nearest integer to the number x
+    (scheme-report-environment )
+    (set-car! )
+    (set-cdr! )
+    (sin x) the sine of x
+    (sqrt x) the square root of x
+    (string )
+    (string->list )
+    (string->number )
+    (string->symbol )
+    (string-append a b c ... d) combine the strings a, b, ..., d into a single new string
+    (string-ci<=? )
+    (string-ci )
+    (string-ci=? )
+    (string-ci>=? )
+    (string-ci>? )
+    (string-copy )
+    (string-fill! )
+    (string-length x) return the number of characters in the string x
+    (string-ref )
+    (string-set! )
+    (string<=? )
+    (string )
+    (string=? )
+    (string>=? )
+    (string>? )
+    (string? )
+    (substring s i j ) return the substring of s that starts at position i and ends right before position j, where 0 is the first position in the string.
+    (symbol->string )
+    (symbol? s) return #t if s is a symbol
+    (tan x) tangent of x
+    (truncate x) remove the fractional part of the decimal x to get an integer
+    (vector )
+    (vector->list )
+    (vector-fill! )
+    (vector-length )
+    (vector-ref )
+    (vector-set! )
+    (vector? )
+    (write )
+    (write-char )
+    (zero? z) return #t if z equals 0 
+
+**** Modules
+
+Originally implemented by Derek Upham (derek.upham at ontain.com).
+Modified by Tim Hickey (5/04) to use the "use-module" syntax.
+
+Modules are implemented using the facilty for creating and
+manipulating multiple independent JScheme instances. Each such
+instance constains a DynamicEnvironment which is a set of bindings of
+symbols to values.
+
+Any scheme file can be loaded as a module. The key idea is that when a
+file is loaded as a module it is first loaded into its own Jscheme
+instance (with a new DynamicEnvironment). Then the original
+environment is extended by importing some or all of the bindings from
+the module (possibly with a prefix).
+
+The environments created when loading a module are cached so that
+modules are only loaded once. Moreover, a module can recursively use
+submodules, but modules can not depend on each other recursively as
+this will cause an infinite loop.
+
+The syntax for using modules is as follows:
+
+(use-module MODULE)
+(use-module MODULE SPECIFIER)
+(use-module MODULE SPECIFIER SYMBOLS)
+(use-module MODULE SPECIFIER SYMBOLS PREFIX)
+
+where
+
+MODULE is a either a filename, or a URL, or the name of a compiled Scheme class
+
+- SPECIFIER is one of the following: 'import-procedures 'import-macros
+  'import and it specifies whether to import procedures, macros, or
+  both. The default value is 'import.
+
+- SYMBOLS is either the symbol 'all or is a list of symbols. The
+  default value is 'all In the former case, all symbols defined in the
+  module are imported to the current environment; in the latter case,
+  only those symbols in the list are imported
+
+- PREFIX is a string which is prepended to each imported symbol from
+  the module before that value is put into the current
+  environment. The default value is the empty string "".
+
+***** Examples
+
+The following are all equivalent:
+
+(use-module "elf/basic.scm")
+(use-module "elf/basic.scm" 'import)
+(use-module "elf/basic.scm" 'import 'all)
+(use-module "elf/basic.scm" 'import 'all "")
+
+The following examples show how to get more control over what is
+imported. You can import only procedures, or only macros, or import
+some subset of the procedure or macros.
+
+> (use-module "elf/basic.scm" 'import-procedures 'all)
+> (print "string")
+
+> (use-module "elf/basic.scm" 'import-procedures '(describe print))
+> (describe print)
+
+> (use-module "elf/basic.scm" 'import-macros 'all)
+> (dotimes (x 5) (print x))
+
+> (use-module "elf/basic.scm" 'import-macros '(dotimes))
+> (dotimes (x 5) (display x))
+
+>(use-module "elf/basic.scm" 'import '(describe print dotimes))
+> (dotimes (x 5) (print x))
+
+Finally, you can add arbitrary prefixes to the symbols that are
+imported, but prefixes are never applied to the macros.
+
+> (use-module "elf/basic.scm" 'import-procedures '(describe print) "elf:")
+> (elf:describe 5)
+
+> (use-module "elf/basic.scm" 'import-procedures '(describe print) "elf-")
+> (elf-describe (java.awt.Button. "hi"))
+
+> (use-module "elf/basic.scm" 'import '(describe print dotimes) "elf:")
+> (dotimes (x 5) (elf:print x))
+
+***** Explanations
+
+    (use-module "elf/basic.scm") is equivalent to
+    (use-module "elf/basic.scm" 'import 'all "")
+
+This creates a new JScheme instance js and loads elf/basic.scm into
+js. Then it takes each of the symbols defined in the js environment
+and transfers those bindings verbatim to the current
+environment. Note: any closures imported into the current environment
+will point to the js environment. Hence, we can freely modify the
+values of the primitives (set! car cdr) without changing the behavior
+of the procedures and macros imported from elf/basic.scm.
+
+    (use-module "elf/basic.scm" 'import-procedures) is equivalent to
+    (use-module "elf/basic.scm" 'import-procedures 'all "")
+
+This does the same as above, but only imports the procedures, not the
+macros.
+
+    (use-module "elf/basic.scm" 'import-procedures '(describe apropos)) is equivalent to
+    (use-module "elf/basic.scm" 'import-procedures '(describe apropos) "")
+
+This does the same as the first example, but only imports two things,
+the bindings for the describe and apropos procedures.
+
+    (use-module "elf/basic.scm" 'import-macros '(dotimes)) is equivalent to
+    (use-module "elf/basic.scm" 'import-macros '(dotimes) "")
+
+This does the same as the first example, but only imports the binding
+for the dotimes macro.
+
+    (use-module "elf/basic.scm" 'import '(describe apropos dotimes))
+
+This does the same as the first example, but only imports three
+things, the bindings for the describe and apropos procedures and the
+binding for the dotimes macro.
+
+    (use-module "elf/basic.scm" 'import-procedures '(describe apropos) "elf:")
+
+This does the same as the previous example, but it binds the
+describe,apropos values from the js environment to the symbols:
+
+      elf:describe
+      elf:apropos
+
+Note that the prefix is not applied to macros. The rationale here is
+that macros are changing the syntax of the language, and that
+introducing prefixes makes the syntax even more confusing.
+
+    (use-module "elf/basic.scm" 'import-procedures '(describe apropos) "elf-")
+
+This does the same as the previous example, but it binds the
+describe,apropos values from the js environment to the symbols:
+
+      elf-describe
+      elf-apropos
+
+Note that the prefix is not applied to macros. The rationale here is
+that macros are changing the syntax of the language, and that
+introducing prefixes makes the syntax even more confusing.
+
+    (use-module "elf/basic.scm" 'import '(describe apropos dotimes) "elf:")
+
+This does the same as the previous example, but it binds the
+describe,apropos,dotimes values from the js environment to the
+symbols:
+
+      elf:describe
+      elf:apropos
+      dotimes
+
+Note that the prefix is not applied to macros. The rationale here is
+that macros are changing the syntax of the language, and that
+introducing prefixes makes the syntax even more confusing.
+
+***** eval and environments
+
+There are three named environments accessible from Jscheme:
+
+- (null-environment) -- which contains no definitions, but does handle
+  Javadot notation
+
+- (initial-environment) -- which contains only the Jscheme primitives
+
+- (interaction-environment) -- which is the "current" toplevel
+  environment
+
+The eval procedure can be called with any of these three environments
+as its second parameter, e.g.
+
+> (eval `(jsint.Op.add 3 4) (null-environment)) 
+ 7
+> (eval '(begin (set! + *) (+ 3 4)) (initial-environment))
+ SchemeException:[[ERROR: attempting to alter bindings in locked environment:+ <-- {jsint.Primitive *[0,n]}""]]
+> (eval '(begin (set! + *) (+ 3 4)) (interaction-environment))
+12
+> (+ 3 4)
+12
+
+*** JLIB Manual
+
+JLIB is a high-level interface to the Java AWT.
+
+The key idea is to use the flexibility and expressiveness of Scheme to
+create a GUI-building library which allows complex GUIs to be built by
+evaluating a simple and declarative expression whose structure closely
+resembles the structure of the GUI itself.
+
+The JLIB model is based on five fundamental concepts:
+
+- COMPONENTS -- there are a small number of ways to construct basic
+  components (buttons, windows, ...)
+
+- LAYOUTS -- there are a small number of ways to layout basic
+  components (row, col, table, grid, ...)
+
+- ACTIONS -- there is a simple mechanisms for associating an action to
+  a component
+
+- PROPERTIES -- there are easy ways for setting the font and color of
+  components
+
+- TAGGING -- there is a simple mechanism for giving names to
+  components "in place"
+
+Another key idea is that operations on all components should be as
+uniform as possible. For example, there are procedures "readstring"
+and "writestring" which allow one to read a "string" from a component,
+and write a string onto a component. Thus "writestring" can change the
+string on a label, a button, a textfield, a textarea. It can also
+change the title of a window or add an item to a choice
+component. Likewise, readstring returns the label of a button, the
+text in a textarea or textfield, the text of the currently selected
+item in a choice, the title of a window, and the text of a label.
+
+Similarly, JLIB is designed so that the component and layout
+constructors require a few initial arguments of specified types,
+followed by many optional arguments which may apper in any order and
+whose types are used to determine their effect.
+
+For example, a font object will change the font of the component, a
+color object will change the background color, a Listener object will
+add an action listener to the component, a string will generally
+become the label of the object.
+
+The current JLIB primitives are listed in the sections below.
+
+**** Components
+
+Components are created using the functions below. The optional
+arguments are described in the next section and can be used to set the
+color, font, and other properties of the component. The type of the
+argument is used to determine how it affect the component.
+
+- (window TITLE arg1 arg2 ...)
+
+- (button STRING arg1 arg2 ...)
+
+- (textfield STRING NUMCOLS arg1 arg2 ...)
+
+- (textarea NUMROWS NUMCOLS arg1 arg2 ...)
+
+- (choice arg1 arg2 ...)
+
+- (label STRING arg1 arg2 ...)
+
+- (canvas W H ...)
+
+- (menubar NAME arg1 arg2 ...)
+
+- (menu NAME arg1 arg2 ...)
+
+- (menuitem NAME arg1 arg2 ...) 
+
+**** Layouts
+
+Tabular layouts:
+
+- (row arg1 arg2 ...)
+
+- (col arg1 arg2 ...)
+
+- (splitrow s1 s2 R1 R2 arg1 ...) creates a box containing two rows whose relative sizes are given by the proportion s1::s2
+
+- (splitcol s1 s2 C1 C2 arg2 ...) creates a box containing two cols whose relative sizes are given by the proportion s1::s2
+
+- (table ROWS COLS arg1 arg2 ...) creates a box consisting of the specified numbers of rows and columns
+
+- (grid NUMROWS NUMCOLS arg1 arg2 ...) creates a table where all cells have the same size 
+
+These layouts all allow some additional arguments which specify how
+the components are placed in a cell and how they expand when the cell
+is enlarged:
+
+- placement: 'center 'north 'northeast 'east 'southeast ...
+
+- expansion: 'horizontal 'vertical 'both 'none
+
+Border Layout:
+
+- (border arg1 arg2 ...) 
+
+The args can specify properties of the container (e.g. color, font,
+etc.) and they can also include the following terms which add up to
+five components to specified parts of the layout. When the layout is
+resized, the center component expands in both ways, the north and
+south components expand horizontally only, and the east and west
+expand vertically only. The following positional args must precede the
+other args (font/color/etc.)
+
+- (north COMPONENT)
+
+- (south COMPONENT)
+
+- (east COMPONENT)
+
+- (west COMPONENT)
+
+- (center COMPONENT) 
+
+Card Layout
+
+- (cards (card NAME1 COMPONENT) (card NAME2 COMPONENT) ....) -- this creates a COMPONENT with the CardLayout consisting of several NAMEd components. Only one of the cards is visible at a time
+
+- (showcards CARDS NAME) -- this causes the CARDS layout to make the NAMEd card visible. 
+
+**** Arguments to Components and Layouts
+
+Colors -- these set the background color of the component
+
+- standard colors: black, white, red, green, ...
+
+- (color R G B)
+
+- (color 0xRRGGBB) 
+
+Fonts -- these set the font of the component
+
+- (Courier N) (CourierBold N) (CourierItalic N)
+
+- (TimesRoman N) (TimesRomanBold N) (TimesRomanItalic N)
+
+- (Helvetica N) (HelveticaBold N) (HelveticaItalic N)
+
+- (java.awt.Font. NAME STYLE SIZE) 
+
+Actions -- these specify the actions to be carried out when the component receives an action event
+
+- (action (lambda (e) COMMANDS)) 
+
+Size -- (size WIDTH HEIGHT)
+
+- window -- set the size of the window
+
+- textarea -- set the size of the textarea in rows and columns 
+
+Strings
+
+- textarea -- store string in the textarea
+
+- choice -- add the string as one of the choices
+
+- menu -- add the string as a simple menuitem
+
+- menuitem -- set the label of the menuitem to the string 
+
+Components
+
+- for layouts, add the component to the layout 
+
+Tags
+
+- (let ((tag (maketagger))) EXPR) creates a tagger "tag" whose scope is the EXPR
+- (tag STRING) -- returns the component which has been tagged with the string
+- (tag STRING COMPONENT) -- tags the component with the string and returns the COMPONENT 
+
+Lambdas
+
+- (lambda(C) COMMANDS) -- commands to be carried out on the component "C" when it is being created, for example
+- (lambda (C) (.setForeground C blue)) -- sets the foreground color of the component to blue
+- (lambda (C) (.hide C)) -- makes C invisible (although it still takes up space in the layout)
+- (lambda (C) (display (list "just created " C)) (newline)) -- prints a message when C is created 
+
+**** Actions
+
+Reading/Writing on Components
+
+- (readstring COMPONENT) -- reads the text on a component as a string
+- (readexpr COMPONENT) -- reads the text on a component as a Scheme term
+- (readexprlist COMPONENT) -- reads the text on a component as a sequence of Scheme terms and returns a list containing those terms
+- (writeexpr COMPONENT OBJ) -- convert the object to a string and write on the component
+- (writelnexpr COMPONENT OBJ) -- same as above, but add a new line at the end
+- (appendexpr COMPONENT OBJ) -- append the stringified object to the text on the component
+- (appendlnexpr COMPONENT OBJ) -- same as above, but add a newline at the end 
+
+Other Common Java Actions
+
+- (.hide COMP) (.show COMP) hiding or showing a component (or window)
+- (.pack WIN) (.resize WIN) resizing a window
+- (.setForeground COMP COLOR) (.setBackground COMP COLOR)
+- (.setFont COMP FONT)
+- (.addMouseListener COMP (Listener. (lambda(e) (.getX e) (.getY e) ...)))
+- (.addMouseMotionListener COMP (Listener. (lambda(e) (.getX e) (.getY e) ...)))
+- (.fillRect (.getGraphics g) x y w h)
+- (.fillRect (.bufferg$ CANVAS) x y w h) (.repaint CANVAS) -- canvas objects have an associated backbuffer which you can access using (.bufferg$ CANVAS). 
+
+The current JLIB is accessible here and we have a SWING version as
+well, which is accessible here To get the most uptodate version you
+should download the latest jscheme source from CVS.
 
 ** The Scheme Prelude User Manual
 
