@@ -1,4 +1,4 @@
-;;;   -*- Mode: Scheme; -*-
+;;; -*- Mode: Scheme -*-
 
 ;; io.scm -- Utilities for file input/output
 
@@ -46,3 +46,26 @@
         (if (not (eof-object? line))
             (begin (fn line)
                    (loop (read-line port))))))))
+
+(define (read-file/strings f)
+  ;; Pathname -> List
+  (call-with-input-file f
+    (lambda (port)
+      (let loop ((res '()))
+        (let ((line (read-line port)))
+          (if (eof-object? line)
+              (reverse res)
+              (loop (cons line res))))))))
+
+(define (read-file/sexps f)             ; Only for S-exps due to READ.
+  (call-with-input-file f               ; Similar to RUN/SEXPS.
+    (lambda (port) (read port))))
+
+(define (read-file/string f)
+  (call-with-input-file f
+    (lambda (port)
+      (let loop ((str ""))
+        (let ((line (read-line port)))
+          (if (eof-object? line)
+              str
+              (loop (string-append str line))))))))
