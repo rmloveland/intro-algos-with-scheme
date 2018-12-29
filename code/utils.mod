@@ -22,9 +22,6 @@
    filter
    seq
 
-   ;; Files
-   read-file
-
    ;; Vectors
    vector-swap!))
 

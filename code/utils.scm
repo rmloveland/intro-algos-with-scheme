@@ -75,12 +75,6 @@
       (vector-set! V i j*)
       (vector-set! V j i*))))
 
-;; Read in files of S-expressions
-
-(define (read-file f)             ; Only for S-exps due to READ.
-  (with-input-from-file f               ; Similar to RUN/SEXPS.
-    (lambda () (read))))
-
 ;; WITH-INSTRUMENTATION
 
 (define (with-tracing var proc)
