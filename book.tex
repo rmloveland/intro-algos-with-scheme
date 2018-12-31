@@ -61,9 +61,9 @@ they may run to hundreds of pages in length.
 This book is different because its goals are different.
 
 First, it is an \emph{invitation} to algorithms; this means that we
-will cover only a few common algorithms that operate on each of the
-following data structures, and leave more advanced topics to other
-texts.  Data structures covered in this book include:
+will cover only a few common algorithms and data structures that are
+essential to day-to-day programming, and leave more advanced topics to
+other texts.  Data structures covered in this book include:
 
 \begin{itemize}
 \item Lists
@@ -78,43 +78,47 @@ Second, it is an invitation to algorithms \emph{with Scheme}.  This
 means that we will use Scheme to describe the algorithms we want the
 computer to perform.  It is my opinion that the notation provided by
 Scheme provides a clear description of many common algorithms.
+Furthermore, there are not (to my knowledge) any algorithms books
+written using the Scheme language.
 
 \chapter{Introduction}
 
 What is an \emph{algorithm}?
 
 An algorithm is a recipe for getting a job done.  Many algorithms are
-very simple, since many of the jobs we need a computer to do are
-simple.  For example, we may need to sort a list of numbers, or
-calculate the distance between two towns on a map.
+very simple, since many of the jobs we need a computer to do are (or
+appear to be) quite simple.  For example, we may need to sort a list
+of numbers, or calculate the distance between two towns on a map.
 
 ``Sort a list of numbers'' sounds simple, but there is some complexity
 there that needs to be addressed.  How long is the list?  Is it longer
 than the available memory on our machine?  Are the numbers in the list
-in random order?  Or are they almost sorted already?
+in totally random order?  Or are they almost sorted already?
 
 Depending on the answers to these questions, you'll need to choose one
 sorting algorithm over another.  Some take more memory (space).  Some
 require more CPU cycles (time).
 
 Unless you are doing very specialized optimization work, you can
-probably get along very well just knowing one or two of the most
-common algorithms in the area you're currently working in.  If you
-really need something more advanced, you can always look it up and
-implement it.
+probably get along quite nicely knowing one or two of the most common
+algorithms in the area you're currently working in.  If you really
+need something more advanced, you can always look it up and implement
+it.
 
 And that brings us to the point of this book.  We will study one or
-two common algorithms of each type (sorting, searching, &c.).  Then,
+two common algorithms of each type (sorting, searching, etc.).  Then,
 we will implement these algorithms in the Scheme programming language.
-As our mastery increases, we will take on several ``Real World''
-implementation projects, such as writing our own hash tables or a
-regular expression matcher using the basic algorithms we've learned.
+As our mastery increases in later chapters, we will take on several
+``real world'' implementation projects, such as writing our own hash
+tables and a regular expression matcher, all using the basic
+algorithms we've learned.
 
-Along the way, we will observe several themes that repeat:
+Along the way, we will observe several (related) themes that repeat:
 
 \begin{enumerate}
-\item \emph{Divide and conquer}: break the problem into pieces, solve
-  a smaller problem.
+\item \emph{Divide and conquer}: break a problem into smaller
+  sub-problems, solve the sub-problems, and combine the intermediate
+  results to get a final answer.
 \item \emph{Recursion}: Do it again, and again, and again, until
   you're done.
 \end{enumerate}
@@ -131,11 +135,11 @@ default).  By ``comfortable with recursion'', we mean that you
 understand code that looks like this:
 
 \begin{verbatim}
-  (define (+ a b)
-    (if (= a 0)
-        b
-      (+ (decr a)
-         (incr b))))
+(define (+ a b)
+  (if (= a 0)
+      b
+    (+ (decr a)
+       (incr b))))
 \end{verbatim}
 
 A good book for learning the basics of Scheme is \emph{The Little
@@ -150,10 +154,11 @@ Scheme implementation and operating system:
 %% TODO(rml): Fill in tested version numbers.
 \begin{tabular}{ l m r }
 Larceny        & X     & Windows 10, Linux \\
-Chez (Petite)  & X     & Windows           \\
-Gambit         & X     & Windows, Linux    \\
+Chez (Petite)  & X     & Windows 10        \\
+Gambit         & X     & Windows 10, Linux \\
 Scheme 48      & 1.9.2 & Windows 10, Linux \\
-Kawa           & 3.0   & Windows 10, Linux
+Kawa           & 3.0   & Windows 10, Linux \\
+JScheme        & 7.2   & Windows 10
 \end{tabular}
 
 \section{Required libraries}
@@ -230,168 +235,189 @@ user-visible API are prefixed with a \verb|^| character, e.g.,
 \chapter{Sorting, Searching, and Shuffling Lists}
 
 The list data structure is ubiquitous in Scheme programming.  One of
-the most common patterns is to gather up a list of elements, and
-then process them.
+the most common patterns is to gather up a list of elements, and then
+process them in turn.  (When we say that something is a ``list'' in
+Scheme, we mean that it's actually a linked list.)
 
-When we say that something is a ``list'' in Scheme, we mean that it's
-actually a linked list, which has the following structure:
+For example, we might like to walk down through a directory of files,
+checking each file for some interesting property.
 
 \begin{verbatim}
-  > (visualize (list 'Apple 'Banana))
-
-   ---    ---          ---   ---
-  | CAR | CDR | ---> | CAR | CDR | ---> NIL
-   ---    ---          ---   ---
-    |                   |
-   'Apple            'Banana
+(define (dir-walk* interesting? queue)
+  (let ((file #f))
+    (lambda ()
+      (if (not (null? queue))
+          (begin (set! file (car queue))
+                 (set! queue (cdr queue))
+                 (cond
+                  ((file-directory? file)
+                   (let ((new-files (directory-files file)))
+                     (set! queue
+                           (append queue
+                                   (filter interesting? (map (lambda (filename)
+                                                               (string-append file "/" filename))
+                                                             new-files))))
+                     (if (interesting? file) file)))
+                  ((interesting? file) file)
+                  (else #f)))
+        #f))))
 \end{verbatim}
 
-As you can see from the diagram, each element of the linked list has
-two ``cells'':
+We'll begin our discussion of sorting by implementing the merge sort
+algorithm.  This is useful for a few reasons:
 
 \begin{enumerate}
-
-\item The first cell holds the contents of that element, e.g.,
-  \verb|'Apple|.
-
-\item The second cell points to the next element of the list.
-
+\item It's a pretty good sorting algorithm.
+\item It's a good example of the generally useful ``divide and
+  conquer'' strategy for algorithm design.
+\item It suits Scheme because of the way Scheme lists are
+  actually ``linked lists''.
 \end{enumerate}
 
-In code, we'd write this as: \verb|'(Apple Banana)|.  Or more
-verbosely,
-
-\begin{verbatim}
-  (cons 'Apple (cons 'Banana '()))
-\end{verbatim}
-
-In other languages we'd need to represent this linked list structure
-explicitly, whereas in Scheme it's built-in.
-
-For example, in a C-like language the representation of a linked list
-might look something like the following:
-
-%% TODO(rml): Fill in this implementation.
-\begin{verbatim}
-  struct node { }
-\end{verbatim}
-
-In the sections that follow we'll implement common operations on
-lists.
-
-\section{Sorting}
-
-
-\subsection{Merge Sort}
-
-In this section we'll implement the merge sort algorithm.
+It's also useful because we need to be able to sort before we can
+search.  As a general rule in this book, we will not use a technique
+until we have implemented the prerequisite algorithms.  As we just
+said, a list has to be sorted before it can be searched (efficiently).
 
 If you can understand the merge sort implementation described in this
 chapter, you should have no problem learning more about (and
 implementing your own versions of) other sorting algorithms that you
 encounter.
 
-We start with merge sort for the following reasons:
-
-\begin{enumerate}
-\item It provides a good enough tradeoff between implementation
-  complexity, performance, and CPU and memory usage\footnote{As you
-    learn more about algorithms, you will find that everything
-    involves tradeoffs.  There is no ``best'', there is only ``best in
-    what context?''}.
-\item It is a good example of the ``divide and conquer'' strategy for
-  designing algorithms.
-\item It suits Scheme (and other Lisps) due to the way lists are
-  implemented by the language.
-\end{enumerate}
-
 We'll look at several implementations of merge sort, starting with the
-naive recursive version you can easily find on the internet, followed
-by an iterative\footnote{An iterative process is one that does not
-  consume growing amounts of stack space while it runs.}
-implementation that is necessarily more complex, but which performs
-better.
-
-Let's go ahead and load the code:
-
-\begin{verbatim}
-  > (load-module 'mergesort)
-\end{verbatim}
-
-\subsubsection{The architecture of a merge sort implementation}
+naive version you can easily find on the internet that generates a
+recursive process, and which performs quite badly.  We will then
+improve on that by implementing an iterative\footnote{An iterative
+  process is one that does not consume growing amounts of stack space
+  while it runs.} implementation that is necessarily a bit more
+complex (but not terribly so), and which performs better.
 
 Merge sort is most easily implemented in two parts that work together:
 
 \begin{enumerate}
 
-\item \verb|^MERGE|, an internal ``helper'' procedure that merges two
-  partially sorted lists.  \verb|^MERGE| handles splicing two sublists
-  together in an ordering determined by a predicate such as
-  \verb|<|. In other words, it walks both lists, putting things in
-  pairwise order based on which of them is (in the case of \verb|<|)
-  less than the other.  However, it doesn't fully sort the lists; it
-  only works on one item from each list at a time.  That's why we need
-  the \verb|MERGE-SORT| procedure.
+\item An internal merging procedure that merges two partially sorted
+  lists.  This procedure handles splicing two sublists together in an
+  ordering determined by a predicate such as \verb|<|. It walks both
+  lists, putting things in pairwise order based on which of them is
+  (in the case of \verb|<|) less than the other.  However, it doesn't
+  fully sort the lists; it only works on one item from each list at a
+  time.  That's why we need the driver procedure (described next).
 
-\item \verb|MERGE-SORT|, a user-visible procedure that calls
-  \verb|^MERGE| repeatedly to get the list sorted.  Sometimes a
-  procedure like this that calls another internal-only procedure in a
-  loop is referred to as a ``driver''.
+\item A user-accessible driver procedure that calls the internal
+  merging procedure repeatedly until all of the sub-lists are sorted,
+  at which point the entire list is sorted.  This feels a bit magical,
+  but in fact there is no magic to it at all.
 
 \end{enumerate}
 
-Here are examples showing some expected inputs and outputs of
-\verb|^MERGE|:
+Sometimes it's easier to understand something by looking at its inputs
+and outputs.  Here are a few examples showing expected inputs and
+outputs of \verb|MERGE|, which is our name for the internal merging
+procedure.
+
+Note: to use the code below, 
 
 \begin{verbatim}
-  > (^merge < '(2 191) '(18 45))
+  > (load-module 'merge-sort)
+  > (merge < '(2 191) '(18 45))
   (2 18 45 191)
 
-  > (^merge string<? '("scheme" "hacking") '("is" "fun"))
+  > (merge string<? '("scheme" "hacking") '("is" "fun"))
   ("is" "fun" "scheme" "hacking")
 \end{verbatim}
 
-The user-facing \verb|MERGE-SORT| procedure can be thought of as a
-``driver'' for \verb|^MERGE|.  It handles calling \verb|^MERGE|
+The user-facing driver procedure will handle calling \verb|MERGE|
 repeatedly and splicing the partially sorted lists returned by
-successive calls to \verb|^MERGE| together into a final list that is
+successive calls to \verb|MERGE| together into a final list that is
 fully sorted.
 
-Here are examples showing some expected inputs and outputs:
+Here are examples showing some expected inputs and outputs of
+\verb|MERGE-SORT|:
 
 \begin{verbatim}
   > (merge-sort '(17 51 55 13 12 75 98 48 98 89 68 86 89 51) <)
   (12 13 17 48 51 51 55 68 75 86 89 89 98 98)
 \end{verbatim}
 
-\subsubsection{How the MERGE procedure works}
+As we said above, \verb|MERGE| splices two lists together in a
+pairwise ordering determined by a predicate.  In other words, it walks
+two lists, let's call them $A$ and $B$, and compares the elements of
+each list in turn.  It keeps another list, $C$, where it stores the
+output.  If the current element from $A$ is less than the current
+element from $B$, \verb|MERGE| pushes it onto the output list $C$.
+Otherwise, it pushes the current element from $B$ onto the output
+list.
 
-As we said above, \verb|^MERGE| splices two lists together in a
-pairwise ordering determined by a predicate.  For the sake of
-simplicity, we will assume that we are only working with lists of
-numbers.  This means the only predicates we'll accept are those that
-operate on numbers such as \verb|<|.
-
-It walks two lists, let's call them $A$ and $B$, and compares the
-elements of each list in turn.  It keeps another list, \verb|RESULT|,
-where it stores the output.  If the current element from $A$ is less
-than the current element from $B$, \verb|^MERGE| pushes it onto the
-output list.  Otherwise, it pushes the current element from $B$ onto
-the output list.
-
-Once \verb|^MERGE| has traversed both of its input lists $A$ and $B$,
+Once \verb|MERGE| has traversed both of its input lists $A$ and $B$,
 and processed all the elements of each, it returns its result.
 
-As noted above, the output of \verb|^MERGE| is not a sorted list.  It
+For example, in order for
+\verb|(let ((a '(12 75)) (b '(1024 55))) (merge a b <))| to return the
+output \verb|(12 75 1024 55)|, \verb|MERGE| follows these steps:
+
+\begin{enumerate}
+
+\item Grab the first item of \verb|a| (12) and the first item of
+  \verb|b| (1024).
+
+\item Compare 12 and 1024 and pairwise order them using the predicate
+  \verb|<|, yielding an intermediate list \verb|'(12 1024)|.
+
+\item Grab the next element of \verb|a| (75) and \verb|b| (55).
+
+\item Compare 75 and 55 using \verb|<|, and push the now-ordered pair
+  onto another intermediate list to make \verb|'(55 75)|.  We now have
+  two intermediate lists, (55 75) and (12 1024).
+
+\item MERGE recurs on the intermediate lists '(12 1024) and '(55 75)
+  Since these intermediate lists are each themselves sorted from the
+  previous pass, it (again) walks them in pairwise order, grabbing 12
+  and 55 and sorting them to make '(12 55), and grabbing 1024 and 75
+  and sorting them to make '(75 1024).  It then puts the two together
+  to make (12 55 75 1024).
+  
+\end{enumerate}
+
+For another way of looking at how the above process works, use the
+MERGE-SORT-TRACED procedure from the 'mergesort module.
+
+\begin{verbatim}
+> (merge-sort-traced '(12 1024 75 55) <)
+
+12
+1024
+
+75
+55
+
+(55 75)
+(12 1024)
+
+(12 55 75 1024)
+\end{verbatim}
+
+As noted above, the output of \verb|MERGE| is not a sorted list.  It
 has been put into ``pairwise order''.  This is a fancy way of saying
 that we only compared two elements at a time, one each from $A$ and
 $B$, as we were building it.
 
-Based on our description of the merge algorithm above, the
-implementation is fairly straightforward, but there are a number of
-cases to handle, namely:
+Based on our description of the merge algorithm above, let's try to
+generate some inputs to MERGE and guess their expected outputs.
+
+What are the ouputs of the following calls to MERGE?
+
+\begin{verbatim}
+XXX  
+\end{verbatim}
+
+We can see from the test cases we generated above that we will have to
+handle a number of cases to handle, namely:
 
 \begin{enumerate}
+
+\item MERGE takes two lists.  If the lists contain strings or numbers
+  as elements, we will need to XXX
 
 \item If LEFT and RIGHT are both numbers, ``listify'' them so
   MERGE-AUX can work with them.
