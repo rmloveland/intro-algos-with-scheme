@@ -170,7 +170,7 @@
 ;;; Bottom-up, *iterative* merge sort.  This version has been
 ;;; rewritten to avoid the (unnecessary) overhead of EXPLODE.
 
-(define (merge pred l r)
+(define (merge l r pred)
   (letrec ((merge-aux
             (lambda (pred left right result)
               (cond 
@@ -241,9 +241,9 @@
                  (newline)
                  (newline)
                  (loop (cddr xs)
-                       (cons (merge pred (first xs) (second xs)) result)))
+                       (cons (merge (first xs) (second xs) pred) result)))
                (loop (cddr xs)
-                     (cons (merge pred (first xs) (second xs)) result)))))))
+                     (cons (merge (first xs) (second xs) pred) result)))))))
 
 (define (merge-sort xs pred)
   (%merge-sort xs pred #f))
