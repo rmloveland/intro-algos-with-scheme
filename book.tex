@@ -232,7 +232,7 @@ user-visible API are prefixed with a \verb|^| character, e.g.,
 
 \mainmatter{}
 \part{Basics}
-\chapter{Sorting, Searching, and Shuffling Lists}
+\chapter{Sorting, Searching, and Shuffling}
 
 The list data structure is ubiquitous in Scheme programming.  One of
 the most common patterns is to gather up a list of elements, and then
@@ -263,6 +263,8 @@ checking each file for some interesting property.
         #f))))
 \end{verbatim}
 
+XXX: Intro needs to be completely (re)written.
+
 We'll begin our discussion of sorting by implementing the merge sort
 algorithm.  This is useful for a few reasons:
 
@@ -292,6 +294,9 @@ improve on that by implementing an iterative\footnote{An iterative
   while it runs.} implementation that is necessarily a bit more
 complex (but not terribly so), and which performs better.
 
+XXX: Write the naive version and some tests that exercise it.  We can
+run those same tests later on against the better implementation.
+
 Merge sort is most easily implemented in two parts that work together:
 
 \begin{enumerate}
@@ -316,7 +321,7 @@ and outputs.  Here are a few examples showing expected inputs and
 outputs of \verb|MERGE|, which is our name for the internal merging
 procedure.
 
-Note: to use the code below, 
+Note: to use the code below
 
 \begin{verbatim}
   > (load-module 'merge-sort)
@@ -327,13 +332,27 @@ Note: to use the code below,
   ("is" "fun" "scheme" "hacking")
 \end{verbatim}
 
+You will now have the following additional procedures in your
+environment:
+
+\begin{itemize}
+\item MERGE
+\item MERGE-SORT
+\item MERGE-SORT-TRACED works just as MERGE-SORT, but prints some
+  some additional output to make it easier to visualize what is
+  happening.  Specifically, it prints the intermediate results of
+  recursive calls to MERGE to make it easier to see how MERGE-SORT
+  works by building up bigger and bigger sorted sub-lists and merging
+  them together.
+\end{itemize}
+
 The user-facing driver procedure will handle calling \verb|MERGE|
 repeatedly and splicing the partially sorted lists returned by
 successive calls to \verb|MERGE| together into a final list that is
 fully sorted.
 
 Here are examples showing some expected inputs and outputs of
-\verb|MERGE-SORT|:
+MERGE-SORT:
 
 \begin{verbatim}
   > (merge-sort '(17 51 55 13 12 75 98 48 98 89 68 86 89 51) <)
@@ -405,11 +424,98 @@ $B$, as we were building it.
 Based on our description of the merge algorithm above, let's try to
 generate some inputs to MERGE and guess their expected outputs.
 
-What are the ouputs of the following calls to MERGE?
+\break
+
+Let's look at the ouputs of a few more calls to MERGE with 1, 2, 3, and
+4-element lists, respectively, to build our intuition for its
+behavior.
 
 \begin{verbatim}
-XXX  
+(merge '(769) '(485) <)
+; => (485 769)
+
+(merge '(769 1023) '(485 99) <)
+; => (485 99 769 1023)
+
+(merge '(769 1023 3) '(485 99 293) <)
+; => (485 99 293 769 1023 3)
+
+(merge '(769 1023 3 12) '(485 99 293 13) <)
+; => (485 99 293 13 769 1023 3 12)
 \end{verbatim}
+
+We can see that:
+
+\begin{enumerate}
+  \item Given 1-element lists, it sorts the 2 elements using the
+    predicate and returns a sorted list
+
+  \item Given 2-element lists $A$ and $B$, it returns '(B1 B2 A1 A2).
+
+  \item Given 3-element lists, it returns '(B1 b2 b3 a1 a2 a3).
+
+  \item Given 4-element lists, it returns
+\end{enumerate}
+
+Are you seeing the pattern?  Oddly, it appears that MERGE is only
+merging lists according to a check on the first elements of each list
+using the supplied predicate, and then leaving the rest of the lists
+in their original order.
+
+Clearly this is useful but not sufficient to get a list sorted!
+Intuitively we can see that MERGE is useful as it gets down to shorter
+lists, since it is able to put everything in sorted order in the
+``1-element lists'' case.
+
+Next let's look at how MERGE behaves with some deliberately ``odd''
+inputs.
+
+\begin{verbatim}
+  ; Case 1
+  (merge '() '() <)
+  ; => ()
+
+  ; Case 2
+  (merge 19 23 <)
+  ; => (19 23)
+
+  ; Case 3
+  (merge 19 '(1 2 3) <)
+  ; => (1 2 3 19)
+
+  ; Case 4
+  (merge '() '(485) <)
+  ; => (485)
+
+  ; Case 5
+  (merge '19 () <)
+  ; => (19)
+
+  ; Case 6
+  (merge '(12) '(485 99 293 13) <)
+  ; => (12 485 99 293 13)
+
+  ; Case 7
+  (merge '(12023) '(485 99 293 13) <)
+  ; => (485 99 293 13 12023)
+\end{verbatim}
+
+We can codify the above behavior in the following specification of
+cases:
+
+\begin{enumerate}
+\item The ``base case'' of \verb|(merge '() '() <)| should return ().
+  (Case 1)
+
+\item MERGE needs to work on numbers as well as lists. (Case 2, 3)
+
+\item MERGE should accept an empty list as one of its inputs.
+
+\item MERGE should accept as input 2 lists which do not have the same
+  number of elements.
+\end{enumerate}
+
+
 
 We can see from the test cases we generated above that we will have to
 handle a number of cases to handle, namely:
