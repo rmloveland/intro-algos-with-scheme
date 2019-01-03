@@ -55,31 +55,72 @@ Why another book about algorithms?
 
 There are already many books about algorithms.  Most provide detailed
 analyses of topics such as ``Big O notation'' and are aimed at an
-academic audience.  As a result, they strive to be comprehensive, and
-they may run to hundreds of pages in length.
+academic audience.  As a result, they strive to be comprehensive in
+their treatment of the topic, and may run to many hundreds of pages in
+length.
 
-This book is different because its goals are different.
+Most books use ``industry-standard'' programming languages like Java,
+C++, or even Python.  Some use pseudocode, which is arguably better,
+or at least not as ephemeral (the world will not always program
+computers in Java).  It's all very well, but we are interested in
+implementing algorithms in Scheme, which is not an ALGOL-derived
+language which distinguishes between statements and expressions and
+``fundamental'' data types and ``objects''?
 
-First, it is an \emph{invitation} to algorithms; this means that we
-will cover only a few common algorithms and data structures that are
-essential to day-to-day programming, and leave more advanced topics to
-other texts.  Data structures covered in this book include:
+Why Scheme?  Because Java, C++, and Python do not have anything
+FUNDAMENTAL to say about computing.  They are languages of the moment.
+By contrast, Scheme is a small, well-designed language that is not
+tied to particular programming paradigms or hardware architectures.
+There have even been Scheme CPUs.  It is based on fundamental ideas
+about an ideal language for computing, that is, expressing the idea of
+a computational process.  In their paper ``Lisp: A language for
+stratified design'', Abelson and Sussman write:
 
-\begin{itemize}
-\item Lists
-\item Trees
-\item Graphs
-\item Strings
-\end{itemize}
+Programming languages should be designed not by piling feature on top
+of feature, but by removing the weaknesses and restrictions that make
+additional features appear necessary.  The Scheme dialect of Lisp
+demonstrates that a very small number of rules for forming
+expressions, with no restrictions on how they are composed, suffice to
+form a practical and efficient programming language that is flexible
+enough to support most of the major programming paradigms in use
+today.
 
-You can get surprisingly far with these simple building blocks!
+When we say Scheme is not tied to any particular programming paradigm,
+we mean that it can be extended by the programmer to use any paradigm:
+imperative; functional; object-oriented; declarative; and more.
 
-Second, it is an invitation to algorithms \emph{with Scheme}.  This
-means that we will use Scheme to describe the algorithms we want the
-computer to perform.  It is my opinion that the notation provided by
-Scheme provides a clear description of many common algorithms.
-Furthermore, there are not (to my knowledge) any algorithms books
-written using the Scheme language.
+There is something different about S-expressions, the fundamental data
+structure of Scheme programs, than about the data structures that are
+used to represent other programming languages.  For one thing,
+S-expressions possess a conceptual unity, since every expression takes
+the form of symbols inside nested parentheses, e.g., this procedure to
+compute the greatest common denominator of two numbers:
+
+\begin{verbatim}
+(define (gcd a b)
+  (if (= b 0)
+      a
+    (gcd b (remainder a b))))
+\end{verbatim}
+
+As a result of this unity, Lisp programs can express metalinguistic
+abstractions.  In other words, unlike in say, Java, Python, or Go, the
+programmer is able to add locally-defined syntax to the language that
+will allow her to better express her intent when describing a
+computational process.
+
+Finally, there is very little written material out there for the
+novice-to-intermediate Scheme programmer (though there are many
+excellent programs, some of which we will link to in the references).
+Most of the Scheme content that is available on the internet is either
+for experts, or misleads beginners with naive, tree-recursive
+solutions that perform badly (I am certainly guilty of this on my own
+blog).
+
+Naturally, there are a number of excellent books on Scheme
+programming, which we will link to from the bibliography.  However, to
+our knowledge there are no algorithms books that use Scheme.  That is
+the niche this book is attempting to fill.
 
 \chapter{Introduction}
 
