@@ -34,24 +34,15 @@
      (let ((new-neighbor (cons k v)))
        (push! new-neighbor ?graph)))))
 
-;; (define *neighbors* (make-graph))
-;; (add-neighbor! 's '(a d) *neighbors*)
-;; (add-neighbor! 'a '(s b d) *neighbors*)
-;; (add-neighbor! 'b '(a c e) *neighbors*)
-;; (add-neighbor! 'c '(b) *neighbors*)
-;; (add-neighbor! 'd '(s a e) *neighbors*)
-;; (add-neighbor! 'e '(b d f) *neighbors*)
-;; (add-neighbor! 'f '(e) *neighbors*)
-
-(define (get-neighbor k)
+(define (get-neighbor k graph)
   ;; List -> Any
-  (let ((val (assoc k *neighbors*)))
+  (let ((val (assoc k graph)))
     (if val (cdr val) '())))
 
 ;; Every time we visit a node, we want to extend our partial paths
 ;; list with that node.  (A.K.A. our "seen" list.)
 
-(define (extend-path path)
+(define (extend-path path graph)
   (display (reverse path))
   (newline)
   (map (lambda (new-node)
@@ -60,7 +51,7 @@
        ;; paths that keep us from ever finding the node we want.
        (filter (lambda (neighbor)
                  (not (member neighbor path)))
-               (get-neighbor (first path)))))
+               (get-neighbor (first path) graph))))
 
 ;; If `BREADTH-FIRST?` is true, perform a breadth-first search.
 ;; Otherwise, use depth-first search.
@@ -79,8 +70,27 @@
                  (loop start finish network
                        (append
                         (rest queue)
-                        (extend-path (first queue))))
+                        (extend-path (first queue) network)))
                  (loop start finish network
                        (append
-                        (extend-path (first queue))
+                        (extend-path (first queue) network)
                         (rest queue)))))))))
+
+(define (run-graph-tests)
+  (begin
+    (define *neighbors* (make-graph))
+    (add-neighbor! 's '(a d) *neighbors*)
+    (add-neighbor! 'a '(s b d) *neighbors*)
+    (add-neighbor! 'b '(a c e) *neighbors*)
+    (add-neighbor! 'c '(b) *neighbors*)
+    (add-neighbor! 'd '(s a e) *neighbors*)
+    (add-neighbor! 'e '(b d f) *neighbors*)
+    (add-neighbor! 'f '(e) *neighbors*)
+    (assert equal?
+            (find-path-between 's 'f *neighbors* #t)
+            '(s d e f)
+            "FIND-PATH-BETWEEN: Breadth-first search generates expected output.")
+    (assert equal?
+            (find-path-between 's 'f *neighbors* #f)
+            '(s a b e f)
+            "FIND-PATH-BETWEEN: Depth-first search generates expected output.")))
