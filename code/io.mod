@@ -4,6 +4,7 @@
   (exports
    read-line
    map-lines
+   expand-file-name
    for-each-line
    read-file/strings
    read-file/string

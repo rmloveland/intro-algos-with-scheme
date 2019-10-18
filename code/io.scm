@@ -69,3 +69,6 @@
           (if (eof-object? line)
               str
               (loop (string-append str line))))))))
+
+(define (expand-file-name f)
+  (string-append (getenv "HOME") (list->string (drop (string->list f) 1))))
