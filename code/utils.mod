@@ -21,6 +21,8 @@
    mapconcat
    filter
    seq
+   take
+   drop
 
    ;; Vectors
    vector-swap!))

@@ -111,4 +111,20 @@
               end
               (cons start xs)))))
 
+(define (take xs i)
+  (let loop ((xs xs) (ys '()) (i i))
+    (cond ((null? xs) (reverse ys))
+          ((zero? i) (reverse ys))
+          (else (loop (cdr xs) (cons (car xs) ys) (- i 1))))))
+
+(define (drop xs i)
+  (let loop ((xs xs) (ys '()) (i i))
+    (if (null? xs)
+        (reverse ys)
+        (loop (cdr xs)
+              (if (<= i 0)
+                  (cons (car xs) ys)
+                  ys)
+              (- i 1)))))
+
 ;; eof
