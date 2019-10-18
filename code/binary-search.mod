@@ -6,6 +6,7 @@
    binary-search
    number->integer
    run-binary-search-tests
-   split-difference))
+   split-difference)
+  (requires mergesort assert io))
 
 ;; eof

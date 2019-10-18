@@ -54,7 +54,7 @@ N can be an integer or flonum (yes, it's quick and dirty)."
   ;; -> IO!
   "Run our binary search tests using known words from the 'words' file."
   (begin
-    (let* ((unsorted (read-file (words-file)))
+    (let* ((unsorted (read-file/sexps (words-file)))
            (sorted (merge-sort unsorted string-ci<?))) ; sort
       (display "Running binary search tests...")
       (newline)
