@@ -3,6 +3,8 @@
 (define-module strings
   (exports
    string-split
+   string-trim
+   string-tokenize
    pregexp-replace
    pregexp-replace*
    pregexp-quote

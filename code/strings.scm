@@ -3,6 +3,7 @@
 ;; strings -- helpers for string processing
 
 (define string-split pregexp-split)
+(define string-tokenize pregexp-split)
 
 (define (string-trim s . which)
   ;; 'LEFT 'RIGHT, default to both
