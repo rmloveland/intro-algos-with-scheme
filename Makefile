@@ -1,7 +1,7 @@
-all: pdf
+all: html
 
-pdf:
-	latexmk -f -quiet -pdf book.tex
+html:
+	confluence2html < book.txt > book.html
 
 clean:
-	rm *.aux *.dvi *latexmk *.log *.fls
+	rm *.html
