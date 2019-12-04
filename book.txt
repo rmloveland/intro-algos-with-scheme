@@ -1,0 +1,1145 @@
+* Invitation to Algorithms with Scheme
+
+[R. M. Loveland|mailto:r@rmloveland.com]
+
+_Gardiner, New York, USA_.
+_January 2019_.
+
+{toc:minlevel=2|maxlevel=2}
+
+** Preface
+
+Why another book about algorithms?
+
+There are already many books about algorithms.  Most provide detailed analyses of topics such as "Big O notation" and are aimed at an academic audience.  As a result, they strive to be comprehensive in their treatment of the topic, and may run to many hundreds of pages in length.
+
+Most books use "industry-standard" programming languages like Java, C++, or even Python.  Some use pseudocode, which is arguably better, or at least not as ephemeral (the world will not always program computers in Java).  It's all very well, but we are interested in implementing algorithms in Scheme, which is not an ALGOL-derived language which distinguishes between statements and expressions and "fundamental" data types and "objects"?
+
+Why Scheme?  Because Java, C++, and Python do not have anything FUNDAMENTAL to say about computing.  They are languages of the moment. By contrast, Scheme is a small, well-designed language that is not tied to particular programming paradigms or hardware architectures. There have even been Scheme CPUs.  It is based on fundamental ideas about an ideal language for computing, that is, expressing the idea of a computational process.  In their paper "Lisp: A language for stratified design", Abelson and Sussman write:
+
+{quote}
+Programming languages should be designed not by piling feature on top of feature, but by removing the weaknesses and restrictions that make additional features appear necessary.  The Scheme dialect of Lisp demonstrates that a very small number of rules for forming expressions, with no restrictions on how they are composed, suffice to form a practical and efficient programming language that is flexible enough to support most of the major programming paradigms in use today.
+{quote}
+
+When we say Scheme is not tied to any particular programming paradigm, we mean that it can be extended by the programmer to use any paradigm: imperative; functional; object-oriented; declarative; and more.
+
+There is something different about S-expressions, the fundamental data structure of Scheme programs, than about the data structures that are used to represent other programming languages.  For one thing, S-expressions possess a conceptual unity, since every expression takes the form of symbols inside nested parentheses, e.g., this procedure to compute the greatest common denominator of two numbers:
+
+{code}
+(define (gcd a b)
+  (if (= b 0)
+      a
+    (gcd b (remainder a b))))
+{code}
+
+As a result of this unity, Lisp programs can express metalinguistic abstractions.  In other words, unlike in say, Java, Python, or Go, the programmer is able to add locally-defined syntax to the language that will allow her to better express her intent when describing a computational process.
+
+Finally, there is very little written material out there for the novice-to-intermediate Scheme programmer (though there are many excellent programs, some of which we will link to in the references). Most of the Scheme content that is available on the internet is either for experts, or misleads beginners with naive, tree-recursive solutions that perform badly (I am certainly guilty of this on my own blog).
+
+Naturally, there are a number of excellent books on Scheme programming, which we will link to from the bibliography.  However, to our knowledge there are no algorithms books that use Scheme.  That is the niche this book is attempting to fill.
+
+** Introduction
+
+What is an _algorithm_?
+
+An algorithm is a recipe for getting a job done.  Many algorithms are very simple, since many of the jobs we need a computer to do are (or appear to be) quite simple.  For example, we may need to sort a list of numbers, or calculate the distance between two towns on a map.
+
+"Sort a list of numbers" sounds simple, but there is some complexity there that needs to be addressed.  How long is the list?  Is it longer than the available memory on our machine?  Are the numbers in the list in totally random order?  Or are they almost sorted already?
+
+Depending on the answers to these questions, you'll need to choose one sorting algorithm over another.  Some take more memory (space).  Some require more CPU cycles (time).
+
+Unless you are doing very specialized optimization work, you can probably get along quite nicely knowing one or two of the most common algorithms in the area you're currently working in.  If you really need something more advanced, you can always look it up and implement it.
+
+And that brings us to the point of this book.  We will study one or two common algorithms of each type (sorting, searching, etc.).  Then, we will implement these algorithms in the Scheme programming language. As our mastery increases in later chapters, we will take on several "real world" implementation projects, such as writing our own hash tables and a regular expression matcher, all using the basic algorithms we've learned.
+
+Along the way, we will observe several (related) themes that repeat:
+
++ _Divide and conquer_: break a problem into smaller sub-problems, solve the sub-problems, and combine the intermediate results to get a final answer.
+
++ _Recursion_: Do it again, and again, and again, until you're done.
+
+** Prerequisites
+
+*** Familiarity with Scheme
+
+This book does not try to teach the Scheme language.  We assume you have already encountered an introduction to Scheme elsewhere. In particular, you should be pretty comfortable with recursion, since we'll be using it a lot (Scheme uses recursion for iteration by default).  By "comfortable with recursion", we mean that you understand code that looks like this:
+
+{code}
+(define (+ a b)
+  (if (= a 0)
+      b
+    (+ (decr a)
+       (incr b))))
+{code}
+
+A good book for learning the basics of Scheme is _The Little Schemer_ by Dan Friedman & Matthias Felleisen.  For more reading recommendations, see the Bibliography.
+
+*** Access to a computer with a Scheme Interpreter
+
+This book's code has been tested with the following combinations of Scheme implementation and operating system:
+
+TODO: Fill in tested version numbers in the table below.
+
+{table}
+| Implementation | Version | Platforms         |
+| Larceny       | X       | Windows 10, Linux |
+| Chez (Petite) | X       | Windows 10        |
+| Gambit        | X       | Windows 10, Linux |
+| Scheme 48     | 1.9.2   | Windows 10, Linux |
+| Kawa          | 3.0     | Windows 10, Linux |
+| JScheme       | 7.2     | Windows 10        |
+{table}
+
+*** Required libraries
+
+The portable module system (which has been tested in all of the implementation/OS combinations in the previous section) can be downloaded from [https://github.com/rmloveland/load-module].
+
+The code for working with this book can be found at [https://github.com/rmloveland/intro-algos-with-scheme/tree/master/code].
+
+To load the book's code (TODO: Update these instructions):
+
++ Copy {{load-module/load-module.scm}} into the book's {{intro-algos-with-scheme/code}} directory.
++ Change into the {{intro-algos-with-scheme/code}} directory.
++ Start your Scheme.
++ Load the module system as follows: {{(load "load-module.scm")}}
++ Load the required modules as described at the beginning of each chapter. E.g., {{(load-module 'mergesort)}}.
+
+*** Typographical Conventions
+
+Procedure names are written in capital letters like this:
+
+{{CHAR-READY?}}
+
+Code samples are usually set off from the surrounding text like this:
+
+{code}
+(define (double n)
+  (+ n n))
+{code}
+
+Most procedures are annotated with comments about the input and output types we expect.  These comments serve as a form of documentation. They makes it a little easier to remember (at least part of) what a procedure does without having to read the entire text of the procedure.
+
+For example, given the following procedure we can see that it takes a two Numbers and returns a Number.
+
+{code}
+(define (plus a b)
+  ;; Num Num -> Num
+  (+ a b))
+{code}
+
+Procedures that are meant to be "internal" A.K.A. not part of a user-visible API are prefixed with a {{^}} character, e.g.,
+
+{code}
+  (define (^merge pred a b)
+    ;; Pred List List -> List
+    ;; Note: this implementation is a no-op.
+    '())
+{code}
+
+TODO: Finish filling this in -- look at an ORA book for ideas.
+
+** Sorting
+
+The list data structure is ubiquitous in Scheme programming.  One of the most common patterns is to gather up a list of elements, and then process them in turn.  (When we say that something is a "list" in Scheme, we mean that it's actually a linked list.)
+
+For example, we might like to walk down through a directory of files, checking each file for some interesting property.
+
+{code}
+(define (dir-walk* interesting? queue)
+  (let ((file #f))
+    (lambda ()
+      (if (not (null? queue))
+          (begin (set! file (car queue))
+                 (set! queue (cdr queue))
+                 (cond
+                  ((file-directory? file)
+                   (let ((new-files (directory-files file)))
+                     (set! queue
+                           (append queue
+                                   (filter interesting? (map (lambda (filename)
+                                                               (string-append file "/" filename))
+                                                             new-files))))
+                     (if (interesting? file) file)))
+                  ((interesting? file) file)
+                  (else #f)))
+        #f))))
+{code}
+
+TODO: Intro needs to be completely (re)written.
+
+We'll begin our discussion of sorting by implementing the merge sort algorithm.  This is useful for a few reasons:
+
++ It's a pretty good sorting algorithm.
++ It's a good example of the generally useful "divide and conquer" strategy for algorithm design.
++ It suits Scheme because of the way Scheme lists are actually "linked lists".
+
+It's also useful because we need to be able to sort before we can search.  As a general rule in this book, we will not use a technique until we have implemented the prerequisite algorithms.  As we just said, a list has to be sorted before it can be searched (efficiently).
+
+If you can understand the merge sort implementation described in this chapter, you should have no problem learning more about (and implementing your own versions of) other sorting algorithms that you encounter.
+
+We'll look at several implementations of merge sort, starting with the naive version you can easily find on the internet that generates a recursive process, and which performs quite badly.  We will then improve on that by implementing an iterative\footnote{An iterative
+  process is one that does not consume growing amounts of stack space
+  while it runs.} implementation that is necessarily a bit more complex (but not terribly so), and which performs better.
+
+    TODO: Write the naive version and some tests that exercise it.  We can run those same tests later on against the better implementation.
+
+Merge sort is most easily implemented in two parts that work together:
+
++ An internal merging procedure that merges two partially sorted lists.  This procedure handles splicing two sublists together in an ordering determined by a predicate such as {{<}}. It walks both lists, putting things in pairwise order based on which of them is (in the case of {{<}}) less than the other.  However, it doesn't fully sort the lists; it only works on one item from each list at a time.  That's why we need the driver procedure (described next).
+
++ A user-accessible driver procedure that calls the internal merging procedure repeatedly until all of the sub-lists are sorted, at which point the entire list is sorted.  This feels a bit magical, but in fact there is no magic to it at all.
+
+Sometimes it's easier to understand something by looking at its inputs and outputs.  Here are a few examples showing expected inputs and outputs of {{MERGE}}, which is our name for the internal merging procedure.
+
+Note: to use the code below
+
+{code}
+  > (load-module 'merge-sort)
+  > (merge < '(2 191) '(18 45))
+  (2 18 45 191)
+
+  > (merge string<? '("scheme" "hacking") '("is" "fun"))
+  ("is" "fun" "scheme" "hacking")
+{code}
+
+You will now have the following additional procedures in your
+environment:
+
++ MERGE
++ MERGE-SORT
++ MERGE-SORT-TRACED works just as MERGE-SORT, but prints some some additional output to make it easier to visualize what is happening.  Specifically, it prints the intermediate results of recursive calls to MERGE to make it easier to see how MERGE-SORT works by building up bigger and bigger sorted sub-lists and merging them together.
+
+The user-facing driver procedure will handle calling {{MERGE}} repeatedly and splicing the partially sorted lists returned by successive calls to {{MERGE}} together into a final list that is fully sorted.
+
+Here are examples showing some expected inputs and outputs of MERGE-SORT:
+
+{code}
+  > (merge-sort '(17 51 55 13 12 75 98 48 98 89 68 86 89 51) <)
+  (12 13 17 48 51 51 55 68 75 86 89 89 98 98)
+{code}
+
+As we said above, {{MERGE}} splices two lists together in a pairwise ordering determined by a predicate.  In other words, it walks two lists, let's call them $A$ and $B$, and compares the elements of each list in turn.  It keeps another list, $C$, where it stores the output.  If the current element from $A$ is less than the current element from $B$, {{MERGE}} pushes it onto the output list $C$. Otherwise, it pushes the current element from $B$ onto the output list.
+
+Once {{MERGE}} has traversed both of its input lists $A$ and $B$, and processed all the elements of each, it returns its result.
+
+For example, in order for {{(let ((a '(12 75)) (b '(1024 55))) (merge a b <))}} to return the output {{(12 75 1024 55)}}, {{MERGE}} follows these steps:
+
++ Grab the first item of {{a}} (12) and the first item of {{b}} (1024).
+
++ Compare 12 and 1024 and pairwise order them using the predicate {{<}}, yielding an intermediate list {{'(12 1024)}}.
+
++ Grab the next element of {{a}} (75) and {{b}} (55).
+
++ Compare 75 and 55 using {{<}}, and push the now-ordered pair onto another intermediate list to make {{'(55 75)}}.  We now have two intermediate lists, (55 75) and (12 1024).
+
++ MERGE recurs on the intermediate lists '(12 1024) and '(55 75) Since these intermediate lists are each themselves sorted from the previous pass, it (again) walks them in pairwise order, grabbing 12 and 55 and sorting them to make '(12 55), and grabbing 1024 and 75 and sorting them to make '(75 1024).  It then puts the two together to make (12 55 75 1024).
+
+For another way of looking at how the above process works, use the MERGE-SORT-TRACED procedure from the 'mergesort module.
+
+{code}
+> (merge-sort-traced '(12 1024 75 55) <)
+
+12
+1024
+
+75
+55
+
+(55 75)
+(12 1024)
+
+(12 55 75 1024)
+{code}
+
+As noted above, the output of {{MERGE}} is not a sorted list.  It has been put into "pairwise order".  This is a fancy way of saying that we only compared two elements at a time, one each from $A$ and $B$, as we were building it.
+
+Based on our description of the merge algorithm above, let's try to generate some inputs to MERGE and guess their expected outputs.
+
+Let's look at the ouputs of a few more calls to MERGE with 1, 2, 3, and 4-element lists, respectively, to build our intuition for its behavior.
+
+{code}
+(merge '(769) '(485) <)
+; => (485 769)
+
+(merge '(769 1023) '(485 99) <)
+; => (485 99 769 1023)
+
+(merge '(769 1023 3) '(485 99 293) <)
+; => (485 99 293 769 1023 3)
+
+(merge '(769 1023 3 12) '(485 99 293 13) <)
+; => (485 99 293 13 769 1023 3 12)
+{code}
+
+We can see that:
+
++ Given 1-element lists, it sorts the 2 elements using the predicate and returns a sorted list.
++ Given 2-element lists _A_ and _B_, it returns {{'(B1 B2 A1 A2)}}.
++ Given 3-element lists, it returns '(B1 b2 b3 a1 a2 a3).
++ Given 4-element lists, it returns
+
+Are you seeing the pattern?  Oddly, it appears that MERGE is only merging lists according to a check on the first elements of each list using the supplied predicate, and then leaving the rest of the lists in their original order.
+
+Clearly this is useful but not sufficient to get a list sorted! Intuitively we can see that MERGE is useful as it gets down to shorter lists, since it is able to put everything in sorted order in the "1-element lists" case.
+
+Next let's look at how MERGE behaves with some deliberately "odd" inputs.
+
+{code}
+  ; Case 1
+  (merge '() '() <)
+  ; => ()
+
+  ; Case 2
+  (merge 19 23 <)
+  ; => (19 23)
+
+  ; Case 3
+  (merge 19 '(1 2 3) <)
+  ; => (1 2 3 19)
+
+  ; Case 4
+  (merge '() '(485) <)
+  ; => (485)
+
+  ; Case 5
+  (merge '19 () <)
+  ; => (19)
+
+  ; Case 6
+  (merge '(12) '(485 99 293 13) <)
+  ; => (12 485 99 293 13)
+
+  ; Case 7
+  (merge '(12023) '(485 99 293 13) <)
+  ; => (485 99 293 13 12023)
+{code}
+
+We can codify the above behavior in the following specification of cases:
+
++ The "base case" of {{(merge '() '() <)}} should return (). (Case 1)
+
++ MERGE needs to work on numbers as well as lists. (Case 2, 3)
+
++ MERGE should accept an empty list as one of its inputs.
+
++ MERGE should accept as input 2 lists which do not have the same
+  number of elements.
+
+We can see from the test cases we generated above that we will have to handle a number of cases to handle, namely:
+
++ MERGE takes two lists.  If the lists contain strings or numbers as elements, we will need to XXX
+
++ If LEFT and RIGHT are both numbers, "listify" them so MERGE-AUX can work with them.
+
++ If LEFT is just a number, "listify" it so MERGE-AUX can work with it.
+
++ Likewise, if RIGHT is just a number, "listify" it for MERGE-AUX.
+
++ If LEFT and RIGHT are empty, we're done merging. Return the result.
+
++ If LEFT and RIGHT still have elements to be processed, call PRED and run them through MERGE-AUX again.
+
++ If the cases above haven't matched, and LEFT is not NULL?, call MERGE-AUX again.
+
++ If the cases above haven't matched, and RIGHT is not NULL?, call MERGE-AUX again.
+
+{code}
+(define (^merge pred l r)
+  ;; Procedure List List -> List
+  (define (merge-aux pred left right result)
+    (cond
+     ((and (number? left)     ; Case 1.
+           (number? right))
+      (merge-aux pred (list left) (list right) result))
+     ((number? left)          ; Case 2.
+      (merge-aux pred (list left) right result))
+     ((number? right)         ; Case 3.
+      (merge-aux pred left (list right) result))
+     ((and (null? left)       ; Case 4.
+           (null? right))
+      (reverse result))
+     ((and (not (null? left)) ; Case 5.
+           (not (null? right)))
+      (if (pred (car left)
+                (car right))
+          (merge-aux pred
+                     (cdr left)
+                     right
+                     (cons (car left) result))
+        (merge-aux pred
+                   left
+                   (cdr right)
+                   (cons (car right) result))))
+     ((not (null? left))      ; Case 6.
+      (merge-aux pred (cdr left) right (cons (car left) result)))
+     ((not (null? right))     ; Case 7.
+      (merge-aux pred left (cdr right) (cons (car right) result)))
+     (else #f)))              ; We should never get here.
+  (merge-aux pred l r '()))
+{code}
+
+**** Merge Sort
+
+Recently I've begun a project to implement a number of basic algorithms in Scheme, which I'd like to eventually grow into a free (as in freedom) ebook. Having just done a Binary Search in Scheme, I thought it would be fun to give merge sort a try.
+
+According to the mighty interwebs, merge sort is a good choice for sorting linked lists (a.k.a., Lisp lists). Unfortunately the only Lisp merge sort implementation examples I've been able to find on the web have been recursive, not iterative.
+
+The implementation described here is an iterative, bottom-up merge sort, written in a functional style. (I daren't say the functional style, lest any real Scheme wizards show up and burn me to a crisp.)
+
+***** First, generate a list of random numbers
+
+In order to have something to sort, we need a procedure that generates a list of random numbers --- note that the docstring is allowed by MIT/GNU Scheme; YMMV with other Schemes.
+
+{code}
+(define (make-list-of-random-numbers list-length max)
+  ;; Int Int -> List
+  "Make a list of random integers less than MAX that's LIST-LENGTH long."
+  (letrec ((maker
+            (lambda (list-length max result)
+              (let loop ((n list-length) (result '()))
+                (if (= n 0)
+                    result
+                    (loop (- n 1) (cons (random max) result)))))))
+    (maker list-length max '())))
+{code}
+
+***** Then, write a merge procedure
+
+This implementation of the merge procedure is a straight port of the one described on the Wikipedia Merge Sort page, with one minor difference to make the sort faster 1.
+
+An English description of the merge operation is as follows:
+
+If both items passed in are numbers (or strings), wrap them up in lists and recur. (In this example we only care about sorting numbers)
+
+If both lists are empty, return the result.
+
+If neither list is empty:
+
+If the first item in the first list is "less than" the first item in the second list, cons it onto the result and recur.
+
+Otherwise, cons the first item in the second list on the result and recur.
+
+If the first list still has items in it, cons the first item onto the result and recur.
+
+If the second list still has items in it, cons the first item onto the result and recur.
+
+If none of the above conditions are true, return {{\#f}}. I put this here for debugging purposes while writing this code; now that the procedure is debugged, it is never reached. (Note: "debugged" just means I haven't found another bug yet.)
+
+{code}
+(define (rml/merge pred l r)
+  (letrec ((merge-aux
+            (lambda (pred left right result)
+              (cond
+               ((and (number? left)
+                     (number? right))
+                (merge-aux pred
+                           (list left)
+                           (list right)
+                           result))
+               ((and (string? left)
+                     (string? right))
+                (merge-aux pred
+                           (list left)
+                           (list right)
+                           result))
+               ((and (null? left)
+                     (null? right))
+                (reverse result))
+               ((and (not (null? left))
+                     (not (null? right)))
+                (if (pred (car left)
+                          (car right))
+                    (merge-aux pred
+                               (cdr left)
+                               right
+                               (cons (car left) result))
+                  (merge-aux pred
+                             left
+                             (cdr right)
+                             (cons (car right) result))))
+               ((not (null? left))
+                (merge-aux pred (cdr left) right (cons (car left) result)))
+               ((not (null? right))
+                (merge-aux pred left (cdr right) (cons (car right) result)))
+               (else #f)))))
+    (merge-aux pred l r '())))
+{code}
+
+We can run a few merges to get a feel for how it works. The comparison predicate we pass as the first argument will let us sort all kinds of things, but for the purposes of this example we'll stick to numbers:
+
+{code}
+> (rml/merge < '(360 388 577) '(10 811 875 995))
+(10 360 388 577 811 875 995)
+
+> (rml/merge < '(8 173 227 463 528 817) '(10 360 388 577 811 875 995))
+(8 10 173 227 360 388 463 528 577 811 817 875 995)
+
+> (rml/merge <
+           '(218 348 486 520 639 662 764 766 886 957 961 964)
+           '(8 10 173 227 360 388 463 528 577 811 817 875 995))
+(8 10 173 218 227 348 360 388 463 486 520 528 577 639 662 764 766 811 817 875 886 957 961 964 995)
+{code}
+
+***** Finally, do a bottom up iterative merge sort
+
+It took me a while to figure out how to do the iterative merge sort in a Schemely fashion. As usual, it wasn't until I took the time to model the procedure on paper that I got somewhere. Here's what I wrote in my notebook:
+
+{code}
+;;  XS                   |      RESULT
+;;---------------------------------------------
+
+'(5 1 2 9 7 8 4 3 6)            '()
+    '(2 9 7 8 4 3 6)            '((1 5))
+        '(7 8 4 3 6)            '((2 9) (1 5))
+            '(4 3 6)            '((7 8) (2 9) (1 5))
+                '(6)            '((3 4) (7 8) (2 9) (1 5))
+                 '()            '((6) (3 4) (7 8) (2 9) (1 5))
+
+;; XS is null, and RESULT is not of length 1 (meaning it isn't sorted
+;; yet), so we recur, swapping the two:
+
+'((6) (3 4) (7 8) (2 9) (1 5))  '()
+          '((7 8) (2 9) (1 5))  '((3 4 6))
+                      '((1 5))  '((2 7 8 9) (3 4 6))
+                           '()  '((1 5) (2 7 8 9) (3 4 6))
+
+;; Once more XS is null, but RESULT is still not sorted, so we swap
+;; and recur again
+
+'((1 5) (2 7 8 9) (3 4 6))      '()
+                  '(3 4 6)      '((1 2 5 7 8 9))
+                       '()      '((3 4 6) (1 2 5 7 8 9))
+
+;; Same story: swap and recur!
+
+'((3 4 6) (1 2 5 7 8 9))        '()
+                     '()        '((1 2 3 4 5 6 7 8 9))
+
+;; Finally, we reach our base case: XS is null, and RESULT is of
+;; length 1, meaning that it contains a sorted list
+
+'(1 2 3 4 5 6 7 8 9)
+{code}
+
+This was a really fun little problem to think about and visualize. It just so happens that it fell out in a functional style; usually I don't mind doing a bit of state-bashing, especially if it's procedure-local. Here's the code that does the sort shown above:
+
+{code}
+  (define (rml/merge-sort xs pred)
+    (let loop ((xs xs)
+               (result '()))
+         (cond ((and (null? xs)
+                     (null? (cdr result)))
+                (car result))
+               ((null? xs)
+                (loop result
+                      xs))
+               ((null? (cdr xs))
+                (loop (cdr xs)
+                      (cons (car xs) result)))
+               (else
+                (loop (cddr xs)
+                      (cons (rml/merge <
+                                       (first xs)
+                                       (second xs))
+                            result))))))
+{code}
+
+That's nice, but how does it perform?
+
+A good test of our merge sort is to compare it to the system's built-in sort procedure. In the case of MIT/GNU Scheme, we'll need to compile our code if we hope to get anywhere close to the system's speed. If your Scheme is interpreted, you don't have to bother of course.
+
+To make the test realistic, we'll create three lists of random numbers: one with 20,000 items, another with 200,000, and finally a giant list of 2,000,000 random numbers. This should give us a good idea of our sort's performance. Here's the output of timing first two sorts, 20,000 and 200,000 2:
+
+{code}
+;;; Load compiled code
+
+(load "mergesort")
+;Loading "mergesort.so"... done
+;Value: rml/insertion-sort2
+
+;;; Define our lists
+
+(define unsorted-20000 (make-list-of-random-numbers 20000 200000))
+;Value: unsorted-20000
+
+(define unsorted-200000 (make-list-of-random-numbers 200000 2000000))
+;Value: unsorted-200000
+
+;;; Sort the list with 20,000 items
+
+(with-timing-output (rml/merge-sort unsorted-20000 <))
+;Run time:      .03
+;GC time:       0.
+;Actual time:   .03
+
+(with-timing-output (sort unsorted-20000 <))
+;Run time:      .02
+;GC time:       0.
+;Actual time:   .021
+
+;;; Sort the list with 200,000 items
+
+(with-timing-output (rml/merge-sort unsorted-200000 <))
+;Run time:      .23
+;GC time:       0.
+;Actual time:   .252
+
+(with-timing-output (sort unsorted-200000 <))
+;Run time:      .3
+;GC time:       0.
+;Actual time:   .3
+{code}
+
+As you can see, our sort procedure is on par with the system's for these inputs. Now let's turn up the heat. How about a list with 2,000,000 random numbers?
+
+{code}
+;;; Sort the list with 2,000,000 items
+
+(define unsorted-2000000 (make-list-of-random-numbers 2000000 20000000))
+;Value: unsorted-2000000
+
+(with-timing-output (rml/merge-sort4 unsorted-2000000 <))
+;Aborting!: out of memory
+;GC #34: took:   0.80 (100%) CPU time,   0.10 (100%) real time; free: 11271137
+;GC #35: took:   0.70 (100%) CPU time,   0.90  (81%) real time; free: 11271917
+;GC #36: took:   0.60 (100%) CPU time,   0.90  (99%) real time; free: 11271917
+
+(with-timing-output (sort unsorted-2000000 <))
+;Run time:      2.48
+;GC time:       0.
+;Actual time:   2.474
+
+{code}
+
+No go. On a MacBook with 4GB of RAM, our merge sort runs out of memory, while the system sort procedure works just fine. It seems the wizards who implemented this Scheme system knew what they were doing after all!
+
+It should be pretty clear at this point why we're running out of memory. In MIT/GNU Scheme, the system sort procedure uses vectors and mutation (and is no doubt highly tuned for the compiler), whereas we take a relatively brain-dead approach that uses lists and lots of cons-ing. I leave it as an exercise for the reader (or perhaps my future self) to rewrite this code so that it doesn't run out of memory.
+
+Footnotes:
+
+1 An earlier implementation started off the sort by "exploding" the list to be sorted so that {{'(1 2 3)}} became {{'((1) (2) (3))}}. This is convenient for testing purposes, but very expensive. It's also unnecessary after the first round of merging. We avoid the need to explode the list altogether by teaching merge to accept numbers and listify them when they appear. We could also do the same for strings and other types as necessary.
+
+2 For the definition of the with-timing-output macro, see here.
+
+** Searching
+
+Now that we've sorted a list of elements, we can search it.  It turns out that searching through a list of things is much faster if you can sort that list first.
+
+In this section we'll look at a particular type of search algorithm called binary search.  Binary search is so named because it cuts the search space in half with every iteration.
+
+Unlike some other searches, binary search only works on ordered lists of things.  That is why we had to go through the trouble of sorting our list earlier: so that we could search through it now.
+
+Load the binary search library:
+
+{code}
+(load-module 'binary-search)
+{code}
+
+*** Binary Search
+
+Binary search is a method for finding a specific item in a sorted list. Here's how it works:
+
+Binary search works like this:
+
+1. Pick the element in the middle of the list.
+2. Is it the word you're looking for?
+
+If yes, you're done.
+
+If no, check it against the element you're looking for:
+
+If it's less than the element you're looking for:
+
+Split the list in half at the current element
+
+Search again, this time using only the high half of the list as input
+
+If it's greater than the element you're looking for:
+
+1. Split the list in half at the current element
+2. Search again, this time using only the low half of the list as
+input
+
+TODO: Merge the above and below descriptions.
+
+Take a guess that the item you want is in the middle of the current search "window" (when you start, the search window is the entire list).
+
+If the item is where you guessed it would be, return the index (the location of your guess).
+
+If your guess is "less than" the item you want (based on a comparison function you choose), recur, this time raising the "bottom" of the search window to the midway point.
+
+If your guess is "greater than" the item you want (based on your comparison function), recur, this time lowering the "top" of the search window to the midway point.
+
+In other words, you cut the size of the search window in half every time through the loop. This gives you a worst-case running time of about (/ (log n) (log 2)) steps. This means you can find an item in a sorted list of 20,000,000,000 (twenty billion) items in about 34 steps.
+
+**** Reading lines from a file
+
+Before I could start writing a binary search, I needed a sorted list of items. I decided to work with a sorted list of words from /usr/share/dict/words, so I wrote a couple of little procedures to make a list of words from a subset of that file. (I didn't want to read the entire large file into a list in memory.)
+
+Note: Both {{format}} and the Lisp-inspired {{\#!optional}} keyword are available in MIT Scheme; they made writing the re-matches? procedure more convenient.
+
+re-matches? checks if a regular expression matches a string (in this case, a line from a file).
+
+make-list-of-words-matching is used to loop over the lines of the words file and return a list of lines matching the provided regular expression.  Now I have the tools I need to make my word list.
+
+{code}
+(load-option 'format)
+
+(define (re-matches? re line #!optional display-matches)
+  ;; Regex String . Boolean -> Boolean
+  "Attempt to match RE against LINE. Print the match if DISPLAY-MATCHES is set."
+  (let ((match (re-string-match re line)))
+    (if match
+        (if (not (default-object? display-matches))
+            (begin (format #t "|~A|~%" (re-match-extract line match 0))
+                   #t)
+            #t)
+        #f)))
+
+(define (make-list-of-words-matching re file)
+  ;; Regex String -> List
+  "Given a regular expression RE, loop over FILE, gathering matches."
+  (call-with-input-file file
+    (lambda (port)
+      (let loop ((source (read-line port)) (sink '()))
+        (if (eof-object? source)
+            sink
+            (loop (read-line port) (if (re-matches? re source)
+                             (cons source sink)
+                             sink)))))))
+{code}
+
+Since I am not one of the 10\% of programmers who can implement a correct binary search on paper, I started out by writing a test procedure. The test procedure grew over time as I found bugs and read an interesting discussion about the various edge cases a binary search procedure should handle. These include:
+
++ Empty list
++ List has one word
++ List has two word
++ Word is not there and "less than" anything in the list
++ Word is not there and "greater than" anything in the list
++ Word is first item
++ Word is last item
++ List is all one word
+
+If multiple copies of word are in list, return the first word found (this could be implemented to return the first or last duplicated word)
+
+Furthermore, I added a few "sanity checks" that check the return values against known outputs. Here are the relevant procedures:
+
+assert= checks two numbers for equality and prints a result
+
+assert-equal checks two Scheme objects against each other with equal? and prints a result
+
+run-binary-search-tests reads in words from a file and runs all of our tests
+
+{code}
+(define (assert= expected got #!optional noise)
+  ;; Int Int -> IO
+  (if (= expected got)
+      (format #t "~A is ~A\t...ok~%" expected got)
+      (format #t "~A is not ~A\t...FAIL~%" expected got)))
+
+(define (assert-equal? expected got #!optional noise)
+  ;; Thing Thing -> IO
+  (if (equal? expected got)
+      (format #t "~A is ~A\t...ok~%" expected got)
+      (format #t "~A is not ~A\t...FAIL~%" expected got)))
+
+(define (run-binary-search-tests)
+  ;; -> IO
+  "Run our binary search tests using known words from the 'words' file.
+This file should be in the current working directory."
+  (with-working-directory-pathname (pwd)
+    (lambda ()
+      (if (file-exists? "words")
+          (begin
+            (format #t "file 'words' exists, making a list...~%")
+            (let* ((unsorted (make-list-of-words-matching "acc" "words"))
+                   (sorted (sort unsorted string<?)))
+              (format #t "doing binary searches...~%")
+              (assert-equal? #f (binary-search "test" '())) ; empty list
+              (assert-equal? #f (binary-search "aardvark" sorted)) ; element absent and too small
+              (assert-equal? #f (binary-search "zebra" sorted)) ; element absent and too large
+              (assert= 0 (binary-search "accusive" '("accusive"))) ; list of length one
+              (assert= 0 (binary-search "acca" sorted)) ; first element of list
+              (assert= 1 (binary-search "aardvark" '("aardvark" "aardvark" "babylon"))) ; multiple copies of word in list
+              (assert= 1 (binary-search "barbaric" '("accusive" "barbaric"))) ; list of length two
+              (assert= 98 (binary-search "acclamator" sorted))
+              (assert= 127 (binary-search "aardvark" (map (lambda (x) "aardvark") test-list))) ; list is all one value
+              (assert= 143 (binary-search "accomplice" sorted))
+              (assert= 254 (binary-search "accustomedly" sorted))
+              (assert= 255 (binary-search "accustomedness" sorted)))))))) ; last element of list
+{code}
+
+**** The binary search procedure
+
+Finally, here's the binary search procedure; it uses a couple of helper procedures for clarity.
+
+->int is a helper procedure that does a quick and dirty integer conversion on its argument
+
+split-difference takes a low and high number and returns the floor of the halfway point between the two
+
+binary-search takes an optional debug-print argument that I used a lot while debugging. The format statements and the optional argument tests add a lot of bulk --- now that the procedure is debugged, they can probably be removed. (Aside: I wonder how much "elegant" code started out like this and was revised after sufficient initial testing and debugging?)
+
+{code}
+(define (->int n)
+  ;; Number -> Int
+  "Given a number N, return its integer representation.
+N can be an integer or flonum (yes, it's quick and dirty)."
+  (flo:floor->exact (exact->inexact n)))
+
+(define (split-difference low high)
+  ;; Int Int -> Int
+  "Given two numbers, return their rough average."
+  (if (= (- high low) 1)
+      1
+    (->int (/ (- high low) 2))))
+
+(define (binary-search word xs #!optional debug-print)
+  ;; String List -> Int
+  "Do binary search of list XS for WORD. Return the index found, or #f."
+  (if (null? xs)
+      #f
+    (let loop ((low 0) (high (- (length xs) 1)))
+         (let* ((try (+ low (split-difference low high)))
+                (word-at-try (list-ref xs try)))
+           (cond
+            ((string=? word-at-try word) try)
+            ((< (- high low) 1) #f)
+            ((= (- high try) 1)
+             (if (string=? (list-ref xs low) word)
+                 low
+               #f))
+            ((string<? word-at-try word)
+             (if (not (default-object? debug-print))
+                 (begin (format #f "(string<? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~2%" %
+                                 word-at-try word try high low)
+                        (loop (+ 1 try) high)) ; raise the bottom of the window
+                        (loop (+ 1 try) high)))
+            ((string>? word-at-try word)
+             (if (not (default-object? debug-print))
+                 (begin (format #f "(string>? ~A ~A) -> #t~%try: ~A high: ~A low: ~A ~2%" %
+                                 word-at-try word try high low)
+                        (loop low (+ 1 try))) ; lower the top of the window
+                        (loop low (+ 1 try))))
+            (else #f))))))
+{code}
+
+**** Takeaways
+
+This exercise has taught me a lot.
+
+Writing correct code is hard. (I'm confident that this code is not correct.) You need to figure out your invariants and edge cases first. I didn't, and it made things a lot harder.
+
+It's been said a million times, but tests are code. The tests required some debugging of their own.
+
+Once they worked, the tests were extremely helpful. Especially now that I'm at the point where (if this were "for real") additional features would need to be added, the format calls removed, the procedure speeded up, and so on.
+
+I hope this has been useful to some other aspiring Scheme wizards out there. Happy Hacking!
+
+** Trees
+
+*** Binary trees
+
+CSRMs: constructors, selectors, recognizers, and mutators.
+
+Load the library:
+
+{code}
+> (load-module 'binary-tree)
+{code}
+
+Basic operations:
+
++ creation
++ insertion
++ updating (destructive/in-place)
++ deletion
+
+Walking the tree using higher order functions (see notes from ADuni lectures).
+
+TODO: Mention tree-sort here, and note that this is only fast if the tree is already balanced, so give the "slow version" first, since balanced trees are not introduced yet. Explain why it can be slow.
+
+*** Balanced binary trees
+
+TODO: Red-black tree or AVL tree? AVL is supposedly simpler to implement but red-black is said to have superior tree rotation runtime -- once we have a self-balancing tree of either type we can write the "fast" treesort!
+
+TODO: Mention that when trees are balanced, then TREE-SORT can now be fast.  Add a link back to the TREE-SORT section from here.
+
+TODO: Write sections for the following operations:
+
++ balancing (on insert?)
++ searching
+
+** Graphs
+
+TODO: How to represent graphs with another data structure: matrix, hash table, or association list. We might want to implement our own hash tables first using balanced binary trees -- that would be way cool!
+
+In other words, it might be cool to build everything from the
+bottom up, e.g.:
+
+1. Balanced binary tree
+2. Hash Table
+3. Graph (using hash table representation)
+
+Write an implement the following:
+
++ Traversal
++ Search: DFS, BFS, Dijkstra's Algorithm, A*
+
+*** Searching Graphs
+
+**** Depth-first search
+
+TODO: Add winston-horn-network.png here.
+
+I've been having fun translating some of the code in Winston and Horn's _Lisp_ into Scheme.  This book is amazing --- clearly written, with lots of motivating examples and applications.  As SICP is to language implementation, _Lisp_ is to application development, with chapters covering constraint propagation, forward and backward chaining, simulation, object-oriented programming, and so on.  And it does include the obligatory Lisp interpreter in one chapter, if you're into that sort of thing.
+
+In this installment, based on Chapter 19, we will look at some simple strategies for searching for a path between two nodes on a network (a graph).  The network we'll be using is shown in the diagram above.
+
+Here's the same network, represented as an alist where each {{CAR:CDR}} pair represents a {{NODE:NEIGHBORS}} relationship:
+
+{code}
+'((f e)
+  (e b d f)
+  (d s a e)
+  (c b)
+  (b a c e)
+  (a s b d)
+  (s a d))
+{code}
+
+The high-level strategy the authors use is to traverse the network, building up a list of partial paths.  If a partial path ever reaches the point where it describes a full path between the two network nodes we're after, we've been successful.
+
+As with trees, we can do either a breadth-first or depth-first traversal.  Here's what the intermediate partial paths will look like for a breadth-first traversal that builds a path between nodes {{S}} and {{F}}:
+
+{code}
+(s)
+(s a)
+(s d)
+(s a b)
+(s a d)
+(s d a)
+(s d e)
+(s a b c)
+(s a b e)
+(s a d e)
+(s d a b)
+(s d e b)
+'(s d e f)
+{code}
+
+Based on that output, we can deduce that every time we visit a node, we want to extend our partial paths list with that node.  Here's one option --- its only problem is that it will happily build circular paths that keep us from ever finding the node we want:
+
+{code}
+(define (%buggy-extend path) ;; Builds circular paths
+     (map (lambda (new-node)
+            (cons new-node path))
+          (%get-neighbor (first path))))
+{code}
+
+(Incidentally, I've become fond of the convention whereby internal procedures that aren't part of a public-facing API are prefixed with the {{\%}} character.  This can be found in some parts of the MIT Scheme sources, and I believe it's used in Racket as well.  I've started writing lots of my procedures using this notation to remind me that the code I'm writing is not the real `API', that the design will need more work, and that the current code is just a first draft.  I'm using that convention here.)
+
+Here's a better version that checks if we've already visited the node before adding it to the partial paths list --- as a debugging aid it prints out the current path before extending it:
+
+{code}
+(define (%extend path)
+    (display (reverse path))
+    (newline)
+    (map (lambda (new-node)
+           (cons new-node path))
+         (filter (lambda (neighbor)
+                   (not (member neighbor path)))
+                 (%get-neighbor (first path)))))
+
+{code}
+
+You may have noticed the {{\%GET-NEIGHBOR}} procedure; it's just part of some silly data structure bookkeeping code.  Please feel free to deride me in the comments for my use of a global variable.  What can I say?  I'm Scheming like it's 1988 over here!  Here's the boilerplate:
+
+{code}
+(define *neighbors* '())
+
+(define (%add-neighbor! k v)
+  (let ((new-neighbor (cons k v)))
+    (set! *neighbors*
+          (cons new-neighbor *neighbors*))))
+
+(define (%get-neighbor k)
+  (let ((val (assoc k *neighbors*)))
+    (if val
+        (cdr val)
+      '())))
+
+(%add-neighbor! 's '(a d))
+(%add-neighbor! 'a '(s b d))
+(%add-neighbor! 'b '(a c e))
+(%add-neighbor! 'c '(b))
+(%add-neighbor! 'd '(s a e))
+(%add-neighbor! 'e '(b d f))
+(%add-neighbor! 'f '(e))
+{code}
+
+Now that we have our data structure and a way to extend our partial path list (non-circularly), we can write the main search procedure, {{\%BREADTH-FIRST}}.  The authors have a lovely way of explaining its operation:
+
+{quote}
+{{BREADTH-FIRST}} is said to do a breadth-first search because it extends all partial paths out to uniform length before extending any to a greater length.
+{quote}
+
+Here's the code, translated to use a more Schemely, iterative named {{LET}} instead of the linear-recursive definition from the book:
+
+{code}
+(define (%breadth-first start finish network)
+  (let ((queue (list (list start))))
+    (let loop ((start start)
+               (finish finish)
+               (network network)
+               (queue queue))
+      (cond ((null? queue) '())         ;Queue empty?
+            ((equal? finish (first (first queue))) ;Finish found?
+             (reverse (first queue)))              ;Return path.
+            (else
+             (loop start
+                   finish               ;Try again.
+                   network
+                   (append
+                    (rest queue)
+                    (extend (first queue))))))))) ;New paths in front.
+
+{code}
+
+(A better way to write this procedure would be to implement a generic internal search procedure that takes its `breadthiness' or `depthiness' as a parameter.  We could then wrap it with nicer public-facing search procedures specific names.)
+
+Meanwhile, back at the REPL, we remind ourselves of what {{*NEIGHBORS*}} actually looks like, and then we search for a path between the nodes {{S}} and {{F}}.
+
+{code}
+     > *neighbors*
+     '((f e) (e b d f) (d s a e) (c b) (b a c e) (a s b d) (s a d))
+     > (%breadth-first 's 'f *neighbors*)
+     (s)
+     (s a)
+     (s d)
+     (s a b)
+     (s a d)
+     (s d a)
+     (s d e)
+     (s a b c)
+     (s a b e)
+     (s a d e)
+     (s d a b)
+     (s d e b)
+     '(s d e f)
+{code}
+
+What fun!  I can almost imagine using a three-dimensional variant of these searches for a space wargame with wormhole travel.  Except, you know, they'd need to be much faster and more skillfully implemented. There's also the tiny requirement to write the surrounding game.
+
+It shouldn't need to be said, but: Of course the authors knew better; they were trying to hide that unnecessary complexity from you until later.
+
+**** Shortest path between nodes (aka Breadth-first search)
+
+*** Graph coloring
+
+** Strings
+
+TODO: Figure out what the (say) 2-3 most basic algorithms are that we need to cover.
+
+** A hash table library
+
+In this chapter, we're going to implement our own hash tables.
+
+In day-to-day programming, the hash table is probably the most important real-world data structure.
+
+The hash table also gives us a nice real-world proving ground for our algorithms skills, since implementing hash tables requires putting together several different data structures into one --- in other words, it is a _compound data structure_.
+
+** A regular expression library
+
+In this chapter, we're going to implement our own regular expression matching library.
+
+** Glossary
+
+*** Iterative process
+
+In terms of Scheme code, code that describes an iterative process usually looks like this:
+
+{code}
+    (define (+ a b)
+      (if (= a 0)
+          b
+          (+ (decr a)
+             (incr b))))
+{code}
+
+You can visualize the operation of an iterative process like this:
+
+{code}
+    (+ 4 3)
+    (+ 3 4)
+    (+ 2 5)
+    (+ 1 6)
+    (+ 0 7)
+    7
+{code}
+
+Notice how the "shape" of the successive calls to $+$ stays the same "size"?  In other words, it doesn't grow out to the right.
+
+Using Big O notation [3], you can say that $+$ uses $O(1)$ space (memory), and $O(n)$ time (CPU).
+
+*** Recursive Process
+
+A recursive process is one that consumes growing amounts of stack space while it runs.  It terms of Scheme code, code that describes a recursive process usually looks like this:
+
+{code}
+(define (incr n) (+ n 1))
+(define (decr n) (- n 1))
+
+(define (+ a b)
+  (if (= a 0)
+      b
+      (incr (+ (decr a) b))))
+
+{code}
+
+You can visualize the operation of a recursive process like this:
+
+{code}
+(+ 3 4)
+(incr (+ (decr 3) 4))
+(incr (incr (+ (decr 2) 4)))
+(incr (incr (incr (+ (decr 1) 4))))
+(incr (incr (incr 4)))
+7
+
+{code}
+
+Notice how the "shape" of the successive calls to $+$ get "larger"?
+
+Using Big O notation, you can say that $+$ uses $O(n)$ time in its first argument and $O(n)$ space in its second.
+
+*** Big O Notation
+
+"Big O" notation is a way to talk about the resource usage of an algorithm.  This usage can be along several axes:
+
++ Time (CPU --- how many instructions will it take to compute?)
++ Space (Memory --- how much storage will it use?)
+
+Instead of "resource usage" you can also say the "complexity" of the algorithm.  This is the term you are likely to find in more academic writings.
+
+To be more precise, this notation describes the upper bound of the resource usage.  This means that, even in the worst case scenario, the algorithm will not use more than a given amount of resources.
+
+For more details, check out the following references:
+
++ [https://rob-bell.net/2009/06/a-beginners-guide-to-big-o-notation]
+
++ [http://stackoverflow.com/questions/487258/what-is-a-plain-english-explanation-of-big-o-notation]
+
++ [http://bigocheatsheet.com/]
+
+The last page has a nice big graph that makes it easy to visualize the different complexities.  Further down the page there are tables that list algorithm complexities for various operations (insert, delete, search) on data structures such as stacks, lists, hash tables, etc. Add this to your bookmarks so you can refer back to it as needed.
+
+** Loading the book code into a Scheme
+
+TODO: Write instructions for loading the book code into each of the supported Schemes.
+
+** Bibliography
+
++ Abelson & Sussman, _Structure and Interpretation of Computer Programs_, 1st ed., 1986.
++ Winston & Horn, _Lisp_, 198?.
++ Gabriel, _Performance and Evaluation of Lisp Systems_, 1985.
++ Rawlins, _Compared to What?_, ???.
