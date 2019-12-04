@@ -3,6 +3,13 @@ TAGS
 *.html
 *.pdf
 *.log
+
+*.abcl
+*.fas
+*.lib
+*.ofasl
+*.xfasl
+
 code/load-module.scm
 
 book.aux
