@@ -1,6 +1,4 @@
-;;; -*- Mode: Scheme -*-
-
-;; strings -- helpers for string processing
+;; strings.scm: helpers for string processing            -*- scheme -*-
 
 (define string-split pregexp-split)
 (define string-tokenize pregexp-split)
@@ -22,3 +20,8 @@
 
 (define (string-trim-left s)
   (pregexp-replace "^[ \t]+" s ""))
+
+(define (mapconcat f xs sep)
+  #f)
+
+;; eof
