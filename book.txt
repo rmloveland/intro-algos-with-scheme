@@ -219,9 +219,9 @@ Here are examples showing some expected inputs and outputs of MERGE-SORT:
   (12 13 17 48 51 51 55 68 75 86 89 89 98 98)
 {code}
 
-As we said above, {{MERGE}} splices two lists together in a pairwise ordering determined by a predicate.  In other words, it walks two lists, let's call them $A$ and $B$, and compares the elements of each list in turn.  It keeps another list, $C$, where it stores the output.  If the current element from $A$ is less than the current element from $B$, {{MERGE}} pushes it onto the output list $C$. Otherwise, it pushes the current element from $B$ onto the output list.
+As we said above, {{MERGE}} splices two lists together in a pairwise ordering determined by a predicate.  In other words, it walks two lists, let's call them _A_ and _B_, and compares the elements of each list in turn.  It keeps another list, _C_, where it stores the output.  If the current element from _A_ is less than the current element from _B_, {{MERGE}} pushes it onto the output list _C_. Otherwise, it pushes the current element from _B_ onto the output list.
 
-Once {{MERGE}} has traversed both of its input lists $A$ and $B$, and processed all the elements of each, it returns its result.
+Once {{MERGE}} has traversed both of its input lists _A_ and _B_, and processed all the elements of each, it returns its result.
 
 For example, in order for {{(let ((a '(12 75)) (b '(1024 55))) (merge a b <))}} to return the output {{(12 75 1024 55)}}, {{MERGE}} follows these steps:
 
@@ -252,11 +252,11 @@ For another way of looking at how the above process works, use the MERGE-SORT-TR
 (12 55 75 1024)
 {code}
 
-As noted above, the output of {{MERGE}} is not a sorted list.  It has been put into "pairwise order".  This is a fancy way of saying that we only compared two elements at a time, one each from $A$ and $B$, as we were building it.
+As noted above, the output of {{MERGE}} is not a sorted list.  It has been put into "pairwise order".  This is a fancy way of saying that we only compared two elements at a time, one each from _A_ and _B_, as we were building it.
 
 Based on our description of the merge algorithm above, let's try to generate some inputs to MERGE and guess their expected outputs.
 
-Let's look at the ouputs of a few more calls to MERGE with 1, 2, 3, and 4-element lists, respectively, to build our intuition for its behavior.
+Let's look at the outputs of a few more calls to MERGE with 1, 2, 3, and 4-element lists, respectively, to build our intuition for its behavior.
 
 {code}
 (merge '(769) '(485) <)
@@ -614,7 +614,7 @@ As you can see, our sort procedure is on par with the system's for these inputs.
 
 No go. On a MacBook with 4GB of RAM, our merge sort runs out of memory, while the system sort procedure works just fine. It seems the wizards who implemented this Scheme system knew what they were doing after all!
 
-It should be pretty clear at this point why we're running out of memory. In MIT/GNU Scheme, the system sort procedure uses vectors and mutation (and is no doubt highly tuned for the compiler), whereas we take a relatively brain-dead approach that uses lists and lots of cons-ing. I leave it as an exercise for the reader (or perhaps my future self) to rewrite this code so that it doesn't run out of memory.
+It should be pretty clear at this point why we're running out of memory. In MIT/GNU Scheme, the system sort procedure uses vectors and mutation (and is no doubt highly tuned for the compiler), whereas we take a relatively brain-dead approach that uses lists and lots of consing. I leave it as an exercise for the reader (or perhaps my future self) to rewrite this code so that it doesn't run out of memory.
 
 Footnotes:
 
@@ -1078,9 +1078,9 @@ You can visualize the operation of an iterative process like this:
     7
 {code}
 
-Notice how the "shape" of the successive calls to $+$ stays the same "size"?  In other words, it doesn't grow out to the right.
+Notice how the "shape" of the successive calls to _+_ stays the same "size"?  In other words, it doesn't grow out to the right.
 
-Using Big O notation [3], you can say that $+$ uses $O(1)$ space (memory), and $O(n)$ time (CPU).
+Using Big O notation [3], you can say that _+_ uses _O(1)_ space (memory), and _O(n)_ time (CPU).
 
 *** Recursive Process
 
@@ -1109,9 +1109,9 @@ You can visualize the operation of a recursive process like this:
 
 {code}
 
-Notice how the "shape" of the successive calls to $+$ get "larger"?
+Notice how the "shape" of the successive calls to _+_ get "larger"?
 
-Using Big O notation, you can say that $+$ uses $O(n)$ time in its first argument and $O(n)$ space in its second.
+Using Big O notation, you can say that _+_ uses _O(n)_ time in its first argument and _O(n)_ space in its second.
 
 *** Big O Notation
 
