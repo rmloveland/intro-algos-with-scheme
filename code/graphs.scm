@@ -1,14 +1,12 @@
-;;; graphs.scm
+;; graphs.scm                                         -*- scheme -*-
 
-;; 1. Unweighted, undirected graphs
-
-;; This code is adapted from my "Simple network search in Scheme" blog
-;; post. The implementation is a port to Scheme of the Common Lisp
+;; This file contains code for working with unweighted, undirected
+;; graphs, adapted from a blog post "Simple network search in
+;; Scheme". The implementation is a port to Scheme of the Common Lisp
 ;; code in Chapter 19 of Winston and Horn's book *Lisp*.
 
 ;; In this adjacency list representation, each `(CAR . CDR)` pair
-;; represents a
-;; `(NODE . NEIGHBORS)` relationship.
+;; represents a `(NODE . NEIGHBORS)` relationship.
 
 ;; For more information about the properties of the adjacency list
 ;; representation of a graph, see Sedgewick, p. 421 (2nd ed.).
@@ -23,7 +21,7 @@
 ;;                   (a s b d)
 ;;                   (s a d)))
 
-;; ... or build it up stepwise.
+;; ... or build it up stepwise, by consing.
 
 (define (make-graph)
   '())
@@ -77,20 +75,22 @@
                         (rest queue)))))))))
 
 (define (run-graph-tests)
+  (let ((g (make-graph)))
   (begin
-    (define *neighbors* (make-graph))
-    (add-neighbor! 's '(a d) *neighbors*)
-    (add-neighbor! 'a '(s b d) *neighbors*)
-    (add-neighbor! 'b '(a c e) *neighbors*)
-    (add-neighbor! 'c '(b) *neighbors*)
-    (add-neighbor! 'd '(s a e) *neighbors*)
-    (add-neighbor! 'e '(b d f) *neighbors*)
-    (add-neighbor! 'f '(e) *neighbors*)
+    (add-neighbor! 's '(a d) g))
+    (add-neighbor! 'a '(s b d) g)
+    (add-neighbor! 'b '(a c e) g)
+    (add-neighbor! 'c '(b) g)
+    (add-neighbor! 'd '(s a e) g)
+    (add-neighbor! 'e '(b d f) g)
+    (add-neighbor! 'f '(e) g)
     (assert equal?
-            (find-path-between 's 'f *neighbors* #t)
+            (find-path-between 's 'f g #t)
             '(s d e f)
             "FIND-PATH-BETWEEN: Breadth-first search generates expected output.")
     (assert equal?
-            (find-path-between 's 'f *neighbors* #f)
+            (find-path-between 's 'f g #f)
             '(s a b e f)
             "FIND-PATH-BETWEEN: Depth-first search generates expected output.")))
+
+;; eof
